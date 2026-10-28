@@ -17,7 +17,8 @@ export async function createProject(userId: string, input: { name: string; slug:
   const { data: reserved } = await db.from("reserved_slugs").select("slug").eq("slug", slug).maybeSingle();
   if (reserved) throw new HttpError(409, "That subdomain is reserved. Pick another name.");
   const { data: tier } = await db.rpc("effective_tier", { p_user: userId });
-  const { data: cfg } = await db.from("tiers").select("max_projects").eq("id", tier).single();
+  const { data: cfg } = await db.from("tiers").select("max_projects").eq("id", tier ?? "free").single();
+  if (!cfg) throw new HttpError(500, "Tier settings not found.");
   const { count } = await db.from("projects").select("id", { count: "exact", head: true }).eq("owner_id", userId);
   if (cfg.max_projects != null && (count ?? 0) >= cfg.max_projects)
     throw new HttpError(403, `Your tier allows ${cfg.max_projects} project${cfg.max_projects === 1 ? "" : "s"}. Upgrade your tier to add more.`);

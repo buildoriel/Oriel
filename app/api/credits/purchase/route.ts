@@ -28,7 +28,7 @@ export const POST = handle(async (req: Request) => {
   const { txHash, token, product } = b.data;
   const db = admin();
   const { data: profile } = await db.from("profiles").select("wallet_address, wallet_verified_at, referred_by, purchased_tier, purchased_tier_until").eq("id", user.id).single();
-  if (!profile.wallet_verified_at) throw new HttpError(400, "Verify your wallet first.");
+  if (!profile?.wallet_verified_at || !profile.wallet_address) throw new HttpError(400, "Verify your wallet first.");
   const { data: used } = await db.from("payments").select("id").eq("tx_hash", txHash.toLowerCase()).maybeSingle();
   if (used) throw new HttpError(409, "This transaction has already been used.");
 
@@ -52,14 +52,16 @@ export const POST = handle(async (req: Request) => {
   else if (isPack) credits = TOPUP_PACKS[product as PackId].credits;
   else {
     const { data: t } = await db.from("tiers").select("monthly_credits").eq("id", product).single();
-    credits = t.monthly_credits;
+    credits = t?.monthly_credits ?? 0;
   }
   const { data: pay, error } = await db.from("payments").insert({
-    user_id: user.id, chain_id: robinhoodChain.id, tx_hash: txHash.toLowerCase(), token, amount_raw: amount.toString(),
+    user_id: user.id, chain_id: robinhoodChain.id, tx_hash: txHash.toLowerCase(), token,
+    // numeric(78,0): sent as a string so 18-decimal amounts keep full precision
+    amount_raw: amount.toString() as unknown as number,
     usd_value: usdValue, kind: isPack || short ? "topup" : "tier_month", product: short ? `partial_${product}` : product, credits,
   }).select("id").single();
   if (error?.code === "23505") throw new HttpError(409, "This transaction has already been used.");
-  if (error) throw error;
+  if (error || !pay) throw error ?? new Error("payment insert failed");
 
   if (isPack || short) { if (credits > 0) await grant(user.id, credits, "topup", "topup", pay.id, short ? { partial: product } : {}); }
   else {

@@ -53,6 +53,7 @@ export async function detachFromVercel(hostname: string) {
 export async function verifyDomain(id: string) {
   const db = admin();
   const { data: d } = await db.from("domains").select("*").eq("id", id).single();
+  if (!d) throw new Error(`domain ${id} not found`);
   const r = await checkDns(d.hostname);
   if (!r.ok) { await db.from("domains").update({ status: "pending", last_error: r.error }).eq("id", id); return { status: "pending", error: r.error }; }
   await attachToVercel(d.hostname);

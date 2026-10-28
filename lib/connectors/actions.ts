@@ -54,7 +54,8 @@ export async function githubPush(userId: string, projectId: string, message: str
   const H = { authorization: `Bearer ${token}`, accept: "application/vnd.github+json", "content-type": "application/json" };
   const db = admin();
   const { data: p } = await db.from("projects").select("slug, github_repo").eq("id", projectId).single();
-  let repo = p.github_repo as string | null;
+  if (!p) throw new HttpError(404, "Project not found.");
+  let repo = p.github_repo;
   if (!repo) {
     const r = await j(await fetch("https://api.github.com/user/repos", { method: "POST", headers: H,
       body: JSON.stringify({ name: `oriel-${p.slug}`, private: true, auto_init: true, description: "Made with Oriel" }) }));
@@ -88,6 +89,7 @@ export async function githubPush(userId: string, projectId: string, message: str
 export async function vercelDeploy(userId: string, projectId: string) {
   const token = await tokenFor(userId, "vercel");
   const { data: p } = await admin().from("projects").select("slug").eq("id", projectId).single();
+  if (!p) throw new HttpError(404, "Project not found.");
   const files = await projectFiles(projectId);
   const r = await j(await fetch("https://api.vercel.com/v13/deployments", {
     method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
@@ -104,7 +106,8 @@ export async function netlifyDeploy(userId: string, projectId: string) {
   const { createHash } = await import("crypto");
   const db = admin();
   const { data: p } = await db.from("projects").select("netlify_site_id").eq("id", projectId).single();
-  let siteId = p.netlify_site_id as string | null;
+  if (!p) throw new HttpError(404, "Project not found.");
+  let siteId = p.netlify_site_id;
   let site: any = siteId ? await fetch(`https://api.netlify.com/api/v1/sites/${siteId}`, { headers: H }).then((r) => (r.ok ? r.json() : null)) : null;
   if (!site) {
     site = await j(await fetch("https://api.netlify.com/api/v1/sites", { method: "POST", headers: H, body: "{}" }));
@@ -158,7 +161,7 @@ export async function supabaseApplySchema(userId: string, projectId: string) {
   const token = await tokenFor(userId, "supabase");
   const db = admin();
   const { data: p } = await db.from("projects").select("supabase_ref").eq("id", projectId).single();
-  if (!p.supabase_ref) throw new HttpError(400, "Link a Supabase project first.");
+  if (!p?.supabase_ref) throw new HttpError(400, "Link a Supabase project first.");
   const { data: f } = await db.from("project_files").select("content").eq("project_id", projectId).eq("path", "supabase/schema.sql").maybeSingle();
   if (!f) throw new HttpError(400, "supabase/schema.sql does not exist yet. Ask the agent to create it.");
   await j(await fetch(`${SB}/projects/${p.supabase_ref}/database/query`, {

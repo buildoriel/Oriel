@@ -4,16 +4,16 @@ import { BuyButton } from "@/components/BuyButton";
 export const metadata = { title: "Tiers & Credits" };
 const TIERS = [
   { id: "free", name: "Free", credits: "60", price: "$0", stake: null, items: ["About 3 quick builds or 20 edits", "1 project on a subdomain", "Download as ZIP", "Wallet verification required"] },
-  { id: "builder", name: "Builder", credits: "1,000", price: "$20", usd: 20, stake: "$200", items: ["About 4 full builds, 100 edits", "5 projects", "GitHub connector", "Revenue share"] },
-  { id: "pro", name: "Pro", credits: "2,500", price: "$50", usd: 50, stake: "$500", feat: true, items: ["About 8 builds + 1 premium", "20 projects, custom domain", "GitHub, Vercel, Netlify, Supabase, Drive", "Larger revenue share"] },
-  { id: "studio", name: "Studio", credits: "10,000", price: "$200", usd: 200, stake: "$2,000", items: ["About 15 premium builds", "Unlimited projects and domains", "1 free domain per year", "All connectors, largest revenue share"] },
+  { id: "builder", name: "Builder", credits: "1,000", price: "$20", usd: 20, stake: "$200", items: ["About 4 full builds, 100 edits", "5 projects", "GitHub connector", "Revenue share when you stake"] },
+  { id: "pro", name: "Pro", credits: "2,500", price: "$50", usd: 50, stake: "$500", feat: true, items: ["About 8 builds + 1 premium", "20 projects, 1 custom domain", "GitHub, Vercel, Netlify, Supabase, Drive", "Larger revenue share when you stake"] },
+  { id: "studio", name: "Studio", credits: "10,000", price: "$200", usd: 200, stake: "$2,000", items: ["About 15 premium builds", "Unlimited projects and custom domains", "All connectors incl. Cloudflare DNS", "Largest revenue share when you stake", "1 free domain per year (coming soon)"] },
 ];
 
 export default function Tiers() {
   return (
     <section className="page">
       <h2>Tiers &amp; Credits</h2>
-      <p className="mute" style={{ marginTop: 12, maxWidth: "56ch" }}>Pay monthly, or stake $ORIEL worth 10x the monthly price. The AI model is picked automatically for each request, up to your tier's limit.</p>
+      <p className="mute" style={{ marginTop: 12, maxWidth: "56ch" }}>Pay monthly, or stake $ORIEL worth 10x the monthly price. The AI model is picked automatically for each request, up to your tier's limit. Revenue share is paid to stakers only, in USDG.</p>
       <div className="grid tiers">
         {TIERS.map((t) => (
           <div key={t.id} className={`card tier${t.feat ? " feat" : ""}`}>

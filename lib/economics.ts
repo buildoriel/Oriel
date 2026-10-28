@@ -80,7 +80,7 @@ export async function runMonthly(now = new Date()) {
         stakedTier = r.tier;
         await db.from("profiles").update({ staked_tier: r.tier, grace_until: r.graceUntil?.toISOString() ?? null }).eq("id", u.id);
         if (u.wallet_address) await db.from("tier_evaluations").upsert({
-          user_id: u.id, period: thisPeriod, staked_raw: raw.toString(), twap_usd: twap,
+          user_id: u.id, period: thisPeriod, staked_raw: raw.toString() as unknown as number /* numeric(78,0) as string keeps precision */, twap_usd: twap,
           stake_value_usd: valueUsd, prev_tier: u.staked_tier, new_tier: r.tier, grace_until: r.graceUntil?.toISOString() ?? null,
         }, { onConflict: "user_id,period" });
         const note = notice(r.event, u.staked_tier, r.tier, r.graceUntil);
@@ -127,7 +127,7 @@ export async function runMonthly(now = new Date()) {
   if (allocations.length) {
     const tree = StandardMerkleTree.of(allocations.map((a) => [getAddress(a.e.wallet!), a.raw.toString()]), ["address", "uint256"]);
     root = tree.root;
-    const rows = [...tree.entries()].map(([i, v]) => ({ period, user_id: allocations[i].e.id, wallet: v[0], amount_raw: v[1], proof: tree.getProof(i) }));
+    const rows = [...tree.entries()].map(([i, v]) => ({ period, user_id: allocations[i].e.id, wallet: v[0], amount_raw: v[1] as unknown as number /* numeric as string keeps precision */, proof: tree.getProof(i) }));
     // if writing allocations fails, the period row is deleted again so the job can be safely re-run
     await db.from("revshare_allocations").delete().eq("period", period);
     await db.from("monthly_economics").upsert(econRow(period, revenue, aiCost, margin, demand, split, root), { onConflict: "period" });

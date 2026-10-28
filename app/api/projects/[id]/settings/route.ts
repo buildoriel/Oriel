@@ -4,6 +4,7 @@ import { requireUser, HttpError } from "@/lib/supabase/server";
 import { admin } from "@/lib/supabase/admin";
 import { ownProject } from "@/lib/projects";
 import { handle } from "@/lib/http";
+import type { TablesUpdate } from "@/lib/database.types";
 
 export const GET = handle(async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const user = await requireUser();
@@ -21,7 +22,7 @@ export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ id: st
   const p = await ownProject(user.id, (await ctx.params).id);
   const b = Body.safeParse(await req.json());
   if (!b.success) throw new HttpError(400, "Invalid settings.");
-  const patch: Record<string, unknown> = { ...b.data };
+  const patch: TablesUpdate<"projects"> = { ...b.data };
   // opting out of the showcase also removes the project from the home page
   if (b.data.showcase_opt_in === false) patch.featured_at = null;
   await admin().from("projects").update(patch).eq("id", p.id);

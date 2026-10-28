@@ -27,6 +27,7 @@ export const POST = handle(async (req: Request) => {
   const db = admin();
   const { data: cfg } = await db.from("tiers").select("max_custom_domains").eq("id", tier).single();
   const { count } = await db.from("domains").select("id", { count: "exact", head: true }).eq("owner_id", user.id);
+  if (!cfg) throw new HttpError(500, "Tier settings not found.");
   if (cfg.max_custom_domains >= 0 && (count ?? 0) >= cfg.max_custom_domains)
     throw new HttpError(403, `Your tier allows ${cfg.max_custom_domains} custom domain${cfg.max_custom_domains === 1 ? "" : "s"}.`);
   const { data, error } = await db.from("domains").insert({ project_id: projectId, owner_id: user.id, hostname }).select("id").single();

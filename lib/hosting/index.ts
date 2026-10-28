@@ -25,6 +25,8 @@ export const isPublicFile = (path: string) => !PRIVATE_FILE.test(path);
 /** Copy the project's working files into an immutable version in Storage: sites/<projectId>/v<N>/<path> */
 export async function publishProject(projectId: string) {
   const db = admin();
+  const { data: proj } = await db.from("projects").select("suspended_at").eq("id", projectId).single();
+  if (proj?.suspended_at) throw new HttpError(403, "This project was suspended after an abuse review and cannot be published. Contact support if you think this is a mistake.");
   const { data: all } = await db.from("project_files").select("path, content").eq("project_id", projectId);
   const files = (all ?? []).filter((f: any) => isPublicFile(f.path));
   if (!files.length) throw new HttpError(400, "The project has no files yet.");
@@ -50,10 +52,10 @@ export async function publishProject(projectId: string) {
 export async function resolveSite(kind: "s" | "d", key: string) {
   const db = admin();
   if (kind === "s") {
-    const { data } = await db.from("projects").select("id, published_version").eq("slug", key).maybeSingle();
+    const { data } = await db.from("projects").select("id, published_version, suspended_at").eq("slug", key).maybeSingle();
     return data;
   }
-  const { data } = await db.from("domains").select("project_id, status, projects(id, published_version)")
+  const { data } = await db.from("domains").select("project_id, status, projects(id, published_version, suspended_at)")
     .eq("hostname", key).eq("status", "active").maybeSingle();
   return data?.projects ?? null;
 }

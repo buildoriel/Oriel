@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Nav } from "@/components/Nav";
+import { Footer } from "@/components/Footer";
 import "./globals.css";
 
 // Bricolage Grotesque (OFL) bundled locally: no Google Fonts dependency at build time
@@ -21,7 +22,7 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, view
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${bricolage.variable} ${GeistSans.variable} ${GeistMono.variable}`}>
-      <body><Nav /><main>{children}</main></body>
+      <body><Nav /><main>{children}</main><Footer /></body>
     </html>
   );
 }

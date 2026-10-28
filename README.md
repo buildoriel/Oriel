@@ -17,7 +17,10 @@
 | `supabase/migrations/` | Full schema + RLS + atomic credit functions + storage bucket |
 | `contracts/` | Foundry: `OrielStaking.sol`, `RevenueDistributor.sol`, tests, deploy script |
 | `app/account/` | Account page: wallet verification (activates the 60 Free credits), balance + history, referrals, notifications, revenue share claims, handle |
-| `scripts/` | Tests, revenue share epoch calldata, creator royalty payouts, showcase curation |
+| `app/report/`, `lib/abuse.ts` | Public abuse report form (rate limited per IP hash) and project takedown (HTTP 451) |
+| `app/privacy/`, `app/terms/` | Privacy Policy and Terms of Service (drafts: have a lawyer review them before launch) |
+| `lib/database.types.ts` | TypeScript types generated from the live Supabase schema; the server client is fully typed |
+| `scripts/` | Tests, revenue share epoch calldata, creator royalty payouts, showcase curation, moderation |
 
 ## Architecture at a glance
 
@@ -51,10 +54,10 @@ Local subdomains: `http://projectname.localhost:3000`. Previews: set `PREVIEW_OR
 
 ### 2. Supabase
 1. Create a new project and copy the URL, anon key, and service role key into the env.
-2. `supabase link --project-ref <ref>` then `supabase db push` (runs `0001_init.sql`, `0002_storage.sql`, `0003_fase1_lengkap.sql`).
+2. `supabase link --project-ref <ref>` then `supabase db push` (runs `0001_init.sql` through `0004_abuse_reports.sql`).
 3. Authentication → URL Configuration: Site URL `https://buildoriel.com`, Redirect URLs `https://buildoriel.com/auth/callback` and `http://localhost:3000/auth/callback`.
 4. (Optional) enable the Google provider under Authentication → Providers.
-5. `npm run db:types` to generate TypeScript types from the schema.
+5. `npm run db:types` regenerates `lib/database.types.ts` after any schema change (commit the result).
 
 ### 3. Vercel + DNS
 1. Import the repo into Vercel and fill in every variable from `.env.example`.
@@ -120,6 +123,16 @@ npx tsx --env-file=.env.local scripts/showcase.ts add <slug>
 npx tsx --env-file=.env.local scripts/showcase.ts remove <slug>
 ```
 
+## Abuse reports and takedowns
+Anyone can report a hosted site at `/report` (linked in the footer and on suspended pages). Review and act with:
+```bash
+npx tsx --env-file=.env.local scripts/moderation.ts                          # open reports, grouped by site
+npx tsx --env-file=.env.local scripts/moderation.ts suspend <slug> "<reason>"  # 451 on all its domains, no republish, owner notified
+npx tsx --env-file=.env.local scripts/moderation.ts restore <slug>
+npx tsx --env-file=.env.local scripts/moderation.ts dismiss <report_id>
+```
+Check open reports daily: phishing on `*.buildoriel.com` can get the whole domain blocklisted by browsers and email providers.
+
 ## Credit & tier rules (summary)
 - Free: 60 credits/month, active once the wallet is verified on the Account page (`/account`; signing a message, no gas). One wallet per account.
 - Purchased tier: valid for 30 days from payment; its credits are granted at payment and are not reset on the 1st while the period is active.
@@ -128,13 +141,14 @@ npx tsx --env-file=.env.local scripts/showcase.ts remove <slug>
 - One running build per user (`agent_runs` table), at most `AGENT_RUNS_PER_HOUR` per hour.
 
 ## What works vs. what's left
-Done: everything listed in the table above; passes `tsc`, `next build`, the economics tests, AI adapter tests, agent tools tests, hosting tests, and SQL function tests (credits, agent lock, Free claim) against the Supabase database.
+Done: everything listed in the table above; passes `tsc` (with the typed Supabase client), `next build`, the economics tests, AI adapter tests, agent tools tests, hosting tests, and SQL function tests (credits, agent lock, Free claim, abuse reports) against the Supabase database.
 
 Not yet (intentional, per the roadmap or pending a decision):
 - Buying domains inside the app and the free yearly domain for Studio — Phase 3, needs a registrar choice (e.g. Namecheap, Porkbun, Cloudflare Registrar) and a reseller account; the `free_domain_per_year` flag already exists in the tiers table.
 - An agent job queue outside the request (the agent currently runs inside the SSE request, `maxDuration` 300 seconds max). For longer large projects, move it to a worker (e.g. Inngest/Trigger.dev/Upstash QStash).
 - Per-IP rate limiting for public endpoints (Vercel Firewall or Upstash recommended before launch). Per-account limits already exist.
-- Content moderation for user sites and an abuse report flow (phishing on subdomains would damage the domain's reputation).
+- Automatic content scanning before publish (reports and takedowns are manual today). Consider Google Safe Browsing / Web Risk checks on published URLs.
+- Legal review of `/terms` and `/privacy`, plus the operating entity and governing law, before launch.
 
 ## Numbers to recompute after beta
 Everything in `lib/config.ts` and the `tiers` table: model prices (`lib/agent/models.ts` — placeholders, verify at docs.claude.com), per-action credit caps (`KIND_LIMITS`), tier credit quotas, economic percentages, royalties and referrals.

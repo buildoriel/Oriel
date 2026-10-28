@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAddress } from "viem";
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser, HttpError } from "@/lib/supabase/server";
 import { admin } from "@/lib/supabase/admin";
 import { ADDR, decimalsOf, publicClient, STAKING_ABI } from "@/lib/chain";
 import { twap7d, readSpotPriceUsd } from "@/lib/staking/price";
@@ -11,6 +11,7 @@ import { handle } from "@/lib/http";
 export const GET = handle(async () => {
   const user = await requireUser();
   const { data: p } = await admin().from("profiles").select("wallet_address, wallet_verified_at, staked_tier, grace_until").eq("id", user.id).single();
+  if (!p) throw new HttpError(404, "Profile not found.");
   // before $ORIEL launches and the contracts are deployed: the page still renders without chain data
   if (!stakingConfigured()) return NextResponse.json({ configured: false, staked: 0, twap: null, spot: null, value: null,
     currentTier: p.staked_tier, graceUntil: p.grace_until, walletVerified: !!p.wallet_verified_at });

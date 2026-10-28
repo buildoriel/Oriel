@@ -14,6 +14,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ kind: string; k
   if (kind !== "s" && kind !== "d") return new Response("Not found", { status: 404 });
   const site: any = await resolveSite(kind, decodeURIComponent(key));
   if (!site?.published_version) return notFound();
+  if (site.suspended_at) return suspended();
 
   const base = `${site.id}/v${site.published_version}`;
   return serveStatic((path ?? []).map(decodeURIComponent), trailing, async (rel) => {
@@ -28,6 +29,11 @@ export async function GET(req: Request, ctx: { params: Promise<{ kind: string; k
 const notFound = () => new Response(
   `<!doctype html><meta charset="utf-8"><title>Not found</title><body style="font-family:system-ui;padding:48px;background:#F4F5F7;color:#111317"><h1>This page doesn't exist yet</h1><p>The project hasn't been published or the address is wrong. <a href="https://${ROOT}">Build your own site on Oriel</a>.</p>`,
   { status: 404, headers: { "content-type": "text/html; charset=utf-8" } });
+
+/** Taken down after an abuse review. 451 tells crawlers and browsers the content was removed on purpose. */
+const suspended = () => new Response(
+  `<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><title>Site unavailable</title><body style="font-family:system-ui;padding:48px;background:#F4F5F7;color:#111317"><h1>This site is unavailable</h1><p>It was taken down for violating the <a href="https://${ROOT}/terms">Oriel Terms of Service</a>.</p>`,
+  { status: 451, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=60" } });
 
 /** Project draft from project_files, accessed via a signed token on a separate preview host. */
 async function servePreview(projectId: string, path: string[], trailing: boolean) {
