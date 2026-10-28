@@ -48,6 +48,12 @@ export default function DeployContracts() {
 
   useEffect(() => { try { const s = JSON.parse(localStorage.getItem(SAVED) ?? "{}"); if (s.done) setDone(s.done); if (s.form) setForm((f) => ({ ...f, ...s.form })); } catch { /* fresh start */ } }, []);
   useEffect(() => { try { localStorage.setItem(SAVED, JSON.stringify({ done, form })); } catch { /* private mode */ } }, [done, form]);
+  // prefill $ORIEL with the address detected from the dev wallet's launch
+  useEffect(() => {
+    fetch("/api/token").then((r) => (r.ok ? r.json() : null)).then((j) => {
+      if (j?.address) setForm((f) => (f.oriel ? f : { ...f, oriel: j.address }));
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(async () => {

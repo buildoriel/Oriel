@@ -5,6 +5,7 @@ import { ROOT_DOMAIN } from "@/lib/config";
 import { BuildDemo } from "@/components/BuildDemo";
 import { HeroPrompt } from "@/components/HeroPrompt";
 import { CountUp, RevealObserver } from "@/components/Motion";
+import { TokenCA } from "@/components/TokenCA";
 import styles from "./home.module.css";
 
 export const revalidate = 300;
@@ -64,6 +65,8 @@ export default async function Home() {
             <Link key={label} className="chip" href={`/workspace/new?prompt=${encodeURIComponent(prompt)}`}>{label}</Link>
           ))}
         </div>
+
+        <TokenCA />
       </section>
 
       {/* ---------------- demo ---------------- */}

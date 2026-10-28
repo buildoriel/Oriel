@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { OrielMark } from "./Logo";
 import { ThemeToggle } from "./Theme";
+import { TokenCA } from "./TokenCA";
 
 const SOCIAL: [string, string | undefined][] = [
   ["X", "https://x.com/buildoriel"],
@@ -11,6 +12,7 @@ const SOCIAL: [string, string | undefined][] = [
 export function Footer() {
   return (
     <footer className="foot">
+      <div className="foot-ca"><TokenCA variant="footer" /></div>
       <div className="foot-in">
         <div className="row small mute" style={{ gap: 14 }}><span className="row"><OrielMark size={18} /><span>© {new Date().getFullYear()} Oriel</span></span><ThemeToggle compact /></div>
         <nav aria-label="Help, legal and community">
