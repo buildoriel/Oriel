@@ -1363,6 +1363,7 @@ export type Database = {
         Returns: undefined
       }
       is_project_member: { Args: { p_project: string }; Returns: boolean }
+      user_id_by_email: { Args: { p_email: string }; Returns: string }
       reset_monthly_credits: {
         Args: { p_amount: number; p_period: string; p_user: string }
         Returns: undefined
