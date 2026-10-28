@@ -30,7 +30,7 @@ export function Composer({
   }, [value]);
   useEffect(() => { if (autoFocus) ref.current?.focus(); }, [autoFocus]);
   const full = (files?.length ?? 0) >= MAX_ATTACHMENTS;
-  const canSend = !!value.trim() && !busy && !files?.some((f) => f.error);
+  const canSend = (!!value.trim() || !!files?.length) && !busy && !files?.some((f) => f.error);
   const drop = onAttach ? {
     onDragOver: (e: React.DragEvent) => { if (e.dataTransfer.types.includes("Files")) { e.preventDefault(); setDrag(true); } },
     onDragLeave: (e: React.DragEvent) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDrag(false); },
@@ -57,7 +57,7 @@ export function Composer({
       <div className="composer-foot">
         {onAttach && <>
           <button type="button" className={s.attach} onClick={() => pick.current?.click()} disabled={busy || full}
-            aria-label="Attach files" title={full ? `Up to ${MAX_ATTACHMENTS} files per message` : "Attach images or text files"}><Icon name="plus" /></button>
+            aria-label="Attach files" title={full ? `Up to ${MAX_ATTACHMENTS} files per message` : "Attach images or text files"}><Icon name="paperclip" /></button>
           <input ref={pick} type="file" multiple accept={ACCEPT} hidden onChange={(e) => { if (e.target.files?.length) onAttach([...e.target.files]); e.target.value = ""; }} />
         </>}
         <div className="row small mute grow">{footer}</div>

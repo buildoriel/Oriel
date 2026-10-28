@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { OrielLockup } from "./Logo";
 
-const LINKS: [string, string][] = [["/templates", "Templates"], ["/tiers", "Pricing"], ["/stake", "Stake"]];
+const LINKS: [string, string][] = [["/templates", "Templates"], ["/tiers", "Pricing"], ["/stake", "Stake"], ["/docs", "Docs"]];
 
 /** Top navigation for public pages. Shows "Open workspace" once signed in. */
 export function SiteNav() {

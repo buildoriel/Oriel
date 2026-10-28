@@ -2,13 +2,17 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase/client";
-import { Composer, Menu, Modal, useToasts, type MenuEntry } from "@/components/ui";
+import { Composer, EstimateLabel, Menu, Modal, useEstimate, useToasts, type MenuEntry, type PendingFile } from "@/components/ui";
+import { ShareDialog } from "@/components/ShareDialog";
+import { MAX_ATTACHMENTS, uploadError, uploadType, type Attachment } from "@/lib/uploads";
 import { Icon } from "@/components/Icon";
 import { OrielMark } from "@/components/Logo";
 import { refreshShell } from "@/components/AppShell";
+import ws from "./workspace.module.css";
 
 type Step = { text: string };
-type Msg = { id?: number; role: "user" | "assistant"; content: string; credits?: number | null; action_kind?: string | null; steps?: Step[]; error?: boolean };
+type Msg = { id?: number; role: "user" | "assistant"; content: string; credits?: number | null; action_kind?: string | null; steps?: Step[]; error?: boolean; attachments?: Attachment[] | null };
+type Version = { version: number; file_count: number; bytes: number; created_at: string };
 type Confirm = { title: string; body: string; label: string; run: () => Promise<void>; extra?: "autocommit" };
 type Device = "desktop" | "tablet" | "mobile";
 type CodeFile = { path: string; content: string };
@@ -25,14 +29,24 @@ const STARTERS = [
 ];
 const sleep = (ms: number) => new Promise((ok) => setTimeout(ok, ms));
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "buildoriel.com";
+const ago = (iso: string) => {
+  const s = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.round(s / 60)} min ago`;
+  if (s < 86400) return `${Math.round(s / 3600)} h ago`;
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+};
+const kb = (n: number) => (n >= 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
-export default function Workspace({ project: initial, initialMessages, initialPrompt, activeRunId }: {
+export default function Workspace({ project: initial, role, initialMessages, initialPrompt, activeRunId }: {
   project: { id: string; name: string; slug: string; published_version: number | null };
-  initialMessages: Msg[]; initialPrompt: string; activeRunId: number | null;
+  role: "owner" | "editor"; initialMessages: Msg[]; initialPrompt: string; activeRunId: number | null;
 }) {
+  const owner = role === "owner";
   const [project, setProject] = useState(initial);
   const [msgs, setMsgs] = useState<Msg[]>(initialMessages);
   const [input, setInput] = useState("");
+  const [pending, setPending] = useState<PendingFile[]>([]);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [steps, setSteps] = useState<Step[]>([]);
@@ -61,6 +75,11 @@ export default function Workspace({ project: initial, initialMessages, initialPr
   const [sell, setSell] = useState<{ title: string; description: string; category: string; price: string } | null>(null);
   const [drivePick, setDrivePick] = useState<string | null>(null);
   const [rename, setRename] = useState<string | null>(null);
+  const [versions, setVersions] = useState<{ live: number | null; versions: Version[] } | null | "loading">(null);
+  const [del, setDel] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [share, setShare] = useState(false);
+  const est = useEstimate(busy ? "" : input, project.id);
   const [toasts, toast] = useToasts();
 
   const endRef = useRef<HTMLDivElement>(null);
@@ -98,13 +117,41 @@ export default function Workspace({ project: initial, initialMessages, initialPr
 
   const addStep = (text: string) => setSteps((s) => (s.at(-1)?.text === text ? s : [...s, { text }]));
 
+  function attach(list: File[]) {
+    setPending((cur) => {
+      const room = MAX_ATTACHMENTS - cur.length;
+      if (list.length > room) toast(`Up to ${MAX_ATTACHMENTS} files per message.`);
+      return [...cur, ...list.slice(0, Math.max(0, room)).map((file) => {
+        const error = uploadError(file.name, file.size) ?? undefined;
+        const raster = !error && uploadType(file.name)?.kind === "image";
+        return { file, error, url: raster ? URL.createObjectURL(file) : undefined };
+      })];
+    });
+  }
+  function unattach(i: number) {
+    setPending((cur) => { if (cur[i]?.url) URL.revokeObjectURL(cur[i].url!); return cur.filter((_, k) => k !== i); });
+  }
+
+  /** Upload the attached files one by one (each becomes a project file), then queue the build. */
   async function send(preset?: string) {
-    const text = (preset ?? input).trim(); if (!text || busy) return;
-    setBusy(true); setInput(""); setStatus("Queued"); setSteps([]); setNotice(null); setPane("chat");
-    setMsgs((m) => [...m, { role: "user", content: text }, { role: "assistant", content: "" }]);
-    const res = await fetch(`/api/projects/${project.id}/chat`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message: text }) });
+    const files = preset ? [] : pending;
+    const text = (preset ?? input).trim() || (files.length ? `Use the attached file${files.length === 1 ? "" : "s"}.` : "");
+    if (!text || busy || files.some((f) => f.error)) return;
+    setBusy(true); setStatus(files.length ? "Uploading files" : "Queued"); setSteps([]); setNotice(null); setPane("chat");
+    const attachments: Attachment[] = [];
+    for (const f of files) {
+      const body = new FormData(); body.append("file", f.file);
+      const r = await fetch(`/api/projects/${project.id}/upload`, { method: "POST", body });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { toast(j.error ?? `Could not upload ${f.file.name}.`); setBusy(false); setStatus(""); return; }
+      attachments.push(j);
+    }
+    setInput(""); files.forEach((f) => f.url && URL.revokeObjectURL(f.url)); if (!preset) setPending([]);
+    setMsgs((m) => [...m, { role: "user", content: text, attachments }, { role: "assistant", content: "" }]);
+    const res = await fetch(`/api/projects/${project.id}/chat`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message: text, attachments }) });
     const j = await res.json().catch(() => ({}));
-    if (!res.ok) { finish(j.error ?? "Could not send your message.", undefined, true); setBusy(false); return; }
+    if (!res.ok) { finish(j.error ?? "Could not send your message.", undefined, true); setBusy(false); setStatus(""); return; }
+    if (attachments.length) refreshFiles();
     await follow(j.runId);
   }
 
@@ -182,6 +229,30 @@ export default function Workspace({ project: initial, initialMessages, initialPr
     refreshSettings();
   }
 
+  async function openVersions() {
+    setVersions("loading");
+    const r = await fetch(`/api/projects/${project.id}/versions`); const j = await r.json().catch(() => null);
+    if (!r.ok || !j) { setVersions(null); return toast(j?.error ?? "Could not load versions."); }
+    setVersions(j);
+  }
+  const restore = (v: number) => setConfirmBox({
+    title: `Restore version ${v}?`, label: "Restore",
+    body: `${project.slug}.${ROOT} switches to version ${v}, and the project's files are replaced with that version so the next change builds on it. Changes made since your last publish are lost. Other versions stay in the history.`,
+    run: async () => {
+      const r = await fetch(`/api/projects/${project.id}/versions/${v}`, { method: "POST" }); const j = await r.json().catch(() => ({}));
+      if (!r.ok) return toast(j.error ?? "Restore failed.");
+      setVersion(v); setLive(`https://${project.slug}.${ROOT}`); setVersions(null);
+      setNonce((n) => n + 1); refreshFiles(); if (view === "code") loadCode(); refreshShell();
+      toast(`Restored version ${v}`);
+    },
+  });
+  async function deleteProject() {
+    setDeleting(true);
+    const r = await fetch(`/api/projects/${project.id}`, { method: "DELETE" }); const j = await r.json().catch(() => ({}));
+    if (!r.ok) { setDeleting(false); return toast(j.error ?? "Could not delete the project."); }
+    refreshShell(); location.href = "/workspace";
+  }
+
   const action = (provider: string) => `/api/connectors/${provider}/action`;
   const has = (p: string) => connected.includes(p);
   const github = () => setConfirmBox({
@@ -208,9 +279,10 @@ export default function Workspace({ project: initial, initialMessages, initialPr
   const tierRank = ["free", "builder", "pro", "studio"].indexOf(me?.tier ?? "free");
   const menu: MenuEntry[] = [
     { section: "Project" },
-    { icon: "pencil", label: "Rename", onSelect: () => setRename(project.name) },
+    ...(owner ? [{ icon: "pencil", label: "Rename", onSelect: () => setRename(project.name) } as MenuEntry, { icon: "user", label: "Share", onSelect: () => setShare(true) } as MenuEntry] : []),
+    { icon: "history", label: "Version history", onSelect: openVersions },
     { icon: "download", label: "Download ZIP", onSelect: () => { location.href = `/api/projects/${project.id}/download`; } },
-    ...(live ? [
+    ...(owner && live ? [
       { icon: "tag", label: "Sell as template", onSelect: () => setSell({ title: project.name, description: "", category: "landing", price: "50" }) } as MenuEntry,
       { icon: "spark", label: settings.showcase_opt_in ? "Remove from showcase" : "Allow in showcase", onSelect: toggleShowcase } as MenuEntry,
     ] : []),
@@ -225,7 +297,11 @@ export default function Workspace({ project: initial, initialMessages, initialPr
       ? { icon: "database", label: "Apply Supabase schema", hint: settings.supabase_ref, onSelect: supabaseApply, disabled: !files.includes("supabase/schema.sql") } as MenuEntry
       : { icon: "database", label: "Use a Supabase database", onSelect: supabaseList } as MenuEntry] : []),
     { icon: "plug", label: "Manage connectors", onSelect: () => { location.href = "/connectors"; } },
+    "sep",
+    { icon: "trash", label: "Delete project", onSelect: () => setDel("") },
   ];
+  // editors can chat, publish, restore versions and download; settings, connectors and deletion stay with the owner
+  const items: MenuEntry[] = owner ? menu : menu.slice(0, 3);
 
   const lowCredit = me && me.balance?.total < 1;
   const current = codeFiles?.find((f) => f.path === openFile) ?? codeFiles?.[0];
@@ -250,7 +326,7 @@ export default function Workspace({ project: initial, initialMessages, initialPr
                 : <span className="truncate">{project.slug}.{ROOT} · draft</span>}
             </div>
           </div>
-          <Menu label="Project actions" items={menu} />
+          <Menu label="Project actions" items={items} />
         </header>
 
         {(notice || lowCredit) && (
@@ -288,7 +364,14 @@ export default function Workspace({ project: initial, initialMessages, initialPr
             </div>
           )}
           {msgs.map((m, i) => m.role === "user" ? (
-            <div key={i} className="msg-user">{m.content}</div>
+            <div key={i} className="msg-user">
+              {m.content}
+              {!!m.attachments?.length && (
+                <span className={ws.atts}>
+                  {m.attachments.map((a) => <span key={a.path} className={ws.att} title={a.path}><Icon name={a.type.startsWith("image/") ? "image" : "file"} size={13} /><span className="truncate">{a.name}</span></span>)}
+                </span>
+              )}
+            </div>
           ) : (
             <div key={i} className="msg-ai">
               <div className="mark"><OrielMark size={16} /></div>
@@ -327,9 +410,10 @@ export default function Workspace({ project: initial, initialMessages, initialPr
 
         <div className="ws-input">
           <Composer value={input} onChange={setInput} onSubmit={() => send()} onStop={stopping ? undefined : stop}
-            busy={busy} autoFocus={!initialPrompt}
+            busy={busy} autoFocus={!initialPrompt} files={pending} onAttach={attach} onRemoveFile={unattach}
             placeholder={msgs.length ? "Ask for a change…" : "Describe what to build…"}
             footer={busy ? <span className="row"><span className="truncate">{stopping ? "Stopping after this step" : status}</span></span>
+              : est && input.trim() ? <EstimateLabel est={est} />
               : <span className="num">{me ? `${(me.balance?.total ?? 0).toLocaleString("en-US")} credits` : ""}</span>} />
         </div>
       </section>
@@ -348,7 +432,7 @@ export default function Workspace({ project: initial, initialMessages, initialPr
               <button aria-pressed={device === "mobile"} onClick={() => setDevice("mobile")} aria-label="Mobile"><Icon name="phone" /></button>
             </div>
           )}
-          <div className="pv-url hide-mobile"><Icon name="globe" /><span className="truncate">{live ? `${project.slug}.${ROOT}` : "Draft preview"}</span>{version ? <span className="badge" style={{ marginLeft: "auto" }}>v{version}</span> : null}</div>
+          <div className="pv-url hide-mobile"><Icon name="globe" /><span className="truncate">{live ? `${project.slug}.${ROOT}` : "Draft preview"}</span>{version ? <button type="button" className={`badge ${ws.vbadge}`} onClick={openVersions} title="Version history">v{version}</button> : null}</div>
           <span className="grow only-mobile" />
           <button className="btn btn-ghost btn-icon btn-sm" onClick={() => (view === "code" ? loadCode() : setNonce((n) => n + 1))} aria-label="Reload"><Icon name="refresh" /></button>
           {(live || preview) && <a className="btn btn-ghost btn-icon btn-sm" href={live ?? preview} target="_blank" rel="noreferrer" aria-label="Open in new tab"><Icon name="external" /></a>}
@@ -440,6 +524,37 @@ export default function Workspace({ project: initial, initialMessages, initialPr
           ))}
         </div>
       </Modal>
+      <Modal open={versions !== null} onClose={() => setVersions(null)} title="Version history"
+        footer={<button className="btn" onClick={() => setVersions(null)}>Close</button>}>
+        <p>Every publish is saved as a version. Restore one to put it back live and continue from it.</p>
+        {versions === "loading" ? <div className="skel" style={{ height: 96 }} />
+          : versions && versions.versions.length === 0 ? <div className="empty"><Icon name="history" /><span>No versions yet. Publish to create version 1.</span></div>
+          : versions && (
+            <div className={ws.versions}>
+              {versions.versions.map((v) => (
+                <div key={v.version} className={ws.version}>
+                  <div className="grow" style={{ minWidth: 0 }}>
+                    <div className="row" style={{ gap: 8, color: "var(--ink)" }}><b>Version {v.version}</b>{v.version === versions.live && <span className="badge badge-ok"><span className="dot dot-ok" />Live</span>}</div>
+                    <div className="xs mute">{ago(v.created_at)} · {v.file_count} file{v.file_count === 1 ? "" : "s"} · {kb(v.bytes)}</div>
+                  </div>
+                  <button className="btn btn-sm" onClick={() => restore(v.version)} disabled={busy}>Restore</button>
+                </div>
+              ))}
+            </div>
+          )}
+      </Modal>
+
+      <Modal open={del !== null} onClose={() => !deleting && setDel(null)} title="Delete project"
+        footer={<><button className="btn" onClick={() => setDel(null)} disabled={deleting}>Cancel</button>
+          <button className="btn btn-danger" onClick={deleteProject} disabled={deleting || del?.trim() !== project.name.trim()}>
+            {deleting ? <span className="spinner" /> : <Icon name="trash" />}Delete project</button></>}>
+        <p>This deletes <b style={{ color: "var(--ink)" }}>{project.name}</b>: its files and chat, the site at {project.slug}.{ROOT}, and any custom domains. It cannot be undone. Templates you made from it stay available.</p>
+        <label className="field"><span className="label">Type the project name to confirm</span>
+          <input className="input" value={del ?? ""} onChange={(e) => setDel(e.target.value)} placeholder={project.name} autoFocus
+            onKeyDown={(e) => { if (e.key === "Enter" && del?.trim() === project.name.trim()) deleteProject(); }} /></label>
+      </Modal>
+
+      {owner && <ShareDialog projectId={project.id} open={share} onClose={() => setShare(false)} />}
       {toasts}
     </div>
   );

@@ -5,6 +5,7 @@ import { getAddress, type Address } from "viem";
 import { refreshShell } from "@/components/AppShell";
 import { Icon } from "@/components/Icon";
 import { Modal } from "@/components/ui";
+import { ThemeToggle } from "@/components/Theme";
 import { claimRevshare, isClaimed, verifyWallet } from "@/lib/wallet-client";
 import s from "./account.module.css";
 
@@ -149,6 +150,13 @@ export default function Account() {
                 <div className="small"><div className="xs faint" style={{ marginBottom: 2 }}>{date(n.created_at)}</div>{n.body}</div>
               </div>))}</div>
           )}
+        </section>
+
+        <section className={`card card-lg ${s.wide}`}>
+          <div className="row-between wrap" style={{ gap: 16 }}>
+            <span><h2 className="h3">Appearance</h2><span className="small mute">Follow your device, or always use light or dark.</span></span>
+            <ThemeToggle />
+          </div>
         </section>
 
         <section className={`card card-lg ${s.wide}`}>

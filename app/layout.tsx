@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ErrorReporter } from "@/components/ErrorReporter";
+import { THEME_SCRIPT } from "@/components/Theme";
 import "./globals.css";
 
 // Self-hosted variable fonts (SIL OFL, licenses in app/fonts): no Google Fonts dependency at build time.
@@ -31,7 +32,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${serif.variable} ${GeistMono.variable}`}>
+    <html lang="en" className={`${inter.variable} ${serif.variable} ${GeistMono.variable}`} suppressHydrationWarning>
+      {/* applies a saved light/dark choice before first paint */}
+      <head><script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} /></head>
       <body>{children}<ErrorReporter /><Analytics /><SpeedInsights /></body>
     </html>
   );

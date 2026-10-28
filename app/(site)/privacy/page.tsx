@@ -12,7 +12,7 @@ export default function Privacy() {
         <li><b>Account data:</b> your email address and, if you sign in with Google, your basic Google profile.</li>
         <li><b>Wallet data:</b> the public wallet address you verify by signing a message, and the on-chain transactions you send to Oriel (payments, staking, claims). Blockchain data is public by nature.</li>
         <li><b>Project data:</b> your chat messages with the agent, the files it creates, and the sites you publish.</li>
-        <li><b>Usage data:</b> credit balance and history, AI usage per request (model, token counts, cost), and basic server logs.</li>
+        <li><b>Usage data:</b> credit balance and history, AI usage per request (model, token counts, cost), and basic server logs. We use Vercel Web Analytics and Speed Insights (cookieless, aggregate page views and performance) and keep error reports (message, page, browser) to fix bugs.</li>
         <li><b>Connector data:</b> when you connect GitHub, Vercel, Netlify, Supabase, Google Drive, or Cloudflare, we store access tokens encrypted (AES-256-GCM) and use them only for the actions you start.</li>
         <li><b>Abuse reports:</b> the report you submit, an optional email, and a salted hash of your IP address used only to limit spam.</li>
       </ul>
