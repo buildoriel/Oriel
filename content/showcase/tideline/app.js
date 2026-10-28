@@ -117,7 +117,7 @@
   function money(k) { return k >= 1000 ? `$${(k / 1000).toFixed(2)}M` : `$${k}k`; }
   function drawCombo(svg) {
     const labels = svg.dataset.labels.split(','), arr = nums(svg.dataset.arr), cus = nums(svg.dataset.customers);
-    const L = 64, R = 856, T = 26, B = 258, max = 1200, n = labels.length;
+    const L = 64, R = 856, T = 34, B = 306, max = 1200, n = labels.length;
     const band = (R - L) / n, bw = 58;
     const yA = (v) => B - (v / max) * (B - T);
     const yC = (v) => B - (v / Math.max(...cus)) * (B - T) * 0.62; // secondary scale sits inside the bars

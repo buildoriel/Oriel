@@ -8,5 +8,5 @@
   { "slug": "meridian-conf", "name": "Meridian 2027", "category": "business",
     "title": "Conference website", "description": "An event site with a live countdown, speakers, a two-day schedule with a personal agenda, and tickets." },
   { "slug": "tideline", "name": "Tideline", "category": "deck",
-    "title": "Startup pitch deck", "description": "A 12-slide investor deck with charts, keyboard navigation, an overview grid, speaker notes and PDF export." }
+    "title": "Startup pitch deck", "description": "A 13-slide investor deck with charts, keyboard navigation, an overview grid, speaker notes and PDF export." }
 ]
