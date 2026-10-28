@@ -1,12 +1,44 @@
 [
-  { "slug": "sora-ceramics", "name": "Sora Ceramics", "category": "store",
-    "title": "Ceramics shop", "description": "A calm, gallery-like online store with filters, quick view, glaze variants, a cart drawer and checkout." },
-  { "slug": "lumen-finance", "name": "Lumen", "category": "dashboard",
-    "title": "Personal finance dashboard", "description": "A dark-mode finance app with cash-flow charts, transactions, budgets and savings goals." },
-  { "slug": "halden-studio", "name": "Halden Studio", "category": "portfolio",
-    "title": "Architecture studio portfolio", "description": "An editorial portfolio with a filterable project index, project galleries and an inquiry form." },
-  { "slug": "meridian-conf", "name": "Meridian 2027", "category": "business",
-    "title": "Conference website", "description": "An event site with a live countdown, speakers, a two-day schedule with a personal agenda, and tickets." },
-  { "slug": "tideline", "name": "Tideline", "category": "deck",
-    "title": "Startup pitch deck", "description": "A 13-slide investor deck with charts, keyboard navigation, an overview grid, speaker notes and PDF export." }
+  {
+    "slug": "strength-planner",
+    "name": "Forge",
+    "category": "dashboard",
+    "title": "Strength training planner",
+    "description": "A weekly workout planner that builds a strength plan from your goal, schedule and equipment, with exercise swaps and print."
+  },
+  {
+    "slug": "sora-ceramics",
+    "name": "Sora Ceramics",
+    "category": "store",
+    "title": "Ceramics shop",
+    "description": "A calm, gallery-like online store with filters, quick view, glaze variants, a cart drawer and checkout."
+  },
+  {
+    "slug": "lumen-finance",
+    "name": "Lumen",
+    "category": "dashboard",
+    "title": "Personal finance dashboard",
+    "description": "A dark-mode finance app with cash-flow charts, transactions, budgets and savings goals."
+  },
+  {
+    "slug": "halden-studio",
+    "name": "Halden Studio",
+    "category": "portfolio",
+    "title": "Architecture studio portfolio",
+    "description": "An editorial portfolio with a filterable project index, project galleries and an inquiry form."
+  },
+  {
+    "slug": "meridian-conf",
+    "name": "Meridian 2027",
+    "category": "business",
+    "title": "Conference website",
+    "description": "An event site with a live countdown, speakers, a two-day schedule with a personal agenda, and tickets."
+  },
+  {
+    "slug": "tideline",
+    "name": "Tideline",
+    "category": "deck",
+    "title": "Startup pitch deck",
+    "description": "A 13-slide investor deck with charts, keyboard navigation, an overview grid, speaker notes and PDF export."
+  }
 ]

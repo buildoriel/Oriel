@@ -16,5 +16,7 @@ export const POST = handle(async (req: Request) => {
   const given = Buffer.from(req.headers.get("authorization")?.replace(/^Bearer /, "") ?? "");
   const want = Buffer.from(token);
   if (given.length !== want.length || !timingSafeEqual(given, want)) throw new HttpError(401, "unauthorized");
-  return NextResponse.json({ results: await seedShowcase() });
+  const body = await req.json().catch(() => ({}));
+  const slugs = Array.isArray(body?.slugs) ? body.slugs.filter((x: unknown): x is string => typeof x === "string") : undefined;
+  return NextResponse.json({ results: await seedShowcase(slugs) });
 });
