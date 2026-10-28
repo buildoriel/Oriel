@@ -4,8 +4,10 @@ import { requireUser, HttpError } from "@/lib/supabase/server";
 import { admin } from "@/lib/supabase/admin";
 import { ownProject } from "@/lib/projects";
 import { handle } from "@/lib/http";
+import { limitByIp } from "@/lib/ratelimit";
 
 export const GET = handle(async (req: Request) => {
+  await limitByIp(req, "templates", 120);
   const cat = new URL(req.url).searchParams.get("category");
   let q = admin().from("templates").select("id, title, description, category, price_credits, uses, creator_id, profiles(handle), source:projects!templates_source_project_id_fkey(slug)").eq("published", true).order("uses", { ascending: false }).limit(60);
   if (cat) q = q.eq("category", cat);

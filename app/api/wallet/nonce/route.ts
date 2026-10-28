@@ -4,8 +4,10 @@ import { randomBytes } from "crypto";
 import { requireUser } from "@/lib/supabase/server";
 import { admin } from "@/lib/supabase/admin";
 import { handle } from "@/lib/http";
+import { limitByIp } from "@/lib/ratelimit";
 
-export const POST = handle(async () => {
+export const POST = handle(async (req: Request) => {
+  await limitByIp(req, "wallet", 20);
   const user = await requireUser();
   const nonce = randomBytes(16).toString("hex");
   await admin().from("wallet_nonces").upsert({ user_id: user.id, nonce, expires_at: new Date(Date.now() + 10 * 60_000).toISOString() });

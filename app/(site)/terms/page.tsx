@@ -10,6 +10,7 @@ export default function Terms() {
 
       <h3>1. Eligibility and accounts</h3>
       <p>You must be at least 18 and able to form a binding contract. You are responsible for your account and for what happens under it. Free credits are limited to one account per person and one verified wallet per account.</p>
+      <p>Sign-in is provided by Privy. If you sign in without a wallet, Privy creates a self-custodial wallet for you. You are responsible for keeping access to your sign-in method and for any funds you send to that wallet.</p>
 
       <h3>2. Credits and payments</h3>
       <ul>
@@ -29,6 +30,7 @@ export default function Terms() {
 
       <h3>4. Your content</h3>
       <p>You own the projects you create, including the AI-generated files, to the extent the law allows. You give Oriel a license to store, process, host, and display your content as needed to run the service, and to show projects you opt into the showcase. If you sell a template, buyers get a license to use and modify it for their own projects.</p>
+      <p>Only upload files you have the right to use. In a team project, the members you add can view, change, and publish it; you are responsible for who you invite.</p>
 
       <h3>5. Acceptable use</h3>
       <p>Do not use Oriel to build or host anything that:</p>
@@ -50,7 +52,7 @@ export default function Terms() {
       <p>You must own or control any domain you connect. You are responsible for its DNS records and renewal.</p>
 
       <h3>9. Availability and changes</h3>
-      <p>We work to keep Oriel running but do not guarantee it will be uninterrupted or error-free. We may change or discontinue features. Download your projects regularly; ZIP export is available on every tier.</p>
+      <p>We work to keep Oriel running but do not guarantee it will be uninterrupted or error-free. We may change or discontinue features. Download your projects regularly; ZIP export is available on every tier. You can unpublish or delete your sites at any time.</p>
 
       <h3>10. Disclaimers and liability</h3>
       <p>Oriel is provided &ldquo;as is&rdquo; without warranties of any kind. To the maximum extent the law allows, Oriel is not liable for indirect or consequential damages, lost profits, lost data, or token losses, and our total liability is limited to the amount you paid us in the 3 months before the claim.</p>

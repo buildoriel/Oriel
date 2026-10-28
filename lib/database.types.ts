@@ -958,6 +958,12 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: { hits: number; key: string; window_start: string }
+        Insert: { hits?: number; key: string; window_start: string }
+        Update: { hits?: number; key?: string; window_start?: string }
+        Relationships: []
+      }
       referrals: {
         Row: {
           created_at: string
@@ -1365,6 +1371,7 @@ export type Database = {
         Args: { p_template: string }
         Returns: undefined
       }
+      hit_rate_limit: { Args: { p_key: string; p_limit: number; p_window_seconds: number }; Returns: boolean }
       is_project_member: { Args: { p_project: string }; Returns: boolean }
       user_id_by_email: { Args: { p_email: string }; Returns: string }
       reset_monthly_credits: {

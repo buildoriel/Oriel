@@ -7,6 +7,7 @@ import { placeholderEmail } from "@/lib/account-email";
 import { applyReferral } from "@/lib/referral";
 import { linkWallet } from "@/lib/wallet";
 import { handle } from "@/lib/http";
+import { limitByIp } from "@/lib/ratelimit";
 
 /**
  * Privy signs the person in (wallet, email or Google); this exchanges the Privy identity token for a
@@ -14,6 +15,7 @@ import { handle } from "@/lib/http";
  * Account match order: Privy id -> verified email -> new account.
  */
 export const POST = handle(async (req: Request) => {
+  await limitByIp(req, "auth", 20);
   const { idToken } = await req.json().catch(() => ({}));
   if (typeof idToken !== "string" || idToken.length > 20_000) throw new HttpError(400, "Missing sign-in token.");
   const who = await verifyPrivyIdentity(idToken).catch((e) => { throw new HttpError(401, `Sign-in could not be verified. ${e?.message ?? ""}`.trim()); });
