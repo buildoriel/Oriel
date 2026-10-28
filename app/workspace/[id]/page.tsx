@@ -7,6 +7,10 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   const sb = await supabaseServer();
   const { data: project } = await sb.from("projects").select("id, name, slug, published_version").eq("id", id).maybeSingle();
   if (!project) redirect("/workspace");
-  const { data: messages } = await sb.from("messages").select("id, role, content, credits, action_kind").eq("project_id", id).order("id").limit(100);
-  return <Workspace project={project} initialMessages={messages ?? []} initialPrompt={prompt ?? ""} />;
+  const [{ data: messages }, { data: active }] = await Promise.all([
+    sb.from("messages").select("id, role, content, credits, action_kind").eq("project_id", id).order("id").limit(100),
+    // a build that is still queued or running (e.g. the tab was closed): the workspace picks up its progress
+    sb.from("agent_runs").select("id").eq("project_id", id).is("finished_at", null).maybeSingle(),
+  ]);
+  return <Workspace project={project} initialMessages={messages ?? []} initialPrompt={prompt ?? ""} activeRunId={active?.id ?? null} />;
 }

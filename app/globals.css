@@ -180,3 +180,4 @@ table.ledger td:last-child{text-align:right;font-family:var(--m)}
 .legal-body h3{margin-top:18px}
 .legal-body ul{margin:0;padding-left:20px;display:grid;gap:8px}
 @media (max-width:900px){.foot-in{padding:24px 16px calc(96px + env(safe-area-inset-bottom,0px))}main .page{padding-bottom:48px}}
+.banner.bad{border-left-color:#B4231A}

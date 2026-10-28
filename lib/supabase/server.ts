@@ -22,5 +22,6 @@ export async function requireUser() {
 }
 
 export class HttpError extends Error {
-  constructor(public status: number, message: string) { super(message); }
+  /** details: extra JSON returned to the client next to `error` (e.g. scan findings) */
+  constructor(public status: number, message: string, public details?: Record<string, unknown>) { super(message); }
 }

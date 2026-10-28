@@ -27,6 +27,7 @@ export type Database = {
           reporter_email: string | null
           reporter_user_id: string | null
           resolved_at: string | null
+          source: string
           status: string
           url: string
         }
@@ -41,6 +42,7 @@ export type Database = {
           reporter_email?: string | null
           reporter_user_id?: string | null
           resolved_at?: string | null
+          source?: string
           status?: string
           url: string
         }
@@ -55,6 +57,7 @@ export type Database = {
           reporter_email?: string | null
           reporter_user_id?: string | null
           resolved_at?: string | null
+          source?: string
           status?: string
           url?: string
         }
@@ -75,28 +78,81 @@ export type Database = {
           },
         ]
       }
+      agent_run_events: {
+        Row: {
+          created_at: string
+          data: Json
+          id: number
+          run_id: number
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: number
+          run_id: number
+          type: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: number
+          run_id?: number
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_run_events_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "agent_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_runs: {
         Row: {
+          attempts: number
+          cancel_requested: boolean
+          error: string | null
           finished_at: string | null
           id: number
+          lease_until: string | null
+          message: string
+          phase: string
           project_id: string
           started_at: string
+          state: Json | null
           status: string
           user_id: string
         }
         Insert: {
+          attempts?: number
+          cancel_requested?: boolean
+          error?: string | null
           finished_at?: string | null
           id?: number
+          lease_until?: string | null
+          message?: string
+          phase?: string
           project_id: string
           started_at?: string
+          state?: Json | null
           status?: string
           user_id: string
         }
         Update: {
+          attempts?: number
+          cancel_requested?: boolean
+          error?: string | null
           finished_at?: string | null
           id?: number
+          lease_until?: string | null
+          message?: string
+          phase?: string
           project_id?: string
           started_at?: string
+          state?: Json | null
           status?: string
           user_id?: string
         }
@@ -1203,11 +1259,19 @@ export type Database = {
         Args: { p_project: string; p_user: string }
         Returns: number
       }
+      claim_agent_run: {
+        Args: { p_lease_seconds: number; p_max_working: number; p_run: number }
+        Returns: boolean
+      }
       claim_free_credits: {
         Args: { p_amount: number; p_user: string }
         Returns: boolean
       }
       effective_tier: { Args: { p_user: string }; Returns: string }
+      enqueue_agent_run: {
+        Args: { p_message: string; p_project: string; p_user: string }
+        Returns: number
+      }
       grant_credits: {
         Args: {
           p_amount: number

@@ -5,7 +5,7 @@ export function handle<T extends any[]>(fn: (...a: T) => Promise<Response>) {
   return async (...a: T) => {
     try { return await fn(...a); }
     catch (e: any) {
-      if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status });
+      if (e instanceof HttpError) return NextResponse.json({ error: e.message, ...e.details }, { status: e.status });
       if (String(e?.message).includes("INSUFFICIENT_CREDITS"))
         return NextResponse.json({ error: "Not enough credits. Top up or upgrade your tier." }, { status: 402 });
       console.error(e);

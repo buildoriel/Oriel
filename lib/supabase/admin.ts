@@ -9,3 +9,8 @@ export function admin() {
   });
   return _admin;
 }
+
+/** Tests only: swap in an in-memory client (scripts/agent-queue.test.ts). */
+export function setAdminForTests(client: unknown) {
+  _admin = client as SupabaseClient<Database>;
+}

@@ -17,6 +17,8 @@
 | `supabase/migrations/` | Full schema + RLS + atomic credit functions + storage bucket |
 | `contracts/` | Foundry: `OrielStaking.sol`, `RevenueDistributor.sol`, tests, deploy script |
 | `app/account/` | Account page: wallet verification (activates the 60 Free credits), balance + history, referrals, notifications, revenue share claims, handle |
+| `lib/agent/jobs.ts`, `app/api/jobs/` | Durable agent job queue on Postgres: background worker slices, resume after time limits or crashes, global concurrency limit, Stop, per-slice credit charging |
+| `lib/moderation/scan.ts` | Pre-publish safety scan: blocks seed phrase phishing, miners, and credential exfiltration; sends borderline findings to moderators; optional Google Safe Browsing |
 | `app/report/`, `lib/abuse.ts` | Public abuse report form (rate limited per IP hash) and project takedown (HTTP 451) |
 | `app/privacy/`, `app/terms/` | Privacy Policy and Terms of Service (drafts: have a lawyer review them before launch) |
 | `lib/database.types.ts` | TypeScript types generated from the live Supabase schema; the server client is fully typed |
@@ -48,13 +50,14 @@ npx tsx scripts/economics.test.ts
 npx tsx scripts/llm-adapter.test.ts
 npx tsx scripts/agent-tools.test.ts
 npx tsx scripts/hosting.test.ts
+npx tsx scripts/scan.test.ts
 npm run dev
 ```
 Local subdomains: `http://projectname.localhost:3000`. Previews: set `PREVIEW_ORIGIN=http://preview.localhost:3000`.
 
 ### 2. Supabase
 1. Create a new project and copy the URL, anon key, and service role key into the env.
-2. `supabase link --project-ref <ref>` then `supabase db push` (runs `0001_init.sql` through `0004_abuse_reports.sql`).
+2. `supabase link --project-ref <ref>` then `supabase db push` (runs `0001_init.sql` through `0005_agent_queue_and_scan.sql`).
 3. Authentication → URL Configuration: Site URL `https://buildoriel.com`, Redirect URLs `https://buildoriel.com/auth/callback` and `http://localhost:3000/auth/callback`.
 4. (Optional) enable the Google provider under Authentication → Providers.
 5. `npm run db:types` regenerates `lib/database.types.ts` after any schema change (commit the result).
@@ -123,6 +126,21 @@ npx tsx --env-file=.env.local scripts/showcase.ts add <slug>
 npx tsx --env-file=.env.local scripts/showcase.ts remove <slug>
 ```
 
+## Agent job queue
+A chat message is queued (`agent_runs`, phase `queued`) and the API returns immediately with a run id; the workspace polls `/api/jobs/<id>` for progress. A worker (`POST /api/jobs/work`, authenticated with `CRON_SECRET`) claims the run with a lease, runs agent steps for up to `AGENT_SLICE_SECONDS`, saves the agent state and files, charges credits for that slice, then hands off to a fresh invocation. Long builds therefore are not limited by the 300-second function limit, and closing the tab does not stop them.
+
+- Failure handling: a failed slice retries after 60 seconds (up to 6 attempts); a dead worker's lease expires and `/api/cron/jobs` (every minute) restarts it. Files written before the failure are kept.
+- At most `AGENT_MAX_CONCURRENCY` builds run at once; the rest wait and the workspace shows their place in the queue.
+- Stop: the build finishes its current step, saves, and charges only for work done.
+- The every-minute cron needs Vercel Pro. On another host, call `GET /api/cron/jobs` with `Authorization: Bearer $CRON_SECRET` every minute.
+
+## Pre-publish safety scan
+Every publish runs `lib/moderation/scan.ts` on the project files:
+- **Blocks** publishing (findings shown to the owner): seed phrase or private key fields, crypto miners, passwords sent to Telegram/Discord/Slack bots, and links listed by Google Safe Browsing (when `GOOGLE_SAFE_BROWSING_KEY` is set; fails open if Google is unreachable).
+- **Allows but reports** (an `auto_scan` abuse report for moderators): brand-name login pages, password forms posting off-site, wallet drainer patterns (unlimited approvals, `setApprovalForAll`, Permit signatures, `eth_sign`), obfuscated scripts, silent redirects, hidden iframes.
+
+Rules are in one file and covered by `scripts/scan.test.ts` (including legitimate pages that must not be flagged). Tune them as real reports come in.
+
 ## Abuse reports and takedowns
 Anyone can report a hosted site at `/report` (linked in the footer and on suspended pages). Review and act with:
 ```bash
@@ -145,9 +163,8 @@ Done: everything listed in the table above; passes `tsc` (with the typed Supabas
 
 Not yet (intentional, per the roadmap or pending a decision):
 - Buying domains inside the app and the free yearly domain for Studio — Phase 3, needs a registrar choice (e.g. Namecheap, Porkbun, Cloudflare Registrar) and a reseller account; the `free_domain_per_year` flag already exists in the tiers table.
-- An agent job queue outside the request (the agent currently runs inside the SSE request, `maxDuration` 300 seconds max). For longer large projects, move it to a worker (e.g. Inngest/Trigger.dev/Upstash QStash).
 - Per-IP rate limiting for public endpoints (Vercel Firewall or Upstash recommended before launch). Per-account limits already exist.
-- Automatic content scanning before publish (reports and takedowns are manual today). Consider Google Safe Browsing / Web Risk checks on published URLs.
+- Image moderation for generated or uploaded images (the scan covers code and text only).
 - Legal review of `/terms` and `/privacy`, plus the operating entity and governing law, before launch.
 
 ## Numbers to recompute after beta

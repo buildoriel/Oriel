@@ -9,6 +9,6 @@ export const POST = handle(async (_req: Request, ctx: { params: Promise<{ id: st
   const user = await requireUser();
   const { id } = await ctx.params;
   const p = await ownProject(user.id, id);
-  const version = await publishProject(id);
-  return NextResponse.json({ version, url: `https://${p.slug}.${ROOT_DOMAIN}` });
+  const { version, review } = await publishProject(id);
+  return NextResponse.json({ version, review, url: `https://${p.slug}.${ROOT_DOMAIN}` });
 });

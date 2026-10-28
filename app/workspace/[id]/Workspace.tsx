@@ -5,9 +5,10 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 type Msg = { id?: number; role: "user" | "assistant"; content: string; credits?: number | null; action_kind?: string | null };
 type Confirm = { title: string; body: string; label: string; run: () => Promise<void>; extra?: "autocommit" };
 const KIND: Record<string, string> = { edit: "edit", build: "build", large: "large project", route: "routing" };
+const sleep = (ms: number) => new Promise((ok) => setTimeout(ok, ms));
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "buildoriel.com";
 
-export default function Workspace({ project, initialMessages, initialPrompt }: { project: any; initialMessages: Msg[]; initialPrompt: string }) {
+export default function Workspace({ project, initialMessages, initialPrompt, activeRunId }: { project: any; initialMessages: Msg[]; initialPrompt: string; activeRunId: number | null }) {
   const [msgs, setMsgs] = useState<Msg[]>(initialMessages);
   const [input, setInput] = useState(initialPrompt);
   const [busy, setBusy] = useState(false);
@@ -26,6 +27,8 @@ export default function Workspace({ project, initialMessages, initialPrompt }: {
   const dlg = useRef<HTMLDialogElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const autoSent = useRef(false);
+  const [runId, setRunId] = useState<number | null>(null);
+  const [notice, setNotice] = useState<{ tone: "info" | "error"; text: string; items?: string[] } | null>(null);
 
   const refreshMe = () => fetch("/api/me").then((r) => r.json()).then((j) => { setMe(j); setBalance(j.balance?.total ?? null); });
   const refreshSettings = () => fetch(`/api/projects/${project.id}/settings`).then((r) => r.json()).then(setSettings);
@@ -36,7 +39,10 @@ export default function Workspace({ project, initialMessages, initialPrompt }: {
     refreshMe(); refreshSettings(); refreshFiles();
     supabaseBrowser().from("my_connectors").select("provider").then(({ data }) => setConnected((data ?? []).map((d: any) => d.provider)));
     // a prompt from Home is sent automatically, once
-    if (initialPrompt && initialMessages.length === 0 && !autoSent.current) {
+    if (activeRunId && !autoSent.current) {
+      autoSent.current = true;
+      setMsgs((m) => [...m, { role: "assistant", content: "" }]); follow(activeRunId);
+    } else if (initialPrompt && initialMessages.length === 0 && !autoSent.current) {
       autoSent.current = true; send(initialPrompt); history.replaceState(null, "", location.pathname);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,29 +52,45 @@ export default function Workspace({ project, initialMessages, initialPrompt }: {
 
   async function send(preset?: string) {
     const text = (preset ?? input).trim(); if (!text || busy) return;
-    setBusy(true); setInput(""); setStatus("Reading request");
+    setBusy(true); setInput(""); setStatus("Queued");
     setMsgs((m) => [...m, { role: "user", content: text }, { role: "assistant", content: "" }]);
+    const res = await fetch(`/api/projects/${project.id}/chat`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message: text }) });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) { patchLast(j.error ?? "Could not send."); setStatus("Failed"); setBusy(false); return; }
+    await follow(j.runId);
+  }
+
+  /** Poll a queued or running build until it finishes. The build keeps going if this tab closes. */
+  async function follow(id: number) {
+    setRunId(id); setBusy(true);
+    let after = 0, misses = 0;
     try {
-      const res = await fetch(`/api/projects/${project.id}/chat`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message: text }) });
-      if (!res.ok || !res.body) { const j = await res.json().catch(() => ({})); patchLast(j.error ?? "Could not send."); setStatus("Failed"); return; }
-      const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "";
       for (;;) {
-        const { value, done } = await reader.read(); if (done) break;
-        buf += dec.decode(value, { stream: true });
-        const parts = buf.split("\n\n"); buf = parts.pop() ?? "";
-        for (const p of parts) {
-          if (!p.startsWith("data: ")) continue;
-          const e = JSON.parse(p.slice(6));
+        const r = await fetch(`/api/jobs/${id}?after=${after}`);
+        if (!r.ok) { if (++misses > 5) throw new Error("lost"); await sleep(3000); continue; }
+        misses = 0;
+        const j = await r.json();
+        // between slices a running build is briefly "queued" again; only show queue status before it starts
+        if (j.status === "queued" && after === 0 && !j.events.length) setStatus(j.stopping ? "Stopping" : j.ahead > 0 ? `In queue · ${j.ahead} ahead` : "Starting");
+        for (const e of j.events) {
+          after = e.id;
           if (e.type === "route") setStatus(e.kind === "edit" ? "Editing" : "Building");
           if (e.type === "file") { setStatus(`Writing ${e.path}`); setNonce((n) => n + 1); }
           if (e.type === "cost") setStatus((s) => s.replace(/ · .*$/, "") + ` · ${e.credits} credits`);
-          if (e.type === "commit") setStatus("Committing to GitHub");
-          if (e.type === "done") { patchLast(e.summary, e.credits); setBalance(e.balance); setStatus("Saved"); setNonce((n) => n + 1); refreshFiles(); }
-          if (e.type === "error") { patchLast(e.message); setStatus("Failed"); }
+          if (e.type === "commit") setStatus("Committed to GitHub");
+          if (e.type === "done") { patchLast(e.summary, e.credits); if (e.balance >= 0) setBalance(e.balance); setStatus("Saved"); setNonce((n) => n + 1); refreshFiles(); return; }
+          if (e.type === "error") { patchLast(e.message); setStatus("Failed"); refreshMe(); return; }
         }
+        if (j.stopping) setStatus("Stopping after this step");
+        await sleep(1200);
       }
-    } catch { patchLast("Connection lost. Finished work is still saved; reload the page."); setStatus("Disconnected"); }
-    finally { setBusy(false); }
+    } catch { patchLast("Lost track of the build. It keeps running in the background; reload the page to see the result."); setStatus("Disconnected"); }
+    finally { setBusy(false); setRunId(null); }
+  }
+  async function stop() {
+    if (!runId) return;
+    setStatus("Stopping");
+    await fetch(`/api/jobs/${runId}/cancel`, { method: "POST" });
   }
   const patchLast = (content: string, credits?: number) => setMsgs((m) => [...m.slice(0, -1), { role: "assistant", content, credits }]);
 
@@ -79,9 +101,15 @@ export default function Workspace({ project, initialMessages, initialPrompt }: {
     return r.ok ? j : null;
   }
   async function publish() {
-    setStatus("Publishing");
-    const r = await fetch(`/api/projects/${project.id}/publish`, { method: "POST" }); const j = await r.json();
-    if (r.ok) { setLive(j.url); setStatus(`Live v${j.version}`); } else setStatus(j.error);
+    setStatus("Checking and publishing"); setNotice(null);
+    const r = await fetch(`/api/projects/${project.id}/publish`, { method: "POST" }); const j = await r.json().catch(() => ({}));
+    if (r.ok) {
+      setLive(j.url); setStatus(`Live v${j.version}`);
+      if (j.review) setNotice({ tone: "info", text: "Published. Our automatic check flagged part of this site for a quick review by the Oriel team; it stays live meanwhile." });
+    } else {
+      setStatus("Not published");
+      setNotice({ tone: "error", text: j.error ?? "Publishing failed.", items: (j.findings ?? []).map((f: any) => `${f.file}: ${f.message}`) });
+    }
   }
   async function sellTemplate() {
     const title = prompt("Template title:", project.name); if (!title) return;
@@ -139,6 +167,12 @@ export default function Workspace({ project, initialMessages, initialPrompt }: {
 
   return (
     <section className="page">
+      {notice && (
+        <div className={`banner${notice.tone === "error" ? " bad" : ""}`} role={notice.tone === "error" ? "alert" : "status"}>
+          <span>{notice.text}{notice.items?.length ? <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>{notice.items.map((i) => <li key={i}>{i}</li>)}</ul> : null}
+            {notice.tone === "error" && notice.items?.length ? <span className="mute" style={{ display: "block", marginTop: 8 }}>Ask the agent to remove these parts, then publish again.</span> : null}</span>
+          <button className="pill sm" onClick={() => setNotice(null)}>Dismiss</button>
+        </div>)}
       {lowCredit && (
         <div className="banner">
           <span>{me?.profile?.wallet_verified_at ? "You're out of credits. Top up or upgrade your tier to keep building." : "Connect a wallet to unlock 60 free credits per month."}</span>
@@ -168,7 +202,8 @@ export default function Workspace({ project, initialMessages, initialPrompt }: {
           <div className="in">
             <textarea aria-label="Message" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Make the headline orange"
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }} />
-            <button className="pill ink sm" onClick={() => send()} disabled={busy}>Send</button>
+            {busy && runId ? <button className="pill sm" onClick={stop}>Stop</button>
+              : <button className="pill ink sm" onClick={() => send()} disabled={busy}>Send</button>}
           </div>
         </div>
         <div className="card pv">

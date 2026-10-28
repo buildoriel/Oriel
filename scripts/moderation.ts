@@ -41,7 +41,7 @@ async function main() {
   }
 
   const { data: reports, error } = await db.from("abuse_reports")
-    .select("id, url, category, details, reporter_email, created_at, project_id, projects(slug, name, suspended_at)")
+    .select("id, url, category, details, reporter_email, source, created_at, project_id, projects(slug, name, suspended_at)")
     .eq("status", "open").order("created_at", { ascending: true }).limit(500);
   if (error) throw error;
   if (!reports?.length) return console.log("No open reports.");
@@ -52,7 +52,7 @@ async function main() {
   }
   for (const [slug, rs] of [...bySite].sort((a, b) => b[1].length - a[1].length)) {
     console.log(`\n${slug}  ${rs.length} report(s)${rs[0].projects?.suspended_at ? "  [already suspended]" : ""}`);
-    for (const r of rs) console.log(`  #${r.id} ${r.created_at.slice(0, 16)} ${r.category.padEnd(13)} ${r.url}${r.details ? `\n      "${r.details.slice(0, 200)}"` : ""}${r.reporter_email ? `  <${r.reporter_email}>` : ""}`);
+    for (const r of rs) console.log(`  #${r.id} ${r.created_at.slice(0, 16)} ${r.source === "auto_scan" ? "[auto-scan] " : ""}${r.category.padEnd(13)} ${r.url}${r.details ? `\n      "${r.details.slice(0, 200)}"` : ""}${r.reporter_email ? `  <${r.reporter_email}>` : ""}`);
   }
 }
 main().catch((e) => { console.error(e.message ?? e); process.exit(1); });
