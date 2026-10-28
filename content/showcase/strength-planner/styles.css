@@ -136,7 +136,7 @@ svg path, svg circle, svg rect { vector-effect: non-scaling-stroke; }
 .nav-links a:hover { color: var(--text); background: var(--surface-2); }
 
 /* ---------- Hero ---------- */
-.hero { position: relative; padding: 36px 0 72px; overflow: hidden; }
+.hero { position: relative; padding: 28px 0 72px; overflow: hidden; }
 .hero-glow {
   position: absolute; inset: -20% -10% auto auto; width: 70%; height: 120%; pointer-events: none;
   background:
@@ -157,7 +157,7 @@ svg path, svg circle, svg rect { vector-effect: non-scaling-stroke; }
   grid-template-columns: minmax(0, 1fr) minmax(0, 470px);
   grid-template-areas: "copy form" "preview form";
   grid-template-rows: auto 1fr;
-  column-gap: 56px; row-gap: 28px;
+  column-gap: 56px; row-gap: 24px;
   align-items: start;
 }
 .hero-copy { grid-area: copy; padding-top: 14px; }
@@ -168,13 +168,13 @@ svg path, svg circle, svg rect { vector-effect: non-scaling-stroke; }
 }
 .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); animation: pulse 2.4s var(--ease) infinite; }
 @keyframes pulse { 50% { box-shadow: 0 0 0 7px transparent; } }
-.hero h1 { font-size: clamp(54px, 6.2vw, 84px); margin: 20px 0 18px; }
+.hero h1 { font-size: clamp(54px, 6vw, 84px); margin: 18px 0 16px; }
 .hl {
   background: linear-gradient(92deg, var(--accent) 10%, var(--accent-2) 90%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .lede { font-size: 17px; line-height: 1.55; color: var(--muted); max-width: 46ch; }
-.hero-meta { list-style: none; padding: 0; margin: 20px 0 0; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 13px; color: var(--muted); }
+.hero-meta { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 13px; color: var(--muted); }
 .hero-meta strong { font-family: var(--font-mono); color: var(--text); font-weight: 600; margin-right: 4px; }
 
 /* Sample-week preview: always a dark "device" card, in both themes */
@@ -355,8 +355,8 @@ svg path, svg circle, svg rect { vector-effect: non-scaling-stroke; }
 .stat span { font-size: 12px; color: var(--muted); }
 .bal { display: grid; gap: 12px; margin-top: 14px; }
 .bal-row { display: grid; grid-template-columns: 92px minmax(0, 1fr) 28px; gap: 10px; align-items: center; font-size: 13px; }
-.bal-row .track { height: 8px; border-radius: 8px; background: var(--surface-2); overflow: hidden; }
-.bal-row .fill { height: 100%; border-radius: inherit; width: var(--w); background: linear-gradient(90deg, var(--accent), var(--accent-2)); transform-origin: left; animation: grow 700ms var(--ease) both; }
+.bal-row .track { display: block; height: 8px; border-radius: 8px; background: var(--surface-2); overflow: hidden; }
+.bal-row .fill { display: block; height: 100%; border-radius: inherit; width: var(--w); background: linear-gradient(90deg, var(--accent), var(--accent-2)); transform-origin: left; animation: grow 700ms var(--ease) both; }
 .bal-row b { font: 600 12px/1 var(--font-mono); text-align: right; }
 @keyframes grow { from { transform: scaleX(0); } }
 .prog { background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 16%, var(--surface)), var(--surface) 60%); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
@@ -460,6 +460,7 @@ svg path, svg circle, svg rect { vector-effect: non-scaling-stroke; }
   .theme-wrap, #theme-toggle { margin-left: auto; }
   .wrap { padding: 0 16px; }
   .hero { padding: 24px 0 48px; }
+  .hero-glow { inset: -5% -40% auto -40%; width: auto; height: 60%; }
   .panel { padding: 18px 16px; }
   .field-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .side { grid-template-columns: minmax(0, 1fr); }
