@@ -10,7 +10,7 @@ export const GET = handle(async () => {
   return NextResponse.json({ notifications: data ?? [] });
 });
 
-// tandai semua sudah dibaca
+// mark all as read
 export const POST = handle(async () => {
   const user = await requireUser();
   await admin().from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);

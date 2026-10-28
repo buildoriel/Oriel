@@ -3,10 +3,10 @@ import { admin } from "./supabase/admin";
 import { SITES_CNAME_TARGET } from "./config";
 
 /**
- * HTTPS otomatis: domain ditambahkan ke proyek Vercel yang menjalankan Oriel.
- * Vercel menerbitkan sertifikat Let's Encrypt setelah DNS mengarah benar.
- * Apex domain (tanpa www) tidak bisa CNAME di banyak registrar: arahkan A record ke IP Vercel
- * (lihat README) atau pakai ALIAS/flattening.
+ * Automatic HTTPS: the domain is added to the Vercel project that runs Oriel.
+ * Vercel issues a Let's Encrypt certificate once DNS points correctly.
+ * Apex domains (no www) cannot use CNAME at many registrars: point an A record at the Vercel IP
+ * (see README) or use ALIAS/flattening.
  */
 const VERCEL = () => ({
   base: `https://api.vercel.com`, project: process.env.VERCEL_PROJECT_ID!,
@@ -18,15 +18,15 @@ export async function checkDns(hostname: string) {
   try {
     const cn = await dns.resolveCname(hostname);
     if (cn.some((c) => c.replace(/\.$/, "").toLowerCase() === SITES_CNAME_TARGET)) return { ok: true as const };
-    return { ok: false as const, error: `CNAME mengarah ke ${cn.join(", ")}, seharusnya ${SITES_CNAME_TARGET}.` };
+    return { ok: false as const, error: `CNAME points to ${cn.join(", ")}; it should be ${SITES_CNAME_TARGET}.` };
   } catch {
     try {
       const a = await dns.resolve4(hostname);
       const expected = (process.env.VERCEL_APEX_IPS ?? "76.76.21.21").split(",");
       if (a.some((ip) => expected.includes(ip))) return { ok: true as const };
-      return { ok: false as const, error: `Record A mengarah ke ${a.join(", ")}.` };
+      return { ok: false as const, error: `A record points to ${a.join(", ")}.` };
     } catch {
-      return { ok: false as const, error: "Record DNS belum ditemukan. Perubahan DNS bisa butuh hingga beberapa jam." };
+      return { ok: false as const, error: "DNS record not found yet. DNS changes can take up to a few hours." };
     }
   }
 }
@@ -34,7 +34,7 @@ export async function checkDns(hostname: string) {
 export async function attachToVercel(hostname: string) {
   const v = VERCEL();
   const r = await fetch(`${v.base}/v10/projects/${v.project}/domains${v.team}`, { method: "POST", headers: v.H, body: JSON.stringify({ name: hostname }) });
-  if (!r.ok && r.status !== 409) throw new Error(`Gagal menambahkan domain ke hosting: ${(await r.json()).error?.message}`);
+  if (!r.ok && r.status !== 409) throw new Error(`Could not add the domain to hosting: ${(await r.json()).error?.message}`);
 }
 
 export async function certReady(hostname: string) {
@@ -49,7 +49,7 @@ export async function detachFromVercel(hostname: string) {
   await fetch(`${v.base}/v9/projects/${v.project}/domains/${hostname}${v.team}`, { method: "DELETE", headers: v.H });
 }
 
-/** Satu langkah verifikasi (dipanggil tombol "Cek" dan cron). */
+/** One verification step (called by the "Check" button and the cron). */
 export async function verifyDomain(id: string) {
   const db = admin();
   const { data: d } = await db.from("domains").select("*").eq("id", id).single();

@@ -20,7 +20,7 @@ export async function routeRequest(message: string, fileCount: number) {
   try {
     const j = JSON.parse(text.replace(/```json|```/g, "").trim());
     if (["edit", "build", "large"].includes(j.kind)) kind = j.kind;
-  } catch { /* pakai default */ }
+  } catch { /* use the default */ }
   if (fileCount === 0 && kind === "edit") kind = "build";
   return { kind, costUsd: usageCostUsd(ROUTER_MODEL, res.usage), usage: res.usage };
 }

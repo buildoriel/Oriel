@@ -1,5 +1,5 @@
-// Kurasi showcase halaman utama. Hanya proyek yang pemiliknya mencentang "Boleh tampil di showcase".
-//   npx tsx --env-file=.env.local scripts/showcase.ts                 (daftar kandidat)
+// Curate the home page showcase. Only projects whose owner ticked "Allow in showcase".
+//   npx tsx --env-file=.env.local scripts/showcase.ts                 (list candidates)
 //   npx tsx --env-file=.env.local scripts/showcase.ts add <slug>
 //   npx tsx --env-file=.env.local scripts/showcase.ts remove <slug>
 import { createClient } from "@supabase/supabase-js";
@@ -12,7 +12,7 @@ async function main() {
     const { data, error } = await db.from("projects").update({ featured_at: op === "add" ? new Date().toISOString() : null })
       .eq("slug", slug).eq("showcase_opt_in", true).not("published_version", "is", null).select("slug");
     if (error) throw error;
-    return console.log(data?.length ? `${op === "add" ? "ditampilkan" : "diturunkan"}: ${slug}` : `tidak diubah: ${slug} belum tayang atau pemilik belum mengizinkan showcase`);
+    return console.log(data?.length ? `${op === "add" ? "featured" : "removed"}: ${slug}` : `unchanged: ${slug} is not published or the owner has not allowed the showcase`);
   }
   const { data } = await db.from("projects").select("slug, name, featured_at, updated_at").eq("showcase_opt_in", true)
     .not("published_version", "is", null).order("updated_at", { ascending: false }).limit(50);

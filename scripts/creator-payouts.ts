@@ -1,8 +1,8 @@
-// Royalti template -> daftar pembayaran USDG untuk multisig.
-//   npx tsx --env-file=.env.local scripts/creator-payouts.ts            (pratinjau, tidak mengubah apa pun)
-//   npx tsx --env-file=.env.local scripts/creator-payouts.ts --commit   (buat baris creator_payouts status pending)
+// Template royalties -> USDG payment list for the multisig.
+//   npx tsx --env-file=.env.local scripts/creator-payouts.ts            (preview, changes nothing)
+//   npx tsx --env-file=.env.local scripts/creator-payouts.ts --commit   (create creator_payouts rows with status pending)
 //   npx tsx --env-file=.env.local scripts/creator-payouts.ts --paid <payout_id> <tx_hash>
-// Royalti di bawah PAYOUT_MIN_USD (default 5) ditahan ke periode berikutnya agar biaya gas tidak lebih besar dari nilainya.
+// Royalties below PAYOUT_MIN_USD (default 5) roll over to the next period so gas does not exceed the amount.
 import { createClient } from "@supabase/supabase-js";
 import { encodeFunctionData, parseAbi, parseUnits, getAddress } from "viem";
 
@@ -13,10 +13,10 @@ const DEC = Number(process.env.NEXT_PUBLIC_USDG_DECIMALS ?? 6);
 async function main() {
   const [flag, id, tx] = process.argv.slice(2);
   if (flag === "--paid") {
-    if (!id || !/^0x[0-9a-fA-F]{64}$/.test(tx ?? "")) throw new Error("Pakai: --paid <payout_id> <tx_hash>");
+    if (!id || !/^0x[0-9a-fA-F]{64}$/.test(tx ?? "")) throw new Error("Usage: --paid <payout_id> <tx_hash>");
     const { error } = await db.from("creator_payouts").update({ status: "paid", tx_hash: tx.toLowerCase() }).eq("id", id).eq("status", "pending");
     if (error) throw error;
-    return console.log(`payout ${id} ditandai paid`);
+    return console.log(`payout ${id} marked paid`);
   }
   const uses: any[] = [];
   for (let from = 0; ; from += 1000) {
@@ -36,11 +36,11 @@ async function main() {
   let total = 0;
   for (const [creator, e] of byCreator) {
     const { data: p } = await db.from("profiles").select("wallet_address, handle").eq("id", creator).single();
-    if (e.usd < MIN) { console.log(`tahan  @${p?.handle ?? creator}: $${e.usd.toFixed(2)} (< $${MIN})`); continue; }
-    if (!p?.wallet_address) { console.log(`tahan  @${p?.handle ?? creator}: $${e.usd.toFixed(2)} (wallet belum terverifikasi)`); continue; }
+    if (e.usd < MIN) { console.log(`hold   @${p?.handle ?? creator}: $${e.usd.toFixed(2)} (< $${MIN})`); continue; }
+    if (!p?.wallet_address) { console.log(`hold   @${p?.handle ?? creator}: $${e.usd.toFixed(2)} (wallet not verified)`); continue; }
     const amount = parseUnits(e.usd.toFixed(Math.min(DEC, 6)), DEC);
     total += e.usd;
-    console.log(`bayar  @${p.handle ?? creator} ${p.wallet_address} $${e.usd.toFixed(2)} (${e.ids.length} pemakaian)`);
+    console.log(`pay    @${p.handle ?? creator} ${p.wallet_address} $${e.usd.toFixed(2)} (${e.ids.length} uses)`);
     if (usdg) console.log(`       USDG.transfer -> ${usdg}\n       ${encodeFunctionData({ abi, functionName: "transfer", args: [getAddress(p.wallet_address), amount] })}`);
     if (flag === "--commit") {
       const { data: row, error } = await db.from("creator_payouts").insert({ creator_id: creator, amount_usd: e.usd, wallet: p.wallet_address, period }).select("id").single();
@@ -49,6 +49,6 @@ async function main() {
       console.log(`       payout_id=${row.id}`);
     }
   }
-  console.log(`total $${total.toFixed(2)}${flag === "--commit" ? " (tercatat pending)" : " (pratinjau; tambah --commit untuk mencatat)"}`);
+  console.log(`total $${total.toFixed(2)}${flag === "--commit" ? " (recorded as pending)" : " (preview; add --commit to record)"}`);
 }
 main().catch((e) => { console.error(e); process.exit(1); });

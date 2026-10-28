@@ -6,24 +6,24 @@ import { handle } from "@/lib/http";
 
 const FREE_GRANT = 60;
 
-// Verifikasi wallet = syarat kredit Free (satu wallet hanya untuk satu akun -> menekan penyalahgunaan).
+// Wallet verification = requirement for Free credits (one wallet per account -> limits abuse).
 export const POST = handle(async (req: Request) => {
   const user = await requireUser();
   const { address, signature } = await req.json();
-  if (typeof address !== "string" || !isAddress(address) || typeof signature !== "string") throw new HttpError(400, "Data tanda tangan tidak valid.");
+  if (typeof address !== "string" || !isAddress(address) || typeof signature !== "string") throw new HttpError(400, "Invalid signature data.");
   const db = admin();
   const { data: n } = await db.from("wallet_nonces").select("*").eq("user_id", user.id).maybeSingle();
-  if (!n || new Date(n.expires_at) < new Date()) throw new HttpError(400, "Permintaan tanda tangan kedaluwarsa. Ulangi.");
-  const message = `Sambungkan wallet ini ke akun Oriel.\n\nAkun: ${user.email}\nNonce: ${n.nonce}`;
+  if (!n || new Date(n.expires_at) < new Date()) throw new HttpError(400, "The signature request expired. Try again.");
+  const message = `Connect this wallet to your Oriel account.\n\nAccount: ${user.email}\nNonce: ${n.nonce}`;
   const ok = await verifyMessage({ address: getAddress(address), message, signature: signature as `0x${string}` }).catch(() => false);
-  if (!ok) throw new HttpError(400, "Tanda tangan tidak cocok dengan wallet.");
+  if (!ok) throw new HttpError(400, "The signature does not match the wallet.");
   await db.from("wallet_nonces").delete().eq("user_id", user.id);
   const wallet = getAddress(address).toLowerCase();
   const { error } = await db.from("profiles").update({ wallet_address: wallet, wallet_verified_at: new Date().toISOString() }).eq("id", user.id);
-  if (error?.code === "23505") throw new HttpError(409, "Wallet ini sudah tersambung ke akun lain.");
+  if (error?.code === "23505") throw new HttpError(409, "This wallet is already connected to another account.");
   if (error) throw error;
 
-  // kredit Free bulan pertama, sekali per akun (atomik: aman dari klik ganda)
+  // first month of Free credits, once per account (atomic: safe against double clicks)
   const { data: granted } = await db.rpc("claim_free_credits", { p_user: user.id, p_amount: FREE_GRANT });
   return NextResponse.json({ wallet, freeCredits: granted ? FREE_GRANT : 0 });
 });

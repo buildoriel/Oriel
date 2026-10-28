@@ -7,12 +7,12 @@ type OAuthProvider = {
 };
 
 /**
- * Izin seminimal mungkin:
- *  - GitHub: GitHub App (bukan OAuth App) dengan izin Contents: read/write + Administration: write
- *    HANYA untuk repo yang dipilih/dibuat. Disarankan install dengan "Only select repositories".
- *  - Google Drive: drive.file -> hanya file yang dibuat Oriel.
- *  - Cloudflare: tidak ada OAuth publik untuk integrasi umum; user menempel API Token
- *    berizin "Zone:DNS:Edit" untuk zona tertentu saja.
+ * Least privilege:
+ *  - GitHub: a GitHub App (not an OAuth App) with Contents: read/write + Administration: write
+ *    ONLY for selected/created repos. Install with "Only select repositories".
+ *  - Google Drive: drive.file -> only files Oriel created.
+ *  - Cloudflare: no public OAuth for general integrations; the user pastes an API Token
+ *    with "Zone:DNS:Edit" for specific zones only.
  */
 export const OAUTH: Record<Exclude<ProviderId, "cloudflare">, OAuthProvider> = {
   github: {

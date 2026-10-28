@@ -1,4 +1,4 @@
-// Tes pemetaan URL situs statis tanpa jaringan: npx tsx scripts/hosting.test.ts
+// Static site URL mapping tests, no network: npx tsx scripts/hosting.test.ts
 import assert from "node:assert";
 import { serveStatic } from "../lib/hosting/serve";
 import { fileBody } from "../lib/hosting";
@@ -21,9 +21,9 @@ async function main() {
   r = await go("/blog/"); assert.equal(r.status, 200); assert.equal(await r.text(), "blog");
   r = await go("/style.css"); assert.equal(r.headers.get("cache-control"), "public, max-age=86400");
   r = await go("/img/a.png"); assert.equal(r.headers.get("content-type"), "image/png");
-  assert.deepEqual([...new Uint8Array(await r.arrayBuffer())].slice(0, 4), [0x89, 0x50, 0x4e, 0x47]); // byte asli PNG, bukan teks base64
-  assert.equal((await go("/supabase/schema.sql")).status, 404); // file privat tidak tayang
-  assert.equal((await go("/tidak-ada")).status, 404);
+  assert.deepEqual([...new Uint8Array(await r.arrayBuffer())].slice(0, 4), [0x89, 0x50, 0x4e, 0x47]); // raw PNG bytes, not base64 text
+  assert.equal((await go("/supabase/schema.sql")).status, 404); // private files are not served
+  assert.equal((await go("/missing")).status, 404);
   assert.equal((await go("/a/../index.html")).status, 404);
   console.log("hosting tests: OK");
 }

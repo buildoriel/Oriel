@@ -8,8 +8,8 @@ import { CREDIT_PRICE_USD, TEMPLATE_ROYALTY_PCT } from "@/lib/config";
 import { handle } from "@/lib/http";
 
 /**
- * Memakai template: potong kredit pembeli, salin file versi beku ke proyek baru,
- * catat royalti kreator (X% dari nilai jual kredit) yang dibayar USDG secara berkala.
+ * Using a template: charge the buyer's credits, copy the frozen version's files into a new project,
+ * and record the creator royalty (X% of the credits' sale value), paid out in USDG periodically.
  */
 export const POST = handle(async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const user = await requireUser();
@@ -17,10 +17,10 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ id: str
   const { slug, name } = await req.json();
   const db = admin();
   const { data: t } = await db.from("templates").select("*").eq("id", id).eq("published", true).maybeSingle();
-  if (!t) throw new HttpError(404, "Template tidak ditemukan.");
+  if (!t) throw new HttpError(404, "Template not found.");
 
   const proj = await createProject(user.id, { name: name || t.title, slug: String(slug ?? ""), templateId: t.id });
-  // kreator memakai template sendiri: gratis
+  // creators use their own templates for free
   const price = t.creator_id === user.id ? 0 : t.price_credits;
   try {
     if (price > 0) await spend(user.id, price, "template_use", t.id);
@@ -50,7 +50,7 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ id: str
   return NextResponse.json({ projectId: proj.id });
 });
 
-/** File biner (gambar) disimpan di project_files sebagai data URL; teks apa adanya. */
+/** Binary files (images) are stored in project_files as data URLs; text as is. */
 async function blobToContent(path: string, blob: Blob) {
   if (/\.(png|jpe?g|webp|gif)$/i.test(path)) {
     const b64 = Buffer.from(await blob.arrayBuffer()).toString("base64");

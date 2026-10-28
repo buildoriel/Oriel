@@ -19,13 +19,13 @@ const Body = z.object({
   priceCredits: z.number().int().min(0).max(5000),
 });
 
-// Menjual template = membekukan versi publikasi terakhir proyek.
+// Selling a template = freezing the project's latest published version.
 export const POST = handle(async (req: Request) => {
   const user = await requireUser();
   const b = Body.safeParse(await req.json());
-  if (!b.success) throw new HttpError(400, "Data template tidak lengkap.");
+  if (!b.success) throw new HttpError(400, "Template details are incomplete.");
   const p = await ownProject(user.id, b.data.projectId);
-  if (!p.published_version) throw new HttpError(400, "Publish proyek dulu sebelum dijual sebagai template.");
+  if (!p.published_version) throw new HttpError(400, "Publish the project before selling it as a template.");
   const { data, error } = await admin().from("templates").insert({
     creator_id: user.id, source_project_id: p.id, source_version: p.published_version, title: b.data.title,
     description: b.data.description, category: b.data.category, price_credits: b.data.priceCredits, published: true,

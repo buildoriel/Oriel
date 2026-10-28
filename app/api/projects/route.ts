@@ -16,6 +16,6 @@ const Body = z.object({ name: z.string().min(1).max(80), slug: z.string() });
 export const POST = handle(async (req: Request) => {
   const user = await requireUser();
   const parsed = Body.safeParse(await req.json());
-  if (!parsed.success) throw new HttpError(400, "Nama proyek wajib diisi.");
+  if (!parsed.success) throw new HttpError(400, "Project name is required.");
   return NextResponse.json(await createProject(user.id, parsed.data));
 });

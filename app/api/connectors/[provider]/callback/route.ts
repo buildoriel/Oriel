@@ -10,11 +10,11 @@ export const GET = handle(async (req: Request, ctx: { params: Promise<{ provider
   const user = await requireUser();
   const provider = (await ctx.params).provider as Exclude<ProviderId, "cloudflare">;
   const cfg = OAUTH[provider];
-  if (!cfg) throw new HttpError(404, "Konektor tidak dikenal.");
+  if (!cfg) throw new HttpError(404, "Unknown connector.");
   const url = new URL(req.url);
   const jar = await cookies();
   if (!url.searchParams.get("state") || url.searchParams.get("state") !== jar.get(`oauth_${provider}`)?.value)
-    throw new HttpError(400, "Sesi sambungan tidak valid. Ulangi dari halaman Connectors.");
+    throw new HttpError(400, "Invalid connection session. Start again from the Connectors page.");
   jar.delete(`oauth_${provider}`);
 
   const id = process.env[cfg.clientIdEnv]!, secret = process.env[cfg.clientSecretEnv]!;
@@ -24,7 +24,7 @@ export const GET = handle(async (req: Request, ctx: { params: Promise<{ provider
   else { body.set("client_id", id); body.set("client_secret", secret); }
   const res = await fetch(cfg.tokenUrl, { method: "POST", headers, body });
   const tok = await res.json();
-  if (!res.ok || !tok.access_token) throw new HttpError(400, `Gagal menyambungkan ${cfg.label}.`);
+  if (!res.ok || !tok.access_token) throw new HttpError(400, `Could not connect ${cfg.label}.`);
 
   await admin().from("connectors").upsert({
     user_id: user.id, provider,

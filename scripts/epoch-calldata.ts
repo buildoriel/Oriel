@@ -1,11 +1,11 @@
-// Menyiapkan transaksi createEpoch untuk multisig setelah cron bulanan selesai.
-// Jalankan: npx tsx --env-file=.env scripts/epoch-calldata.ts 2026-10-01
+// Prepare the createEpoch transaction for the multisig after the monthly cron finishes.
+// Run: npx tsx --env-file=.env scripts/epoch-calldata.ts 2026-10-01
 import { createClient } from "@supabase/supabase-js";
 import { encodeFunctionData, parseAbi, getAddress } from "viem";
 
 async function main() {
   const period = process.argv[2];
-  if (!period) throw new Error("Pakai: epoch-calldata.ts YYYY-MM-01");
+  if (!period) throw new Error("Usage: epoch-calldata.ts YYYY-MM-01");
   const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   const { data: econ } = await db.from("monthly_economics").select("merkle_root").eq("period", period).single();
   const { data: rows } = await db.from("revshare_allocations").select("amount_raw").eq("period", period);
@@ -17,6 +17,6 @@ async function main() {
   console.log(encodeFunctionData({ abi, functionName: "approve", args: [dist, total] }));
   console.log("2) RevenueDistributor.createEpoch ->", dist);
   console.log(encodeFunctionData({ abi, functionName: "createEpoch", args: [epoch, econ!.merkle_root as `0x${string}`, total] }));
-  console.log(`epoch=${epoch} total_raw=${total} penerima=${rows?.length}`);
+  console.log(`epoch=${epoch} total_raw=${total} recipients=${rows?.length}`);
 }
 main().catch((e) => { console.error(e); process.exit(1); });

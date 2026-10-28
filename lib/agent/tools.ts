@@ -6,7 +6,7 @@ export const MAX_PROJECT_FILES = 200;
 const SAFE_PATH = /^(?!\/)(?!.*\.\.)[A-Za-z0-9._\-/]{1,160}$/;
 const TEXT_EXT = /\.(html|css|js|mjs|json|svg|txt|md|csv|xml|webmanifest|sql)$/i;
 export const IMAGE_EXT = /\.(png|jpe?g|webp)$/i;
-/** File yang hanya untuk pemilik proyek (mis. skema database), tidak ikut ditayangkan. */
+/** Files meant only for the project owner (e.g. the database schema); never published. */
 export const PRIVATE_FILE = /\.sql$/i;
 const DATA_URL = /^data:([\w/+.-]+);base64,/;
 export const isDataUrl = (c: string) => DATA_URL.test(c);
@@ -54,11 +54,11 @@ const FINISH: Anthropic.Tool = {
   name: "finish",
   description: "End the task and give the person a short summary of what changed.",
   input_schema: { type: "object", properties: { summary: { type: "string" } }, required: ["summary"] },
-  // breakpoint cache: semua definisi tool di atas ikut ter-cache
+  // cache breakpoint: every tool definition above is cached
   cache_control: { type: "ephemeral" },
 } as Anthropic.Tool;
 
-/** Daftar tool tetap per konfigurasi agar prefix cache tidak berubah antar permintaan. */
+/** Fixed tool lists per configuration so the cache prefix does not change between requests. */
 export const TOOLS: Anthropic.Tool[] = [...BASE_TOOLS, FINISH];
 export const TOOLS_WITH_IMAGES: Anthropic.Tool[] = [...BASE_TOOLS, GENERATE_IMAGE, FINISH];
 
@@ -66,7 +66,7 @@ export type FileMap = Map<string, string>;
 
 export const validPath = (path: string) => SAFE_PATH.test(path) && (TEXT_EXT.test(path) || IMAGE_EXT.test(path));
 
-/** Isi proyek untuk prompt: gambar diganti keterangan singkat agar base64 tidak memakan token. */
+/** Project contents for the prompt: images become a short description so base64 does not burn tokens. */
 export function snapshotOf(files: FileMap) {
   if (!files.size) return "(project is empty)";
   return [...files.entries()].map(([p, c]) => isDataUrl(c)
@@ -76,36 +76,36 @@ export function snapshotOf(files: FileMap) {
 
 export function runTool(files: FileMap, changed: Set<string>, deleted: Set<string>, name: string, input: any): { out: string; done?: string } {
   const path = String(input?.path ?? "");
-  if (name !== "finish" && !validPath(path)) return { out: `Error: path tidak diizinkan: ${path}` };
+  if (name !== "finish" && !validPath(path)) return { out: `Error: path not allowed: ${path}` };
   switch (name) {
     case "write_file": {
-      if (IMAGE_EXT.test(path)) return { out: "Error: gambar raster dibuat dengan generate_image, bukan write_file." };
+      if (IMAGE_EXT.test(path)) return { out: "Error: raster images are created with generate_image, not write_file." };
       const c = String(input.content ?? "");
-      if (Buffer.byteLength(c) > MAX_FILE_BYTES) return { out: "Error: file terlalu besar (maks 400KB)." };
-      if (!files.has(path) && files.size >= MAX_PROJECT_FILES) return { out: "Error: batas jumlah file tercapai." };
+      if (Buffer.byteLength(c) > MAX_FILE_BYTES) return { out: "Error: file too large (max 400KB)." };
+      if (!files.has(path) && files.size >= MAX_PROJECT_FILES) return { out: "Error: file count limit reached." };
       files.set(path, c); changed.add(path); deleted.delete(path);
       return { out: `OK wrote ${path} (${c.length} chars)` };
     }
     case "str_replace": {
       const cur = files.get(path);
-      if (cur == null) return { out: `Error: ${path} tidak ada.` };
-      if (isDataUrl(cur)) return { out: "Error: file gambar tidak bisa diedit sebagai teks." };
+      if (cur == null) return { out: `Error: ${path} does not exist.` };
+      if (isDataUrl(cur)) return { out: "Error: image files cannot be edited as text." };
       const n = cur.split(input.old_str).length - 1;
-      if (n !== 1) return { out: `Error: old_str ditemukan ${n} kali, harus tepat 1.` };
+      if (n !== 1) return { out: `Error: old_str found ${n} times, must be exactly 1.` };
       files.set(path, cur.replace(input.old_str, () => String(input.new_str ?? ""))); changed.add(path);
       return { out: `OK edited ${path}` };
     }
     case "read_file": {
       const cur = files.get(path);
-      if (cur == null) return { out: `Error: ${path} tidak ada.` };
-      return { out: isDataUrl(cur) ? `(gambar ${dataUrlMime(cur)}, ${dataUrlBytes(cur).length} byte)` : cur };
+      if (cur == null) return { out: `Error: ${path} does not exist.` };
+      return { out: isDataUrl(cur) ? `(image ${dataUrlMime(cur)}, ${dataUrlBytes(cur).length} bytes)` : cur };
     }
     case "delete_file":
       files.delete(path); changed.delete(path); deleted.add(path);
       return { out: `OK deleted ${path}` };
     case "finish":
-      return { out: "done", done: String(input?.summary ?? "Selesai.") };
+      return { out: "done", done: String(input?.summary ?? "Done.") };
     default:
-      return { out: `Error: tool tidak dikenal ${name}` };
+      return { out: `Error: unknown tool ${name}` };
   }
 }

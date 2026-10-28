@@ -2,14 +2,14 @@ import { isPublicFile, mimeOf } from "./index";
 
 export type Body = Blob | string | Uint8Array<ArrayBuffer>;
 
-// Location relatif: tetap benar di balik rewrite middleware (subdomain, custom domain, preview)
+// Relative Location: stays correct behind the middleware rewrite (subdomain, custom domain, preview)
 export const redirect = (to: string) => new Response(null, { status: 308, headers: { location: to } });
 
 /**
- * Pemetaan URL -> file, seperti hosting statis biasa:
- *   /            -> index.html          /about    -> about.html, atau about/index.html (lewat redirect ke /about/)
+ * URL -> file mapping, like regular static hosting:
+ *   /            -> index.html          /about    -> about.html, or about/index.html (via a redirect to /about/)
  *   /blog/       -> blog/index.html     /a.css    -> a.css
- * Redirect ke garis miring akhir penting agar link relatif di dalam blog/index.html mengarah ke folder yang benar.
+ * The trailing-slash redirect matters so relative links inside blog/index.html point at the right folder.
  */
 export async function serveStatic(
   segs: string[], trailing: boolean, load: (rel: string) => Promise<Body | null>,

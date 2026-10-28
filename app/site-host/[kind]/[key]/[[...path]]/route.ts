@@ -5,8 +5,8 @@ import { serveStatic, redirect } from "@/lib/hosting/serve";
 
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "buildoriel.com";
 
-// Menyajikan file statis hasil user. Header keamanan: situs user tidak boleh membaca cookie aplikasi
-// (beda origin karena subdomain) dan tidak boleh di-frame oleh pihak lain selain workspace Oriel.
+// Serves users' static files. Security headers: user sites cannot read the app's cookies
+// (different origin via subdomain) and cannot be framed by anyone other than the Oriel workspace.
 export async function GET(req: Request, ctx: { params: Promise<{ kind: string; key: string; path?: string[] }> }) {
   const { kind, key, path } = await ctx.params;
   const trailing = new URL(req.url).pathname.endsWith("/");
@@ -26,14 +26,14 @@ export async function GET(req: Request, ctx: { params: Promise<{ kind: string; k
 }
 
 const notFound = () => new Response(
-  `<!doctype html><meta charset="utf-8"><title>Tidak ditemukan</title><body style="font-family:system-ui;padding:48px;background:#F4F5F7;color:#111317"><h1>Halaman ini belum ada</h1><p>Proyek belum dipublikasikan atau alamatnya salah. <a href="https://${ROOT}">Buat situsmu sendiri di Oriel</a>.</p>`,
+  `<!doctype html><meta charset="utf-8"><title>Not found</title><body style="font-family:system-ui;padding:48px;background:#F4F5F7;color:#111317"><h1>This page doesn't exist yet</h1><p>The project hasn't been published or the address is wrong. <a href="https://${ROOT}">Build your own site on Oriel</a>.</p>`,
   { status: 404, headers: { "content-type": "text/html; charset=utf-8" } });
 
-/** Draf proyek dari project_files, diakses lewat token bertanda tangan di host preview terpisah. */
+/** Project draft from project_files, accessed via a signed token on a separate preview host. */
 async function servePreview(projectId: string, path: string[], trailing: boolean) {
   const [token, ...rest] = path;
-  if (!token || !verifyPreview(projectId, token)) return new Response("Preview kedaluwarsa. Muat ulang workspace.", { status: 403 });
-  // akar preview harus /<id>/<token>/ (dengan garis miring) agar link relatif seperti style.css benar
+  if (!token || !verifyPreview(projectId, token)) return new Response("Preview expired. Reload the workspace.", { status: 403 });
+  // the preview root must be /<id>/<token>/ (with a trailing slash) so relative links like style.css resolve
   if (!rest.length && !trailing) return redirect(`${token}/`);
   return serveStatic(rest.map(decodeURIComponent), trailing, async (rel) => {
     const { data } = await admin().from("project_files").select("content").eq("project_id", projectId).eq("path", rel).maybeSingle();

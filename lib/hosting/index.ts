@@ -11,7 +11,7 @@ const MIME: Record<string, string> = {
 };
 export const mimeOf = (p: string) => MIME[p.split(".").pop()!.toLowerCase()] ?? "application/octet-stream";
 
-/** Isi file siap disajikan: gambar (data URL) menjadi byte, teks apa adanya. */
+/** File content ready to serve: images (data URLs) become bytes, text stays as is. */
 export function fileBody(content: string): string | Uint8Array<ArrayBuffer> {
   if (!isDataUrl(content)) return content;
   const b = dataUrlBytes(content);
@@ -19,16 +19,16 @@ export function fileBody(content: string): string | Uint8Array<ArrayBuffer> {
   out.set(b);
   return out;
 }
-/** File yang boleh tampil di internet (skema SQL dll. hanya untuk pemilik). */
+/** Files that may be public on the internet (SQL schemas etc. are owner-only). */
 export const isPublicFile = (path: string) => !PRIVATE_FILE.test(path);
 
-/** Salin file kerja proyek menjadi versi immutable di Storage: sites/<projectId>/v<N>/<path> */
+/** Copy the project's working files into an immutable version in Storage: sites/<projectId>/v<N>/<path> */
 export async function publishProject(projectId: string) {
   const db = admin();
   const { data: all } = await db.from("project_files").select("path, content").eq("project_id", projectId);
   const files = (all ?? []).filter((f: any) => isPublicFile(f.path));
-  if (!files.length) throw new HttpError(400, "Proyek belum punya file.");
-  if (!files.some((f: any) => f.path === "index.html")) throw new HttpError(400, "index.html belum ada. Minta agent membuat halaman utama dulu.");
+  if (!files.length) throw new HttpError(400, "The project has no files yet.");
+  if (!files.some((f: any) => f.path === "index.html")) throw new HttpError(400, "index.html does not exist yet. Ask the agent to create the home page first.");
 
   const { data: last } = await db.from("project_versions").select("version").eq("project_id", projectId)
     .order("version", { ascending: false }).limit(1).maybeSingle();
@@ -40,7 +40,7 @@ export async function publishProject(projectId: string) {
     const { error } = await db.storage.from(SITES_BUCKET).upload(`${projectId}/v${version}/${f.path}`, body, {
       contentType: mimeOf(f.path), upsert: true, cacheControl: "31536000",
     });
-    if (error) throw new Error(`Upload ${f.path} gagal: ${error.message}`);
+    if (error) throw new Error(`Upload of ${f.path} failed: ${error.message}`);
   }
   await db.from("project_versions").insert({ project_id: projectId, version, file_count: files.length, bytes });
   await db.from("projects").update({ published_version: version }).eq("id", projectId);

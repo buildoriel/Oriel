@@ -4,7 +4,7 @@ import { createWalletClient, createPublicClient, custom, http, parseAbi, parseUn
 const chain = {
   id: Number(process.env.NEXT_PUBLIC_RH_CHAIN_ID ?? 4663), name: "Robinhood Chain",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-  // RPC publik: URL ini ikut tersimpan di wallet user saat menambah jaringan, jadi tidak boleh berisi API key
+  // Public RPC: this URL is saved in the user's wallet when adding the network, so it must not contain an API key
   rpcUrls: { default: { http: [process.env.NEXT_PUBLIC_RH_RPC_URL ?? "https://rpc.mainnet.chain.robinhood.com"] } },
   blockExplorers: { default: { name: "Blockscout", url: process.env.NEXT_PUBLIC_RH_EXPLORER_URL ?? "https://robinhoodchain.blockscout.com" } },
 } as const;
@@ -21,7 +21,7 @@ const STAKING = process.env.NEXT_PUBLIC_STAKING_CONTRACT_ADDRESS as Address;
 
 async function wallet() {
   const eth = (window as any).ethereum;
-  if (!eth) throw new Error("Wallet tidak ditemukan. Pasang wallet yang mendukung Robinhood Chain.");
+  if (!eth) throw new Error("No wallet found. Install a wallet that supports Robinhood Chain.");
   const w = createWalletClient({ chain, transport: custom(eth) });
   const [account] = await w.requestAddresses();
   try { await w.switchChain({ id: chain.id }); } catch { await w.addChain({ chain }); }
@@ -33,7 +33,7 @@ export async function connectAndSign(message: string) {
   return { address: account, signature: await w.signMessage({ account, message }) };
 }
 
-/** Kirim token ke treasury, tunggu receipt, kembalikan hash untuk diverifikasi server. */
+/** Send tokens to the treasury, wait for the receipt, return the hash for server verification. */
 export async function payToTreasury(token: keyof typeof TOKENS, amount: string) {
   const { w, account, pub } = await wallet();
   const dec = await pub.readContract({ address: TOKENS[token], abi: ERC20, functionName: "decimals" });
@@ -57,10 +57,10 @@ export async function unstake(amount: string) {
   return pub.waitForTransactionReceipt({ hash: await w.writeContract({ account, address: STAKING, abi: STAKE, functionName: "unstake", args: [parseUnits(amount, dec)] }) });
 }
 
-/** Tanda tangani pesan nonce lalu verifikasi di server. Mengembalikan kredit Free yang diberikan (0 bila sudah pernah). */
+/** Sign the nonce message, then verify on the server. Returns the Free credits granted (0 if already claimed). */
 export async function verifyWallet(): Promise<{ wallet: string; freeCredits: number }> {
   const n = await fetch("/api/wallet/nonce", { method: "POST" });
-  if (!n.ok) throw new Error((await n.json().catch(() => ({}))).error ?? "Gagal meminta nonce.");
+  if (!n.ok) throw new Error((await n.json().catch(() => ({}))).error ?? "Could not request a nonce.");
   const { message } = await n.json();
   const sig = await connectAndSign(message);
   const v = await fetch("/api/wallet/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(sig) });
@@ -74,13 +74,13 @@ const DIST = parseAbi([
   "function claimed(uint256 epoch, address account) view returns (bool)",
 ]);
 
-/** Status klaim bagi hasil di kontrak (dibaca lewat RPC publik). */
+/** Revenue share claim status in the contract (read through the public RPC). */
 export async function isClaimed(distributor: Address, epoch: number, account: Address) {
   const pub = createPublicClient({ chain, transport: http() });
   return pub.readContract({ address: distributor, abi: DIST, functionName: "claimed", args: [BigInt(epoch), account] });
 }
 
-/** Klaim USDG bagi hasil satu epoch. Siapa pun boleh mengirim, dana selalu ke `account`. */
+/** Claim one epoch's USDG revenue share. Anyone may send it; funds always go to `account`. */
 export async function claimRevshare(distributor: Address, epoch: number, account: Address, amountRaw: string, proof: `0x${string}`[]) {
   const { w, account: from, pub } = await wallet();
   const hash = await w.writeContract({ account: from, address: distributor, abi: DIST, functionName: "claim", args: [BigInt(epoch), account, BigInt(amountRaw), proof] });

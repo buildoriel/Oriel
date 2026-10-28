@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Service role: HANYA dipakai di server. Melewati RLS.
+// Service role: server-side ONLY. Bypasses RLS.
 let _admin: ReturnType<typeof createClient> | null = null;
 export function admin() {
   if (!_admin) {
@@ -8,5 +8,5 @@ export function admin() {
       auth: { persistSession: false },
     });
   }
-  return _admin as any; // ganti dengan tipe hasil `npm run db:types` bila sudah ada
+  return _admin as any; // replace with the types from `npm run db:types` once generated
 }

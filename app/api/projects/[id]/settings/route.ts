@@ -20,9 +20,9 @@ export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ id: st
   const user = await requireUser();
   const p = await ownProject(user.id, (await ctx.params).id);
   const b = Body.safeParse(await req.json());
-  if (!b.success) throw new HttpError(400, "Pengaturan tidak valid.");
+  if (!b.success) throw new HttpError(400, "Invalid settings.");
   const patch: Record<string, unknown> = { ...b.data };
-  // keluar dari showcase = otomatis turun dari halaman utama
+  // opting out of the showcase also removes the project from the home page
   if (b.data.showcase_opt_in === false) patch.featured_at = null;
   await admin().from("projects").update(patch).eq("id", p.id);
   return NextResponse.json({ ok: true });

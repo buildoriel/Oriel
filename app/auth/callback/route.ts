@@ -16,7 +16,7 @@ export async function GET(req: Request) {
       const db = admin();
       const { data: referrer } = await db.from("profiles").select("id").eq("referral_code", ref).maybeSingle();
       if (referrer && referrer.id !== data.user.id) {
-        // hanya untuk akun baru (dibuat < 10 menit lalu)
+        // only for new accounts (created < 10 minutes ago)
         if (Date.now() - new Date(data.user.created_at).getTime() < 10 * 60_000) {
           await db.from("referrals").insert({ referrer_id: referrer.id, referred_id: data.user.id });
           await db.from("profiles").update({ referred_by: referrer.id }).eq("id", data.user.id);

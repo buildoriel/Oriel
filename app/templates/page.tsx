@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const CATS = [["", "Semua"], ["landing", "Landing page"], ["store", "Toko"], ["portfolio", "Portofolio"], ["blog", "Blog"], ["dashboard", "Dashboard"], ["deck", "Deck"], ["community", "Komunitas"], ["business", "Bisnis"]];
+const CATS = [["", "All"], ["landing", "Landing page"], ["store", "Store"], ["portfolio", "Portfolio"], ["blog", "Blog"], ["dashboard", "Dashboard"], ["deck", "Deck"], ["community", "Community"], ["business", "Business"]];
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "buildoriel.com";
 
 export default function Templates() {
@@ -10,7 +10,7 @@ export default function Templates() {
   const router = useRouter();
   useEffect(() => { fetch(`/api/templates${cat ? `?category=${cat}` : ""}`).then((r) => r.json()).then((j) => setItems(j.templates ?? [])); }, [cat]);
   async function use(t: any) {
-    const slug = prompt("Alamat proyek baru (huruf kecil, angka, tanda hubung):", `${t.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Math.random().toString(16).slice(2, 6)}`);
+    const slug = prompt("Address for the new project (lowercase letters, numbers, hyphens):", `${t.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Math.random().toString(16).slice(2, 6)}`);
     if (!slug) return;
     const r = await fetch(`/api/templates/${t.id}/use`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ slug }) });
     if (r.status === 401) { location.href = "/login?next=/templates"; return; }
@@ -19,22 +19,22 @@ export default function Templates() {
   return (
     <section className="page">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end", gap: 16, flexWrap: "wrap" }}>
-        <div><h2>Templates</h2><p className="mute" style={{ marginTop: 12, maxWidth: "52ch" }}>Mulai dari karya orang lain. Kreator menerima royalti USDG setiap kali template-nya dipakai.</p></div>
-        <a className="pill" href="/workspace">Jual template dari proyekmu</a>
+        <div><h2>Templates</h2><p className="mute" style={{ marginTop: 12, maxWidth: "52ch" }}>Start from someone else's work. Creators earn a USDG royalty every time their template is used.</p></div>
+        <a className="pill" href="/workspace">Sell a template from your project</a>
       </div>
       <div className="tbar">{CATS.map(([id, l]) => <button key={id} className={`pill sm${cat === id ? " ink" : ""}`} onClick={() => setCat(id)}>{l}</button>)}</div>
       {err && <p className="err">{err}</p>}
-      {items.length === 0 && <p className="mute">Belum ada template di kategori ini. Publish proyekmu lalu jual sebagai template pertama.</p>}
+      {items.length === 0 && <p className="mute">No templates in this category yet. Publish your project and sell it as the first one.</p>}
       <div className="grid tpl">{items.map((t) => (
         <div key={t.id} className="card tc">
           {t.source?.slug
             ? <div className="frame show-frame"><iframe src={`https://${t.source.slug}.${ROOT}`} title={t.title} loading="lazy" tabIndex={-1} aria-hidden="true" sandbox="allow-scripts" /></div>
             : <div className="thumb"><i /><i /><i /></div>}
           <div className="bd"><h3>{t.title}</h3><p className="mute" style={{ fontSize: 14 }}>{t.description}</p>
-            <div className="ft"><span>oleh @{t.profiles?.handle ?? "kreator"} · {t.uses} pakai</span><span className="mono">{t.price_credits ? `${t.price_credits} kredit` : "gratis"}</span></div>
+            <div className="ft"><span>by @{t.profiles?.handle ?? "creator"} · {t.uses} uses</span><span className="mono">{t.price_credits ? `${t.price_credits} credits` : "free"}</span></div>
             <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-              <button className="pill sm ink" onClick={() => use(t)}>Pakai template</button>
-              {t.source?.slug && <a className="pill sm" href={`https://${t.source.slug}.${ROOT}`} target="_blank" rel="noreferrer">Lihat demo</a>}
+              <button className="pill sm ink" onClick={() => use(t)}>Use template</button>
+              {t.source?.slug && <a className="pill sm" href={`https://${t.source.slug}.${ROOT}`} target="_blank" rel="noreferrer">View demo</a>}
             </div></div>
         </div>))}</div>
     </section>

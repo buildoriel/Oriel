@@ -7,9 +7,9 @@ export function handle<T extends any[]>(fn: (...a: T) => Promise<Response>) {
     catch (e: any) {
       if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status });
       if (String(e?.message).includes("INSUFFICIENT_CREDITS"))
-        return NextResponse.json({ error: "Kredit tidak cukup. Top-up atau naikkan tier." }, { status: 402 });
+        return NextResponse.json({ error: "Not enough credits. Top up or upgrade your tier." }, { status: 402 });
       console.error(e);
-      return NextResponse.json({ error: "Terjadi kesalahan di server." }, { status: 500 });
+      return NextResponse.json({ error: "Something went wrong on our side." }, { status: 500 });
     }
   };
 }

@@ -5,15 +5,15 @@ import { stakingConfigured } from "@/lib/economics";
 import { TIER_PRICE_USD, TOPUP_PACKS, type PackId } from "@/lib/config";
 import { handle } from "@/lib/http";
 
-const BUFFER = 1.03; // 3% ruang gerak harga antara quote dan konfirmasi; kelebihannya dikembalikan sebagai kredit top-up
+const BUFFER = 1.03; // 3% price margin between quote and confirmation; any excess is returned as top-up credits
 
-/** Berapa $ORIEL yang perlu dikirim untuk satu produk. */
+/** How much $ORIEL to send for one product. */
 export const GET = handle(async (req: Request) => {
   const product = new URL(req.url).searchParams.get("product") ?? "";
   const usd = product in TOPUP_PACKS ? TOPUP_PACKS[product as PackId].usd
     : product in TIER_PRICE_USD ? TIER_PRICE_USD[product as keyof typeof TIER_PRICE_USD] : null;
-  if (usd == null) throw new HttpError(400, "Produk tidak dikenal.");
-  if (!stakingConfigured()) throw new HttpError(503, "Pembayaran $ORIEL belum aktif. Pakai USDG.");
-  const price = await orielPriceUsd().catch(() => { throw new HttpError(503, "Harga $ORIEL belum cukup data. Pakai USDG dulu."); });
+  if (usd == null) throw new HttpError(400, "Unknown product.");
+  if (!stakingConfigured()) throw new HttpError(503, "$ORIEL payments are not live yet. Use USDG.");
+  const price = await orielPriceUsd().catch(() => { throw new HttpError(503, "Not enough $ORIEL price data yet. Use USDG for now."); });
   return NextResponse.json({ product, usd, priceUsd: price, amount: ((usd / price) * BUFFER).toFixed(6) });
 });

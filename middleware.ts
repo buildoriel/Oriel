@@ -6,11 +6,11 @@ const APP_HOSTS = new Set([ROOT, `www.${ROOT}`, `app.${ROOT}`, "localhost:3000"]
 
 /**
  * Routing host:
- *  - buildoriel.com / www / app        -> aplikasi Oriel
- *  - <slug>.buildoriel.com              -> /site-host/s/<slug>/<path>   (hasil user)
- *  - preview.buildoriel.com/<projectId>/<token>/<path> -> draf (tanpa cookie, origin terpisah)
- *  - domain lain (custom domain user)   -> /site-host/d/<host>/<path>
- *  - <slug>.localhost:3000 untuk dev
+ *  - buildoriel.com / www / app        -> the Oriel app
+ *  - <slug>.buildoriel.com              -> /site-host/s/<slug>/<path>   (user sites)
+ *  - preview.buildoriel.com/<projectId>/<token>/<path> -> drafts (no cookies, separate origin)
+ *  - any other host (user custom domain) -> /site-host/d/<host>/<path>
+ *  - <slug>.localhost:3000 for dev
  */
 export async function middleware(req: NextRequest) {
   const host = (req.headers.get("host") ?? "").toLowerCase();
@@ -24,7 +24,7 @@ export async function middleware(req: NextRequest) {
   }
   if (url.pathname.startsWith("/site-host")) return new NextResponse(null, { status: 404 });
 
-  // refresh sesi Supabase untuk aplikasi
+  // refresh the Supabase session for the app
   let res = NextResponse.next({ request: req });
   const sb = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
     cookies: {
@@ -37,12 +37,12 @@ export async function middleware(req: NextRequest) {
     },
   });
   const { data } = await sb.auth.getUser();
-  const protectedPath = /^\/(workspace|stake|connectors|akun)/.test(url.pathname);
+  const protectedPath = /^\/(workspace|stake|connectors|account)/.test(url.pathname);
   if (protectedPath && !data.user) {
     url.pathname = "/login"; url.searchParams.set("next", req.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
-  // simpan kode referral 30 hari
+  // keep the referral code for 30 days
   const ref = req.nextUrl.searchParams.get("ref");
   if (ref && /^[a-f0-9]{8}$/.test(ref)) res.cookies.set("oriel_ref", ref, { maxAge: 60 * 60 * 24 * 30, httpOnly: true, sameSite: "lax" });
   return res;

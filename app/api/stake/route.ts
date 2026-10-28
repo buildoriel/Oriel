@@ -11,7 +11,7 @@ import { handle } from "@/lib/http";
 export const GET = handle(async () => {
   const user = await requireUser();
   const { data: p } = await admin().from("profiles").select("wallet_address, wallet_verified_at, staked_tier, grace_until").eq("id", user.id).single();
-  // sebelum $ORIEL diluncurkan dan kontrak di-deploy: halaman tetap tampil tanpa data chain
+  // before $ORIEL launches and the contracts are deployed: the page still renders without chain data
   if (!stakingConfigured()) return NextResponse.json({ configured: false, staked: 0, twap: null, spot: null, value: null,
     currentTier: p.staked_tier, graceUntil: p.grace_until, walletVerified: !!p.wallet_verified_at });
   const [twap, spot, dec] = await Promise.all([twap7d().catch(() => null), readSpotPriceUsd().then((r) => r.priceUsd).catch(() => null), decimalsOf(ADDR.oriel())]);

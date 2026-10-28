@@ -17,7 +17,7 @@ export async function supabaseServer() {
 export async function requireUser() {
   const sb = await supabaseServer();
   const { data } = await sb.auth.getUser();
-  if (!data.user) throw new HttpError(401, "Masuk dulu untuk melanjutkan.");
+  if (!data.user) throw new HttpError(401, "Sign in to continue.");
   return data.user;
 }
 

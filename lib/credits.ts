@@ -22,5 +22,5 @@ export async function grant(userId: string, amount: number, bucket: "monthly" | 
   return Number(data);
 }
 
-/** biaya AI dalam USD -> kredit (dibulatkan ke atas, minimal 1) */
+/** AI cost in USD -> credits (rounded up, minimum 1) */
 export const usdToCredits = (usd: number) => Math.max(1, Math.ceil(usd / CREDIT_COST_USD));

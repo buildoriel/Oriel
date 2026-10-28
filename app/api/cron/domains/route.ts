@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { admin } from "@/lib/supabase/admin";
 import { verifyDomain } from "@/lib/domains";
 import { handle, requireCron } from "@/lib/http";
-// cek ulang domain yang belum aktif (DNS bisa butuh waktu)
+// re-check domains that are not active yet (DNS can take a while)
 export const GET = handle(async (req: Request) => {
   requireCron(req);
   const { data } = await admin().from("domains").select("id").in("status", ["pending", "dns_ok"]).limit(100);

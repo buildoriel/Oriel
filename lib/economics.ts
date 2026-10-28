@@ -9,7 +9,7 @@ import { CREDIT_COST_USD, ECON, TIER_ORDER, type TierId } from "./config";
 
 type Tier = { id: TierId; monthly_credits: number; revshare_weight: number };
 
-/** Murni: pembagian margin. Diuji di scripts/economics.test.ts dengan contoh dari brief. */
+/** Pure: margin split. Tested in scripts/economics.test.ts with the example from the brief. */
 export function splitMargin(marginUsd: number, stakerDemandUsd: number, floorUsd = 0) {
   const budget = Math.max(floorUsd, Math.max(0, marginUsd) * ECON.stakerBudgetPctOfMargin);
   const scale = stakerDemandUsd > 0 ? Math.min(1, budget / stakerDemandUsd) : 1;
@@ -23,23 +23,23 @@ export function splitMargin(marginUsd: number, stakerDemandUsd: number, floorUsd
 
 const monthStart = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
 
-/** Staking aktif bila token, kontrak staking, dan pool sudah diisi (setelah $ORIEL diluncurkan). */
+/** Staking is active once the token, staking contract, and pool are set (after $ORIEL launches). */
 export const stakingConfigured = () =>
   !!(process.env.ORIEL_TOKEN_ADDRESS && process.env.STAKING_CONTRACT_ADDRESS && process.env.ORIEL_POOL_ADDRESS);
 
 /**
- * Dijalankan tanggal 1 tiap bulan (idempoten per periode).
- * 1) hitung margin bulan lalu  2) evaluasi tier stake (TWAP 7 hari, buffer, tenggang)
- * 3) anggaran kredit staker <= 40% margin, dibagi proporsional  4) isi ulang kredit bulanan
- * 5) sisa margin 50/30/20 -> bagi hasil (Merkle), operasional, buyback
+ * Runs on the 1st of every month (idempotent per period).
+ * 1) last month's margin  2) stake tier evaluation (7-day TWAP, buffer, grace period)
+ * 3) staker credit budget <= 40% of margin, scaled proportionally  4) monthly credit refill
+ * 5) remaining margin 50/30/20 -> revenue share (Merkle), operations, buyback
  *
- * Aturan isi ulang:
- *  - tier DIBELI masih aktif: kreditnya sudah diberikan saat bayar dan berlaku selama periode 30 harinya,
- *    jadi tidak di-reset di sini (mencegah kredit hangus 6 hari setelah bayar atau terisi dua kali).
- *  - staker: kredit tier stake x skala anggaran. Bila juga punya tier dibeli yang aktif, kredit staker DITAMBAHKAN.
- *  - Free: 60 kredit hanya untuk wallet terverifikasi.
- * Bila staking belum dikonfigurasi atau sampel harga belum cukup, tier stake TIDAK dievaluasi ulang
- * (tier terakhir dipertahankan) dan bagi hasil ditahan; isi ulang kredit tetap berjalan.
+ * Refill rules:
+ *  - an active PURCHASED tier: its credits were granted at payment and last for its 30-day period,
+ *    so they are not reset here (prevents credits expiring 6 days after paying, or a double refill).
+ *  - staker: stake tier credits x budget scale. With an active purchased tier too, staker credits are ADDED.
+ *  - Free: 60 credits, only for verified wallets.
+ * If staking is not configured or there are not enough price samples, stake tiers are NOT re-evaluated
+ * (the last tier is kept) and revenue share is held back; the credit refill still runs.
  */
 export async function runMonthly(now = new Date()) {
   const db = admin();
@@ -50,15 +50,15 @@ export async function runMonthly(now = new Date()) {
   const { data: done } = await db.from("monthly_economics").select("period").eq("period", period).maybeSingle();
   if (done) return { skipped: true, period };
 
-  // ---- 1. margin bulan lalu ----
+  // ---- 1. last month's margin ----
   const range = (q: any) => q.gte("created_at", prev.toISOString()).lt("created_at", thisMonth.toISOString());
   const revenue = await sumAll((from, to) => range(db.from("payments").select("usd_value")).range(from, to), "usd_value");
   const aiCost = await sumAll((from, to) => range(db.from("ai_usage").select("cost_usd")).range(from, to), "cost_usd");
   const margin = revenue - aiCost;
 
-  // ---- 2. evaluasi tier stake ----
+  // ---- 2. stake tier evaluation ----
   let twap: number | null = null, stakeNote: string | null = null;
-  if (!stakingConfigured()) stakeNote = "staking belum dikonfigurasi";
+  if (!stakingConfigured()) stakeNote = "staking not configured";
   else twap = await twap7d(now).catch((e: Error) => { stakeNote = e.message; return null; });
   const { data: tiers } = await db.from("tiers").select("id, monthly_credits, revshare_weight");
   const T = Object.fromEntries((tiers as Tier[]).map((t) => [t.id, t])) as Record<TierId, Tier>;
@@ -90,17 +90,17 @@ export async function runMonthly(now = new Date()) {
       evaluated.push({ id: u.id, wallet: u.wallet_address, stakedTier, valueUsd, paidTier, verified: !!u.wallet_verified_at });
     }
   }
-  // kuota build premium (Pro: Opus "sesekali") mulai lagi dari nol
+  // premium build quota (Pro: "occasional" Opus) starts over from zero
   await db.from("profiles").update({ premium_builds_used: 0 }).gt("premium_builds_used", 0);
 
-  // ---- 3. anggaran kredit staker ----
-  // staker = tier stake lebih tinggi dari tier yang dibeli; kreditnya dibiayai margin, bukan mencetak token
+  // ---- 3. staker credit budget ----
+  // staker = stake tier above the purchased tier; their credits are funded by margin, not by minting tokens
   const rank = (t: TierId) => TIER_ORDER.indexOf(t);
   const stakers = evaluated.filter((e) => e.stakedTier !== "free" && rank(e.stakedTier) > rank(e.paidTier));
   const demand = stakers.reduce((s, e) => s + T[e.stakedTier].monthly_credits * CREDIT_COST_USD, 0);
   const split = splitMargin(margin, demand, Number(process.env.STAKER_BUDGET_FLOOR_USD ?? 0));
 
-  // ---- 4. isi ulang kredit bulanan ----
+  // ---- 4. monthly credit refill ----
   for (const e of evaluated) {
     const isStaker = stakers.includes(e);
     if (isStaker) {
@@ -110,11 +110,11 @@ export async function runMonthly(now = new Date()) {
     } else if (e.paidTier === "free") {
       await db.rpc("reset_monthly_credits", { p_user: e.id, p_amount: e.verified ? T.free.monthly_credits : 0, p_period: thisPeriod });
     }
-    // tier dibeli aktif: dilewati, kreditnya mengikuti periode 30 hari pembelian
+    // active purchased tier: skipped, its credits follow the 30-day purchase period
   }
 
-  // ---- 5. bagi hasil (USDG) via Merkle ----
-  // ditahan bila nilai stake tidak bisa dihitung bulan ini; jumlahnya tetap tercatat di monthly_economics
+  // ---- 5. revenue share (USDG) via Merkle ----
+  // held back if stake values cannot be computed this month; the amount is still recorded in monthly_economics
   const holders = twap ? evaluated.filter((e) => e.stakedTier !== "free" && e.wallet && e.valueUsd > 0) : [];
   const totalW = holders.reduce((s, e) => s + e.valueUsd * T[e.stakedTier].revshare_weight, 0);
   const usdgDec = holders.length && process.env.USDG_TOKEN_ADDRESS ? await decimalsOf(ADDR.usdg()) : 6;
@@ -128,7 +128,7 @@ export async function runMonthly(now = new Date()) {
     const tree = StandardMerkleTree.of(allocations.map((a) => [getAddress(a.e.wallet!), a.raw.toString()]), ["address", "uint256"]);
     root = tree.root;
     const rows = [...tree.entries()].map(([i, v]) => ({ period, user_id: allocations[i].e.id, wallet: v[0], amount_raw: v[1], proof: tree.getProof(i) }));
-    // bila penulisan alokasi gagal, baris periode dihapus lagi sehingga job bisa diulang dengan aman
+    // if writing allocations fails, the period row is deleted again so the job can be safely re-run
     await db.from("revshare_allocations").delete().eq("period", period);
     await db.from("monthly_economics").upsert(econRow(period, revenue, aiCost, margin, demand, split, root), { onConflict: "period" });
     for (const part of chunk(rows, 500)) {
@@ -154,10 +154,10 @@ function econRow(period: string, revenue: number, aiCost: number, margin: number
 }
 
 function notice(event: string, from: TierId, to: TierId, grace: Date | null) {
-  if (event === "upgrade") return `Tier-mu naik ke ${cap(to)}. Kredit bulan ini sudah diisi.`;
-  if (event === "grace_started") return `Nilai stake-mu di bawah batas aman ${cap(from)}. Kamu tetap di ${cap(from)} sampai ${grace!.toISOString().slice(0, 10)}. Tambah stake agar tidak turun tier.`;
-  if (event === "in_grace") return `Pengingat: masa tenggang ${cap(from)} berakhir ${grace!.toISOString().slice(0, 10)}.`;
-  if (event === "downgrade") return `Masa tenggang berakhir. Tier stake-mu sekarang ${cap(to)}.`;
+  if (event === "upgrade") return `Your tier is now ${cap(to)}. This month's credits have been added.`;
+  if (event === "grace_started") return `Your stake value is below the ${cap(from)} safe threshold. You stay on ${cap(from)} until ${grace!.toISOString().slice(0, 10)}. Add to your stake to keep your tier.`;
+  if (event === "in_grace") return `Reminder: your ${cap(from)} grace period ends ${grace!.toISOString().slice(0, 10)}.`;
+  if (event === "downgrade") return `Your grace period has ended. Your stake tier is now ${cap(to)}.`;
   return null;
 }
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);

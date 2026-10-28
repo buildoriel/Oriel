@@ -5,7 +5,7 @@ import { GeistMono } from "geist/font/mono";
 import { Nav } from "@/components/Nav";
 import "./globals.css";
 
-// Bricolage Grotesque (OFL) dibundel lokal: tanpa ketergantungan Google Fonts saat build
+// Bricolage Grotesque (OFL) bundled locally: no Google Fonts dependency at build time
 const bricolage = localFont({ src: "./fonts/BricolageGrotesque-Variable.ttf", weight: "200 800", variable: "--font-d", display: "swap" });
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, view
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={`${bricolage.variable} ${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" className={`${bricolage.variable} ${GeistSans.variable} ${GeistMono.variable}`}>
       <body><Nav /><main>{children}</main></body>
     </html>
   );

@@ -3,17 +3,17 @@ import { GRACE_MONTHS, STAKE_BUFFER, TIER_ORDER, TIER_STAKE_USD, type TierId } f
 const rank = (t: TierId) => TIER_ORDER.indexOf(t);
 const threshold = (t: TierId) => (t === "free" ? 0 : TIER_STAKE_USD[t]);
 
-/** Tier tertinggi yang syaratnya terpenuhi penuh. */
+/** Highest tier whose threshold is fully met. */
 export function tierForValue(v: number): TierId {
   return [...TIER_ORDER].reverse().find((t) => v >= threshold(t)) ?? "free";
 }
 
 /**
- * Aturan evaluasi bulanan:
- *  - naik tier langsung bila nilai >= batas tier lebih tinggi
- *  - tetap di tier sekarang selama nilai >= 90% batasnya (buffer 10%)
- *  - di bawah buffer: mulai masa tenggang 1 bulan (tetap di tier), beri notifikasi
- *  - masih di bawah buffer setelah masa tenggang habis: turun ke tier yang sesuai nilai
+ * Monthly evaluation rules:
+ *  - move up immediately when the value >= a higher tier's threshold
+ *  - stay on the current tier while the value >= 90% of its threshold (10% buffer)
+ *  - below the buffer: start a 1-month grace period (tier kept) and notify
+ *  - still below the buffer after the grace period: drop to the tier the value qualifies for
  */
 export function evaluateTier(input: { current: TierId; valueUsd: number; graceUntil: Date | null; now: Date }) {
   const { current, valueUsd, graceUntil, now } = input;
@@ -25,7 +25,7 @@ export function evaluateTier(input: { current: TierId; valueUsd: number; graceUn
     return { tier: current, graceUntil: g, event: "grace_started" } as const;
   }
   if (now < graceUntil) return { tier: current, graceUntil, event: "in_grace" } as const;
-  // turun; buffer berlaku untuk tier tujuan juga
+  // downgrade; the buffer applies to the target tier too
   const buffered = [...TIER_ORDER].reverse().find((t) => rank(t) < rank(current) && valueUsd >= threshold(t) * STAKE_BUFFER) ?? "free";
   return { tier: buffered as TierId, graceUntil: null, event: "downgrade" } as const;
 }

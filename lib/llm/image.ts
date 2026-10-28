@@ -1,9 +1,9 @@
 /**
- * Gambar raster (foto/ilustrasi) lewat model image generation di OpenRouter.
- * Model Claude tidak membuat gambar raster, jadi agent memanggil ini lewat tool generate_image.
+ * Raster images (photos/illustrations) via an image generation model on OpenRouter.
+ * Claude models do not create raster images, so the agent calls this through the generate_image tool.
  *
- *   IMAGE_MODEL         slug OpenRouter, mis. "google/gemini-2.5-flash-image". Kosong = fitur mati.
- *   IMAGE_PRICE_USD     perkiraan biaya per gambar bila OpenRouter tidak mengirim usage.cost (default 0.04)
+ *   IMAGE_MODEL         OpenRouter slug, e.g. "google/gemini-2.5-flash-image". Empty = feature off.
+ *   IMAGE_PRICE_USD     estimated cost per image when OpenRouter does not send usage.cost (default 0.04)
  */
 export const imageEnabled = () => !!process.env.IMAGE_MODEL && !!process.env.OPENROUTER_API_KEY;
 
@@ -12,7 +12,7 @@ export type ImageResult = { dataUrl: string; mime: string; bytes: number; costUs
 const ASPECTS = new Set(["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"]);
 
 export async function generateImage(prompt: string, aspect = "16:9"): Promise<ImageResult> {
-  if (!imageEnabled()) throw new Error("Pembuatan gambar belum diaktifkan (IMAGE_MODEL kosong).");
+  if (!imageEnabled()) throw new Error("Image generation is not enabled (IMAGE_MODEL is empty).");
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -30,10 +30,10 @@ export async function generateImage(prompt: string, aspect = "16:9"): Promise<Im
     }),
   });
   const j: any = await res.json().catch(() => ({}));
-  if (!res.ok || j.error) throw new Error(`Gambar gagal dibuat: ${j.error?.message ?? res.status}`);
+  if (!res.ok || j.error) throw new Error(`Image generation failed: ${j.error?.message ?? res.status}`);
   const url: string | undefined = j.choices?.[0]?.message?.images?.[0]?.image_url?.url;
   const m = url?.match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/);
-  if (!m) throw new Error("Model tidak mengembalikan gambar.");
+  if (!m) throw new Error("The model did not return an image.");
   const cost = Number(j.usage?.cost);
   return {
     dataUrl: url!, mime: m[1], bytes: Math.floor((m[2].length * 3) / 4),

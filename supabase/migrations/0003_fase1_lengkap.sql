@@ -1,23 +1,23 @@
 -- =====================================================================
--- Oriel 0003 — melengkapi Fase 1:
---   showcase, GitHub auto-commit, Netlify/Supabase per proyek, kunci agent (anti dobel jalan),
---   pembayaran royalti kreator, klaim kredit Free atomik.
+-- Oriel 0003 — completes Phase 1:
+--   showcase, GitHub auto-commit, per-project Netlify/Supabase, agent lock (no double runs),
+--   creator royalty payouts, atomic Free credit claim.
 -- =====================================================================
 
--- ---------- PROYEK ----------
+-- ---------- PROJECTS ----------
 alter table public.projects
-  add column showcase_opt_in boolean not null default false, -- pemilik mengizinkan tampil di showcase
-  add column featured_at timestamptz,                        -- dipilih tim Oriel untuk halaman utama
+  add column showcase_opt_in boolean not null default false, -- owner allows the project in the showcase
+  add column featured_at timestamptz,                        -- picked by the Oriel team for the home page
   add column github_autocommit boolean not null default false,
   add column netlify_site_id text,
-  add column supabase_ref text,                              -- proyek Supabase milik user yang dipakai situs ini
+  add column supabase_ref text,                              -- the user's own Supabase project used by this site
   add column supabase_url text,
-  add column supabase_anon_key text;                         -- kunci publik (anon), aman ditaruh di situs
+  add column supabase_anon_key text;                         -- public (anon) key, safe to embed in the site
 create index on public.projects(featured_at) where featured_at is not null;
 
--- ---------- KUNCI AGENT ----------
--- Satu user hanya boleh menjalankan satu agent sekaligus: mencegah saldo dipakai ganda
--- oleh dua permintaan paralel dan membatasi beban.
+-- ---------- AGENT LOCK ----------
+-- A user may only run one agent at a time: prevents the balance from being spent twice
+-- by two parallel requests, and limits load.
 create table public.agent_runs (
   id bigserial primary key,
   user_id uuid not null references public.profiles(id) on delete cascade,
@@ -31,7 +31,7 @@ create index on public.agent_runs(user_id, started_at desc);
 alter table public.agent_runs enable row level security;
 create policy "own runs" on public.agent_runs for select using ((select auth.uid()) = user_id);
 
--- Mulai run: membersihkan run macet (> 10 menit) lalu mengunci. Mengembalikan null bila masih ada run aktif.
+-- Start a run: clears stuck runs (> 10 minutes), then locks. Returns null while another run is active.
 create or replace function public.begin_agent_run(p_user uuid, p_project uuid) returns bigint
 language plpgsql security definer set search_path = public as $$
 declare v_id bigint;
@@ -46,7 +46,7 @@ end $$;
 revoke all on function public.begin_agent_run(uuid, uuid) from public, anon, authenticated;
 grant execute on function public.begin_agent_run(uuid, uuid) to service_role;
 
--- ---------- KREDIT FREE: klaim sekali, atomik ----------
+-- ---------- FREE CREDITS: claimed once, atomically ----------
 create or replace function public.claim_free_credits(p_user uuid, p_amount bigint) returns boolean
 language plpgsql security definer set search_path = public as $$
 begin
@@ -59,12 +59,12 @@ end $$;
 revoke all on function public.claim_free_credits(uuid, bigint) from public, anon, authenticated;
 grant execute on function public.claim_free_credits(uuid, bigint) to service_role;
 
--- ---------- ROYALTI KREATOR ----------
+-- ---------- CREATOR ROYALTIES ----------
 alter table public.template_uses add column payout_id bigint references public.creator_payouts(id);
 create index on public.template_uses(payout_id) where payout_id is null;
 alter table public.creator_payouts add column wallet text, add column period date;
 
--- pemakaian template: jumlah dipakai dinaikkan atomik
+-- template use: the use count is incremented atomically
 create or replace function public.increment_template_uses(p_template uuid) returns void
 language sql security definer set search_path = public as $$
   update templates set uses = uses + 1 where id = p_template

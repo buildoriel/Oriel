@@ -9,8 +9,8 @@ import { handle } from "@/lib/http";
 export const GET = handle(async (_req: Request, ctx: { params: Promise<{ provider: string }> }) => {
   const user = await requireUser();
   const provider = (await ctx.params).provider as ProviderId;
-  if (!(provider in OAUTH)) throw new HttpError(404, "Konektor tidak dikenal.");
-  await requireTier(user.id, MIN_TIER[provider], `Konektor ${provider}`);
+  if (!(provider in OAUTH)) throw new HttpError(404, "Unknown connector.");
+  await requireTier(user.id, MIN_TIER[provider], `The ${provider} connector`);
   const cfg = OAUTH[provider as keyof typeof OAUTH];
   const state = randomBytes(16).toString("hex");
   (await cookies()).set(`oauth_${provider}`, state, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 600, path: "/" });

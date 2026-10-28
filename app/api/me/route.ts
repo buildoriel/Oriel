@@ -17,13 +17,13 @@ export const GET = handle(async () => {
   return NextResponse.json({ email: user.email, profile, tier, balance, notifications: notes ?? [], ledger: ledger ?? [] });
 });
 
-// ubah handle publik (dipakai di marketplace template)
+// change the public handle (shown in the template marketplace)
 export const PATCH = handle(async (req: Request) => {
   const user = await requireUser();
   const { handle: h } = await req.json();
-  if (typeof h !== "string" || !/^[a-z0-9_]{3,24}$/.test(h)) throw new HttpError(400, "Handle 3-24 karakter: huruf kecil, angka, garis bawah.");
+  if (typeof h !== "string" || !/^[a-z0-9_]{3,24}$/.test(h)) throw new HttpError(400, "Handles are 3-24 characters: lowercase letters, numbers, underscores.");
   const { error } = await admin().from("profiles").update({ handle: h }).eq("id", user.id);
-  if (error?.code === "23505") throw new HttpError(409, "Handle itu sudah dipakai.");
+  if (error?.code === "23505") throw new HttpError(409, "That handle is taken.");
   if (error) throw error;
   return NextResponse.json({ handle: h });
 });

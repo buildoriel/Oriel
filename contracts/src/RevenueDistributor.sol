@@ -7,9 +7,9 @@ import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProo
 import {Ownable, Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 
 /// @title RevenueDistributor
-/// @notice Bagi hasil bulanan ke staker dalam USDG. Backend membuat Merkle tree (format OpenZeppelin
-///         StandardMerkleTree, leaf = [address, uint256]); owner (multisig) mengunggah root per epoch
-///         sekaligus menyetor USDG. Staker klaim sendiri.
+/// @notice Monthly revenue share to stakers in USDG. The backend builds a Merkle tree (OpenZeppelin
+///         StandardMerkleTree format, leaf = [address, uint256]); the owner (multisig) uploads the root per epoch
+///         and deposits the USDG in the same call. Stakers claim for themselves.
 contract RevenueDistributor is Ownable2Step {
     using SafeERC20 for IERC20;
 
@@ -17,7 +17,7 @@ contract RevenueDistributor is Ownable2Step {
 
     IERC20 public immutable usdg;
     uint256 public constant CLAIM_WINDOW = 365 days;
-    mapping(uint256 => Epoch) public epochs;                 // epoch = yyyymm, mis. 202610
+    mapping(uint256 => Epoch) public epochs;                 // epoch = yyyymm, e.g. 202610
     mapping(uint256 => mapping(address => bool)) public claimed;
 
     event EpochCreated(uint256 indexed epoch, bytes32 root, uint256 total);
@@ -53,7 +53,7 @@ contract RevenueDistributor is Ownable2Step {
         emit Claimed(epoch, account, amount);
     }
 
-    /// @notice USDG yang tidak diklaim setelah 1 tahun dikembalikan ke owner (treasury).
+    /// @notice USDG left unclaimed after 1 year is returned to the owner (treasury).
     function sweep(uint256 epoch) external onlyOwner {
         Epoch storage e = epochs[epoch];
         if (e.root == bytes32(0)) revert UnknownEpoch();

@@ -7,7 +7,7 @@ import {OrielStaking} from "../src/OrielStaking.sol";
 import {RevenueDistributor} from "../src/RevenueDistributor.sol";
 
 /// forge script script/Deploy.s.sol --rpc-url robinhood --broadcast
-/// Env: ORIEL_TOKEN_ADDRESS, USDG_TOKEN_ADDRESS, DISTRIBUTOR_OWNER (alamat multisig), PRIVATE_KEY deployer
+/// Env: ORIEL_TOKEN_ADDRESS, USDG_TOKEN_ADDRESS, DISTRIBUTOR_OWNER (multisig address), PRIVATE_KEY deployer
 contract Deploy is Script {
     function run() external {
         vm.startBroadcast(vm.envUint("PRIVATE_KEY"));

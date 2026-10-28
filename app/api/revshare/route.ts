@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/supabase/server";
 import { admin } from "@/lib/supabase/admin";
 import { handle } from "@/lib/http";
 
-/** Alokasi bagi hasil milik user beserta Merkle proof untuk klaim di RevenueDistributor. */
+/** The user's revenue share allocations with Merkle proofs for claiming from RevenueDistributor. */
 export const GET = handle(async () => {
   const user = await requireUser();
   const { data } = await admin().from("revshare_allocations").select("period, wallet, amount_raw, proof")

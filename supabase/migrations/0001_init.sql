@@ -1,6 +1,6 @@
 -- =====================================================================
--- Oriel — skema awal (Fase 1 + tabel yang disiapkan untuk Fase 2/3)
--- Semua penulisan saldo kredit WAJIB lewat fungsi spend_credits/grant_credits.
+-- Oriel — initial schema (Phase 1 + tables prepared for Phases 2/3)
+-- ALL credit balance writes MUST go through spend_credits/grant_credits.
 -- =====================================================================
 create extension if not exists pgcrypto;
 
@@ -10,16 +10,16 @@ create table public.tiers (
   rank int not null unique,
   monthly_credits int not null,
   price_usd numeric(12,2) not null,
-  stake_usd numeric(12,2),                 -- null = tidak bisa via stake
-  max_projects int,                        -- null = tanpa batas
-  max_custom_domains int not null default 0, -- -1 = tanpa batas
+  stake_usd numeric(12,2),                 -- null = not available via stake
+  max_projects int,                        -- null = unlimited
+  max_custom_domains int not null default 0, -- -1 = unlimited
   free_domain_per_year boolean not null default false,
   revshare_weight numeric(6,3) not null default 0,
   connectors text[] not null default '{}',
   model_edit text not null,
   model_build text not null,
   model_large text not null,
-  premium_build_quota int not null default 0  -- jumlah build dengan model di atas default (Pro: Opus "sesekali")
+  premium_build_quota int not null default 0  -- number of builds with a model above the default (Pro: "occasional" Opus)
 );
 insert into public.tiers values
  ('free',   0,    60,   0,  null,   1,  0, false, 0,     '{}',
@@ -31,7 +31,7 @@ insert into public.tiers values
  ('studio', 3, 10000, 200,  2000, null, -1, true,  1.5,  '{github,vercel,netlify,supabase,google_drive,cloudflare}',
    'claude-haiku-5-5','claude-opus-5-5','claude-fable-5-1', 0);
 
--- ---------- PROFIL ----------
+-- ---------- PROFILES ----------
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   handle text unique,
@@ -42,13 +42,13 @@ create table public.profiles (
   purchased_tier text references public.tiers(id),
   purchased_tier_until timestamptz,
   staked_tier text not null default 'free' references public.tiers(id),
-  grace_until timestamptz,                -- masa tenggang turun tier stake
+  grace_until timestamptz,                -- grace period before a stake tier downgrade
   premium_builds_used int not null default 0,
   free_credits_claimed_at timestamptz,
   created_at timestamptz not null default now()
 );
 
--- tier efektif = tertinggi antara tier dibeli (masih aktif) dan tier stake
+-- effective tier = the higher of the purchased tier (while active) and the stake tier
 create or replace function public.effective_tier(p_user uuid) returns text
 language sql stable set search_path = public as $$
   select t.id from public.tiers t, public.profiles p
@@ -64,9 +64,9 @@ create table public.wallet_nonces (
   expires_at timestamptz not null
 );
 
--- ---------- KREDIT ----------
--- monthly: diisi ulang tiap tanggal 1 (hangus di akhir bulan)
--- topup:   dibeli, tidak hangus
+-- ---------- CREDITS ----------
+-- monthly: refilled on the 1st of each month (expires at month end)
+-- topup:   purchased, never expires
 create table public.credit_balances (
   user_id uuid primary key references public.profiles(id) on delete cascade,
   monthly bigint not null default 0 check (monthly >= 0),
@@ -89,7 +89,7 @@ create table public.credit_ledger (
 );
 create index on public.credit_ledger(user_id, created_at desc);
 
--- pembayaran on-chain (USDG / $ORIEL di Robinhood Chain)
+-- on-chain payments (USDG / $ORIEL on Robinhood Chain)
 create table public.payments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id),
@@ -107,7 +107,7 @@ create table public.payments (
 create index on public.payments(user_id);
 create index on public.payments(created_at);
 
--- biaya AI aktual (dasar perhitungan margin)
+-- actual AI cost (basis for margin calculation)
 create table public.ai_usage (
   id bigserial primary key,
   user_id uuid not null references public.profiles(id),
@@ -126,7 +126,7 @@ create table public.ai_usage (
 create index on public.ai_usage(created_at);
 create index on public.ai_usage(user_id);
 
--- ---------- PROYEK & HOSTING ----------
+-- ---------- PROJECTS & HOSTING ----------
 create table public.projects (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references public.profiles(id) on delete cascade,
@@ -141,7 +141,7 @@ create table public.projects (
 );
 create index on public.projects(owner_id);
 
--- slug yang tidak boleh dipakai (subdomain sistem)
+-- slugs that cannot be used (system subdomains)
 create table public.reserved_slugs (slug text primary key);
 insert into public.reserved_slugs values
  ('www'),('app'),('api'),('sites'),('admin'),('mail'),('docs'),('status'),('blog'),('cdn'),('static'),('oriel'),('help'),('support'),('preview');
@@ -189,7 +189,7 @@ create table public.domains (
 create index on public.domains(owner_id);
 create index on public.domains(project_id);
 
--- ---------- KONEKTOR ----------
+-- ---------- CONNECTORS ----------
 create table public.connectors (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete cascade,
@@ -203,7 +203,7 @@ create table public.connectors (
   unique (user_id, provider)
 );
 
--- ---------- STAKING & EKONOMI ----------
+-- ---------- STAKING & ECONOMICS ----------
 create table public.price_samples (
   id bigserial primary key,
   sampled_at timestamptz not null default now(),
@@ -227,7 +227,7 @@ create table public.tier_evaluations (
 );
 
 create table public.monthly_economics (
-  period date primary key,          -- bulan yang DIPROSES (bulan lalu)
+  period date primary key,          -- the month being PROCESSED (last month)
   revenue_usd numeric(14,4) not null,
   ai_cost_usd numeric(14,4) not null,
   margin_usd numeric(14,4) not null,
@@ -317,7 +317,7 @@ create table public.notifications (
 create index on public.notifications(user_id, read);
 
 -- =====================================================================
--- FUNGSI KREDIT (atomik, hanya untuk service_role)
+-- CREDIT FUNCTIONS (atomic, service_role only)
 -- =====================================================================
 create or replace function public.grant_credits(
   p_user uuid, p_amount bigint, p_bucket text, p_reason public.credit_reason,
@@ -338,7 +338,7 @@ begin
   return v_total;
 end $$;
 
--- memotong kredit bulanan dulu, lalu top-up. Gagal jika saldo kurang.
+-- spends monthly credits first, then top-up. Fails if the balance is insufficient.
 create or replace function public.spend_credits(
   p_user uuid, p_amount bigint, p_reason public.credit_reason,
   p_ref text default null, p_meta jsonb default '{}')
@@ -361,7 +361,7 @@ begin
   return b.monthly + b.topup - p_amount;
 end $$;
 
--- mengganti saldo bulanan (kredit bulan lalu yang tersisa hangus)
+-- replaces the monthly balance (last month's leftover credits expire)
 create or replace function public.reset_monthly_credits(p_user uuid, p_amount bigint, p_period date)
 returns void language plpgsql security definer set search_path = public as $$
 declare old bigint;
@@ -381,7 +381,7 @@ grant execute on function public.grant_credits(uuid, bigint, text, public.credit
 grant execute on function public.spend_credits(uuid, bigint, public.credit_reason, text, jsonb) to service_role;
 grant execute on function public.reset_monthly_credits(uuid, bigint, date) to service_role;
 
--- profil + saldo otomatis saat user mendaftar
+-- profile + balance created automatically on sign-up
 create or replace function public.handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
@@ -394,7 +394,7 @@ create trigger on_auth_user_created after insert on auth.users
   for each row execute function public.handle_new_user();
 
 -- =====================================================================
--- RLS: klien hanya membaca miliknya sendiri. Semua tulis lewat API (service_role).
+-- RLS: clients can only read their own rows. All writes go through the API (service_role).
 -- =====================================================================
 alter table public.profiles enable row level security;
 alter table public.credit_balances enable row level security;
@@ -431,7 +431,7 @@ create policy "own files" on public.project_files for select using (exists (sele
 create policy "own versions" on public.project_versions for select using (exists (select 1 from public.projects p where p.id = project_id and p.owner_id = (select auth.uid())));
 create policy "own messages" on public.messages for select using (exists (select 1 from public.projects p where p.id = project_id and p.owner_id = (select auth.uid())));
 create policy "own domains" on public.domains for select using ((select auth.uid()) = owner_id);
--- token konektor TIDAK pernah dibaca klien; hanya metadata lewat view
+-- connector tokens are NEVER readable by clients; only metadata through the view
 create view public.my_connectors with (security_invoker = true) as
   select id, user_id, provider, account_label, scopes, created_at from public.connectors;
 create policy "own connectors meta" on public.connectors for select using ((select auth.uid()) = user_id);

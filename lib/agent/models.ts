@@ -4,9 +4,9 @@ export type ActionKind = "edit" | "build" | "large";
 export const ROUTER_MODEL = "claude-haiku-5-5";
 
 /**
- * Harga per 1 juta token (USD). VERIFIKASI ke https://docs.claude.com sebelum produksi —
- * nilai default di sini adalah placeholder. Bisa ditimpa via env MODEL_PRICES_JSON.
- * cacheWrite = token yang ditulis ke cache, cacheRead = token yang dibaca dari cache.
+ * Price per 1 million tokens (USD). VERIFY against https://docs.claude.com before production;
+ * the defaults here are placeholders. Can be overridden with env MODEL_PRICES_JSON.
+ * cacheWrite = tokens written to the cache, cacheRead = tokens read from the cache.
  */
 type Price = { input: number; output: number; cacheWrite: number; cacheRead: number };
 const DEFAULT_PRICES: Record<string, Price> = {
@@ -23,7 +23,7 @@ export const PRICES: Record<string, Price> = {
 export type Usage = { input_tokens: number; output_tokens: number; cache_creation_input_tokens?: number | null; cache_read_input_tokens?: number | null };
 export function usageCostUsd(model: string, u: Usage) {
   const p = PRICES[model];
-  if (!p) throw new Error(`Harga model tidak dikenal: ${model}`);
+  if (!p) throw new Error(`Unknown model price: ${model}`);
   return (
     (u.input_tokens * p.input +
       u.output_tokens * p.output +
@@ -32,14 +32,14 @@ export function usageCostUsd(model: string, u: Usage) {
   );
 }
 
-/** Model terkuat yang boleh dipakai per tier dan jenis aksi. */
+/** Strongest model allowed per tier and action kind. */
 export function pickModel(tier: TierId, kind: ActionKind, opts: { premiumLeft: number }) {
   switch (tier) {
     case "free": return "claude-haiku-5-5";
     case "builder": return kind === "edit" ? "claude-haiku-5-5" : "claude-sonnet-5-5";
     case "pro":
       if (kind === "edit") return "claude-haiku-5-5";
-      // "sesekali Opus": proyek besar memakai Opus selama kuota premium bulan ini masih ada
+      // "occasional Opus": large projects use Opus while this month's premium quota lasts
       return kind === "large" && opts.premiumLeft > 0 ? "claude-opus-5-5" : "claude-sonnet-5-5";
     case "studio":
       if (kind === "edit") return "claude-haiku-5-5";
@@ -47,7 +47,7 @@ export function pickModel(tier: TierId, kind: ActionKind, opts: { premiumLeft: n
   }
 }
 
-/** Batas langkah agent dan plafon kredit per permintaan, supaya satu pesan tidak menghabiskan saldo. */
+/** Agent step limit and credit cap per request, so one message cannot drain the balance. */
 export const KIND_LIMITS: Record<ActionKind, { maxSteps: number; maxCredits: number; minCredits: number; maxTokens: number }> = {
   edit:  { maxSteps: 6,  maxCredits: 40,   minCredits: 1,  maxTokens: 8000 },
   build: { maxSteps: 24, maxCredits: 600,  minCredits: 10, maxTokens: 16000 },

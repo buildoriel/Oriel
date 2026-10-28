@@ -8,10 +8,10 @@ import { handle } from "@/lib/http";
 
 async function own(userId: string, id: string) {
   const { data } = await admin().from("domains").select("id, hostname").eq("id", id).eq("owner_id", userId).maybeSingle();
-  if (!data) throw new HttpError(404, "Domain tidak ditemukan.");
+  if (!data) throw new HttpError(404, "Domain not found.");
   return data;
 }
-// POST = cek sekarang
+// POST = check now
 export const POST = handle(async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const user = await requireUser(); const { id } = await ctx.params;
   await own(user.id, id);
@@ -21,7 +21,7 @@ export const DELETE = handle(async (_req: Request, ctx: { params: Promise<{ id: 
   const user = await requireUser(); const { id } = await ctx.params;
   const d = await own(user.id, id);
   await detachFromVercel(d.hostname);
-  // DNS yang dulu diatur otomatis lewat Cloudflare ikut dibersihkan (best effort; konektor bisa sudah diputus)
+  // DNS records set up automatically via Cloudflare are cleaned up too (best effort; the connector may already be disconnected)
   await cloudflareDeleteCname(user.id, d.hostname, SITES_CNAME_TARGET).catch(() => {});
   await admin().from("domains").delete().eq("id", id);
   return NextResponse.json({ ok: true });

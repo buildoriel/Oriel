@@ -6,9 +6,9 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /// @title OrielStaking
-/// @notice Menyimpan jumlah $ORIEL yang di-stake per wallet. Tidak ada reward, harga, atau tier on-chain:
-///         backend Oriel membaca `stakedOf`, menghitung nilai dengan TWAP 7 hari, lalu menentukan tier.
-/// @dev Tanpa owner, tanpa pause, tanpa upgrade. Unstake selalu bisa dilakukan kapan saja.
+/// @notice Stores the amount of $ORIEL staked per wallet. No rewards, prices, or tiers on-chain:
+///         the Oriel backend reads `stakedOf`, values it with a 7-day TWAP, then assigns the tier.
+/// @dev No owner, no pause, no upgrade. Unstaking is always possible at any time.
 contract OrielStaking is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -28,7 +28,7 @@ contract OrielStaking is ReentrancyGuard {
 
     function stake(uint256 amount) external nonReentrant {
         if (amount == 0) revert ZeroAmount();
-        // hitung yang benar-benar diterima (aman untuk token dengan biaya transfer)
+        // count what was actually received (safe for fee-on-transfer tokens)
         uint256 before = token.balanceOf(address(this));
         token.safeTransferFrom(msg.sender, address(this), amount);
         uint256 received = token.balanceOf(address(this)) - before;

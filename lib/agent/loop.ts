@@ -28,7 +28,7 @@ export async function runAgent(opts: {
   const { userId, projectId, message, emit } = opts;
   const db = admin();
 
-  // ---- konteks: tier, saldo, file proyek, riwayat chat ----
+  // ---- context: tier, balance, project files, chat history ----
   const [{ data: tierRow }, { data: profile }, balance, { data: fileRows }, { data: history }, { data: project }] = await Promise.all([
     db.rpc("effective_tier", { p_user: userId }),
     db.from("profiles").select("premium_builds_used, staked_tier").eq("id", userId).single(),
@@ -44,9 +44,9 @@ export async function runAgent(opts: {
   const files: FileMap = new Map((fileRows ?? []).map((f: any) => [f.path, f.content]));
   if (balance.total < 1) throw new Error("INSUFFICIENT_CREDITS");
 
-  // ---- 1. router Haiku (bila router gagal, pakai tebakan aman tanpa menggagalkan permintaan) ----
+  // ---- 1. Haiku router (if the router fails, use a safe guess instead of failing the request) ----
   const route = await routeRequest(message, files.size).catch((e) => {
-    console.error("router gagal", e);
+    console.error("router failed", e);
     return { kind: (files.size ? "edit" : "build") as ActionKind, costUsd: 0, usage: null as any };
   });
   let costUsd = route.costUsd;
@@ -57,13 +57,13 @@ export async function runAgent(opts: {
 
   const budgetCredits = Math.min(balance.total, limits.maxCredits);
   if (budgetCredits < limits.minCredits) {
-    // tetap tagih biaya router
+    // still charge for the router call
     await chargeAndLog({ userId, projectId, kind: "edit", model: "claude-haiku-5-5", costUsd, usage: route.usage, balance, tier, actionKind: "route" });
     throw new Error("INSUFFICIENT_CREDITS");
   }
 
-  // ---- 2. susun prompt dengan prompt caching ----
-  // breakpoint 1: tools (pada tool terakhir), 2: system, 3: snapshot proyek, 4: giliran terakhir (bergeser tiap langkah)
+  // ---- 2. build the prompt with prompt caching ----
+  // breakpoint 1: tools (on the last tool), 2: system, 3: project snapshot, 4: latest turn (moves every step)
   const snapshot = snapshotOf(files);
   const tools = imageEnabled() ? TOOLS_WITH_IMAGES : TOOLS;
   const supa = project?.supabase_url && project?.supabase_anon_key
@@ -86,17 +86,17 @@ export async function runAgent(opts: {
   let images = 0;
   let summary = "", usageAgg = { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 };
 
-  /** generate_image: biaya gambar ikut dihitung ke biaya permintaan ini. */
+  /** generate_image: the image cost is added to this request's cost. */
   async function imageTool(input: { path?: string; prompt?: string; aspect_ratio?: string }) {
     const path = String(input?.path ?? "");
-    if (!validPath(path) || !IMAGE_EXT.test(path)) return "Error: path gambar harus berakhiran .png, .jpg, atau .webp.";
-    if (images >= MAX_IMAGES_PER_RUN) return `Error: batas ${MAX_IMAGES_PER_RUN} gambar per permintaan tercapai.`;
-    if (!files.has(path) && files.size >= MAX_PROJECT_FILES) return "Error: batas jumlah file tercapai.";
-    if (usdToCredits(costUsd) >= budgetCredits) return "Error: batas kredit untuk permintaan ini tercapai.";
+    if (!validPath(path) || !IMAGE_EXT.test(path)) return "Error: image path must end in .png, .jpg, or .webp.";
+    if (images >= MAX_IMAGES_PER_RUN) return `Error: limit of ${MAX_IMAGES_PER_RUN} images per request reached.`;
+    if (!files.has(path) && files.size >= MAX_PROJECT_FILES) return "Error: file count limit reached.";
+    if (usdToCredits(costUsd) >= budgetCredits) return "Error: credit limit for this request reached.";
     try {
       const img = await generateImage(String(input?.prompt ?? ""), input?.aspect_ratio);
       costUsd += img.costUsd; images++;
-      if (img.bytes > MAX_IMAGE_BYTES) return "Error: gambar terlalu besar.";
+      if (img.bytes > MAX_IMAGE_BYTES) return "Error: image is too large.";
       files.set(path, img.dataUrl); changed.add(path); deleted.delete(path);
       emit({ type: "file", path, op: "write" });
       emit({ type: "cost", credits: usdToCredits(costUsd) });
@@ -106,7 +106,7 @@ export async function runAgent(opts: {
     }
   }
 
-  // ---- 3. agent loop: rencanakan -> tulis -> perbaiki ----
+  // ---- 3. agent loop: plan -> write -> fix ----
   for (let step = 0; step < limits.maxSteps && !summary; step++) {
     const res = await createMessage({
       model, max_tokens: limits.maxTokens, system, tools, messages: withMovingBreakpoint(msgs),
@@ -131,15 +131,15 @@ export async function runAgent(opts: {
       if (r.done) summary = r.done;
       results.push({ type: "tool_result", tool_use_id: b.id, content: r.out.slice(0, 60_000) });
     }
-    if (res.stop_reason !== "tool_use") { summary ||= textOf(res.content) || "Selesai."; break; }
+    if (res.stop_reason !== "tool_use") { summary ||= textOf(res.content) || "Done."; break; }
     msgs.push({ role: "user", content: results });
 
-    // hentikan bila biaya berjalan melewati plafon
-    if (usdToCredits(costUsd) >= budgetCredits) { summary = "Berhenti karena batas kredit untuk permintaan ini tercapai. Perubahan sejauh ini sudah disimpan."; break; }
+    // stop when the running cost passes the cap
+    if (usdToCredits(costUsd) >= budgetCredits) { summary = "Stopped because the credit limit for this request was reached. Changes so far have been saved."; break; }
   }
-  if (!summary) summary = "Batas langkah tercapai. Perubahan sejauh ini sudah disimpan; kirim pesan lanjutan untuk meneruskan.";
+  if (!summary) summary = "Step limit reached. Changes so far have been saved; send a follow-up message to continue.";
 
-  // ---- 4. simpan file ----
+  // ---- 4. save files ----
   const now = new Date().toISOString();
   if (changed.size) {
     await db.from("project_files").upsert(
@@ -149,13 +149,13 @@ export async function runAgent(opts: {
   if (deleted.size) await db.from("project_files").delete().eq("project_id", projectId).in("path", [...deleted]);
   await db.from("projects").update({ updated_at: now }).eq("id", projectId);
 
-  // GitHub: setiap edit menjadi commit (bila user mengaktifkannya saat push pertama)
+  // GitHub: every edit becomes a commit (if the user enabled it on the first push)
   if ((changed.size || deleted.size) && project?.github_repo && project?.github_autocommit) {
     try { emit({ type: "commit", url: (await githubPush(userId, projectId, summary)).url }); }
-    catch (e: any) { emit({ type: "text", text: `Commit ke GitHub gagal: ${e.message}` }); }
+    catch (e: any) { emit({ type: "text", text: `GitHub commit failed: ${e.message}` }); }
   }
 
-  // ---- 5. potong kredit sesuai biaya aktual ----
+  // ---- 5. charge credits for the actual cost ----
   const credits = Math.min(usdToCredits(costUsd), balance.total);
   const newBalance = await chargeAndLog({ userId, projectId, kind, model, costUsd, usage: usageAgg, balance, tier, actionKind: kind, credits });
   if (model === "claude-opus-5-5" && tier === "pro")
@@ -173,7 +173,7 @@ async function chargeAndLog(a: {
   balance: { monthly: number; total: number }; tier: TierId; actionKind: string; credits?: number;
 }) {
   const credits = a.credits ?? usdToCredits(a.costUsd);
-  // atribusi sumber dana untuk perhitungan ekonomi
+  // attribute the funding source for the economics calculation
   const { data: p } = await admin().from("profiles").select("staked_tier").eq("id", a.userId).single();
   const fromMonthly = Math.min(a.balance.monthly, credits) >= credits / 2;
   const funded_by = !fromMonthly ? "paid" : a.tier === "free" ? "free" : p?.staked_tier === a.tier ? "staker" : "paid";
@@ -187,7 +187,7 @@ async function chargeAndLog(a: {
   return bal;
 }
 
-/** Pindahkan breakpoint cache ke blok terakhir agar giliran sebelumnya dibaca dari cache di langkah berikutnya. */
+/** Move the cache breakpoint to the last block so earlier turns are read from cache on the next step. */
 function withMovingBreakpoint(msgs: Anthropic.MessageParam[]): Anthropic.MessageParam[] {
   if (msgs.length < 2) return msgs;
   const out = msgs.map((m) => ({ ...m, content: Array.isArray(m.content) ? m.content.map((b) => ({ ...b })) : m.content }));

@@ -1,17 +1,17 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 /**
- * Lapisan adapter AI. Agent selalu berbicara dalam format pesan Anthropic;
- * adapter ini meneruskannya ke Anthropic langsung atau ke OpenRouter.
+ * AI adapter layer. The agent always speaks the Anthropic message format;
+ * this adapter forwards it to Anthropic directly or to OpenRouter.
  *
- *   LLM_PROVIDER=openrouter  (default)  -> https://openrouter.ai, provider dikunci ke Anthropic
- *   LLM_PROVIDER=anthropic              -> Claude API langsung
+ *   LLM_PROVIDER=openrouter  (default)  -> https://openrouter.ai, provider pinned to Anthropic
+ *   LLM_PROVIDER=anthropic              -> Claude API directly
  *
- * Pencatatan biaya TIDAK berubah: usage dipetakan ke bentuk Anthropic lalu dihitung
- * dengan tabel harga di lib/agent/models.ts (usageCostUsd).
+ * Cost accounting does NOT change: usage is mapped to the Anthropic shape and priced
+ * with the table in lib/agent/models.ts (usageCostUsd).
  */
 export type LlmRequest = {
-  model: string;                       // nama internal, mis. "claude-sonnet-5-5"
+  model: string;                       // internal name, e.g. "claude-sonnet-5-5"
   max_tokens: number;
   system: Anthropic.TextBlockParam[];
   messages: Anthropic.MessageParam[];
@@ -30,7 +30,7 @@ export async function createMessage(req: LlmRequest): Promise<LlmResponse> {
   return provider() === "anthropic" ? viaAnthropic(req) : viaOpenRouter(req);
 }
 
-// ---------------------------------------------------------------- Anthropic langsung
+// ---------------------------------------------------------------- Anthropic direct
 let _anthropic: Anthropic | null = null;
 async function viaAnthropic(req: LlmRequest): Promise<LlmResponse> {
   _anthropic ??= new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
@@ -49,8 +49,8 @@ async function viaAnthropic(req: LlmRequest): Promise<LlmResponse> {
 
 // ---------------------------------------------------------------- OpenRouter
 /**
- * Nama model internal -> slug OpenRouter. VERIFIKASI di https://openrouter.ai/models,
- * lalu timpa lewat env OPENROUTER_MODEL_MAP bila slug berbeda.
+ * Internal model name -> OpenRouter slug. VERIFY at https://openrouter.ai/models,
+ * then override with env OPENROUTER_MODEL_MAP if a slug differs.
  */
 const DEFAULT_MODEL_MAP: Record<string, string> = {
   "claude-haiku-5-5": "anthropic/claude-haiku-5.5",
@@ -84,7 +84,7 @@ function toOpenRouterMessages(req: LlmRequest): ORMessage[] {
       out.push({ role: "assistant", content: text || null, ...(calls.length ? { tool_calls: calls } : {}) });
       continue;
     }
-    // user: hasil tool menjadi pesan role "tool" (harus tepat setelah assistant), teks sisanya jadi pesan user
+    // user: tool results become role "tool" messages (must directly follow the assistant), remaining text becomes a user message
     const texts: ORPart[] = [];
     for (const b of m.content as any[]) {
       if (b.type === "tool_result") {
@@ -99,7 +99,7 @@ function toOpenRouterMessages(req: LlmRequest): ORMessage[] {
 
 async function viaOpenRouter(req: LlmRequest): Promise<LlmResponse> {
   const model = modelMap()[req.model];
-  if (!model) throw new Error(`Model ${req.model} belum dipetakan ke OpenRouter (OPENROUTER_MODEL_MAP).`);
+  if (!model) throw new Error(`Model ${req.model} is not mapped to OpenRouter (OPENROUTER_MODEL_MAP).`);
   const order = (process.env.OPENROUTER_PROVIDER_ORDER ?? "anthropic").split(",").map((s) => s.trim());
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -117,25 +117,25 @@ async function viaOpenRouter(req: LlmRequest): Promise<LlmResponse> {
       ...(req.tools?.length ? {
         tools: req.tools.map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: t.input_schema } })),
       } : {}),
-      // Kunci ke provider Anthropic tanpa fallback: cache prompt hanya kena di provider yang sama.
+      // Pin to the Anthropic provider with no fallback: the prompt cache only hits on the same provider.
       provider: { order, allow_fallbacks: false },
       usage: { include: true },
     }),
   });
   const j: any = await res.json().catch(() => ({}));
-  if (!res.ok || j.error) throw new Error(`OpenRouter ${res.status}: ${j.error?.message ?? "permintaan gagal"}`);
+  if (!res.ok || j.error) throw new Error(`OpenRouter ${res.status}: ${j.error?.message ?? "request failed"}`);
 
   const msg = j.choices?.[0]?.message ?? {};
   const content: any[] = [];
   if (typeof msg.content === "string" && msg.content) content.push({ type: "text", text: msg.content, citations: null });
   for (const c of msg.tool_calls ?? []) {
     let input: unknown = {};
-    try { input = JSON.parse(c.function?.arguments || "{}"); } catch { /* argumen rusak -> tool membalas error */ }
+    try { input = JSON.parse(c.function?.arguments || "{}"); } catch { /* malformed arguments -> the tool replies with an error */ }
     content.push({ type: "tool_use", id: c.id, name: c.function?.name, input });
   }
   const fr = j.choices?.[0]?.finish_reason;
 
-  // Format OpenAI: prompt_tokens SUDAH termasuk token yang dibaca/ditulis ke cache.
+  // OpenAI format: prompt_tokens ALREADY includes tokens read from / written to the cache.
   const u = j.usage ?? {};
   const cacheRead = Number(u.prompt_tokens_details?.cached_tokens ?? 0);
   const cacheWrite = Number(u.prompt_tokens_details?.cache_write_tokens ?? 0);

@@ -4,10 +4,10 @@ import { admin } from "../supabase/admin";
 import { TWAP_DAYS } from "../config";
 
 /**
- * Harga $ORIEL dalam USD dari pool di Pons.
- * POOL_TYPE=v2 (getReserves) atau v3 (slot0). Token quote diasumsikan USDG (=$1) kecuali
- * QUOTE_USD_PRICE diisi (mis. pool ORIEL/WETH -> isi lewat sumber harga ETH yang tepercaya).
- * Sesuaikan fungsi ini dengan antarmuka pool Pons yang sebenarnya.
+ * $ORIEL price in USD from the pool on Pons.
+ * POOL_TYPE=v2 (getReserves) or v3 (slot0). The quote token is assumed to be USDG (=$1) unless
+ * QUOTE_USD_PRICE is set (e.g. an ORIEL/WETH pool -> set it from a trusted ETH price source).
+ * Adapt this function to the actual Pons pool interface.
  */
 const V2 = parseAbi(["function getReserves() view returns (uint112,uint112,uint32)", "function token0() view returns (address)", "function token1() view returns (address)"]);
 const V3 = parseAbi(["function slot0() view returns (uint160 sqrtPriceX96,int24,uint16,uint16,uint16,uint8,bool)", "function token0() view returns (address)", "function token1() view returns (address)"]);
@@ -33,25 +33,25 @@ export async function readSpotPriceUsd() {
   return { priceUsd: priceInQuote * quoteUsd, block: await c.getBlockNumber() };
 }
 
-/** Disimpan tiap jam oleh cron. */
+/** Stored every hour by the cron. */
 export async function samplePrice() {
   const { priceUsd, block } = await readSpotPriceUsd();
-  if (!(priceUsd > 0) || !isFinite(priceUsd)) throw new Error("Harga pool tidak valid");
+  if (!(priceUsd > 0) || !isFinite(priceUsd)) throw new Error("Invalid pool price");
   await admin().from("price_samples").insert({ price_usd: priceUsd, block_number: Number(block) });
   return priceUsd;
 }
 
-/** TWAP 7 hari = rata-rata sampel per jam selama 7 hari terakhir (butuh >= 70% sampel). */
+/** 7-day TWAP = average of the hourly samples over the last 7 days (needs >= 70% of samples). */
 export async function twap7d(at = new Date()) {
   const since = new Date(at.getTime() - TWAP_DAYS * 86400_000).toISOString();
   const { data } = await admin().from("price_samples").select("price_usd").gte("sampled_at", since).lte("sampled_at", at.toISOString());
   const xs = (data ?? []).map((r: any) => Number(r.price_usd)) as number[];
   const expected = TWAP_DAYS * 24;
-  if (xs.length < expected * 0.7) throw new Error(`Sampel harga kurang (${xs.length}/${expected}). Tier tidak dievaluasi.`);
+  if (xs.length < expected * 0.7) throw new Error(`Not enough price samples (${xs.length}/${expected}). Tier not evaluated.`);
   return xs.reduce((a: number, b: number) => a + b, 0) / xs.length;
 }
 
-/** Harga untuk menilai pembayaran $ORIEL: terendah antara spot dan TWAP 7 hari (pool tipis mudah dipompa sesaat). */
+/** Price used to value $ORIEL payments: the lower of spot and the 7-day TWAP (a thin pool is easy to pump briefly). */
 export async function orielPriceUsd() {
   const [spot, twap] = await Promise.all([readSpotPriceUsd().then((r) => r.priceUsd), twap7d()]);
   return Math.min(spot, twap);
