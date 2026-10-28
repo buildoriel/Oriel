@@ -1,0 +1,13 @@
+.wide { grid-column: 1 / -1; }
+.balance { font: 450 44px/1.05 var(--font-serif); letter-spacing: -0.02em; margin: 2px 0 12px; }
+.rows { display: grid; }
+.rows > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.rows > div:last-child { border-bottom: 0; }
+.rows > div > span:first-child { color: var(--mute); }
+.rows > div > span:last-child { text-align: right; }
+.address { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); font: 13px/1.4 var(--font-mono); }
+.address span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.note { display: grid; grid-template-columns: 7px minmax(0, 1fr); gap: 12px; align-items: start; }
+.note :global(.dot) { margin-top: 7px; }
+.read { color: var(--mute); }
+.scroll { overflow-x: auto; }

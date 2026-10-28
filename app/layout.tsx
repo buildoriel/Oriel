@@ -1,13 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Nav } from "@/components/Nav";
-import { Footer } from "@/components/Footer";
 import "./globals.css";
 
-// Bricolage Grotesque (OFL) bundled locally: no Google Fonts dependency at build time
-const bricolage = localFont({ src: "./fonts/BricolageGrotesque-Variable.ttf", weight: "200 800", variable: "--font-d", display: "swap" });
+// Self-hosted variable fonts (SIL OFL, licenses in app/fonts): no Google Fonts dependency at build time.
+const inter = localFont({ src: "./fonts/Inter-Variable.woff2", weight: "100 900", variable: "--font-inter", display: "swap" });
+const serif = localFont({
+  src: [
+    { path: "./fonts/SourceSerif4-Variable.woff2", weight: "200 900", style: "normal" },
+    { path: "./fonts/SourceSerif4-Variable-Italic.woff2", weight: "200 900", style: "italic" },
+  ],
+  variable: "--font-serif4", display: "swap",
+});
 
 export const metadata: Metadata = {
   title: { default: "Oriel — Build anything. Own a piece of it.", template: "%s · Oriel" },
@@ -17,12 +21,15 @@ export const metadata: Metadata = {
   openGraph: { siteName: "Oriel", url: "https://buildoriel.com" },
   twitter: { site: "@buildoriel", card: "summary_large_image" },
 };
-export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#F4F5F7" };
+export const viewport: Viewport = {
+  width: "device-width", initialScale: 1, viewportFit: "cover",
+  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#FAF9F6" }, { media: "(prefers-color-scheme: dark)", color: "#1A1917" }],
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${bricolage.variable} ${GeistSans.variable} ${GeistMono.variable}`}>
-      <body><Nav /><main>{children}</main><Footer /></body>
+    <html lang="en" className={`${inter.variable} ${serif.variable} ${GeistMono.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }

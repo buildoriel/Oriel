@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OrielMark } from "./Logo";
 
 const SOCIAL: [string, string | undefined][] = [
   ["X", "https://x.com/buildoriel"],
@@ -11,7 +12,7 @@ export function Footer() {
   return (
     <footer className="foot">
       <div className="foot-in">
-        <span className="mono mute">© {new Date().getFullYear()} Oriel. Build anything. Own a piece of it.</span>
+        <div className="row small mute"><OrielMark size={18} /><span>© {new Date().getFullYear()} Oriel</span></div>
         <nav aria-label="Legal and community">
           <Link href="/terms">Terms</Link>
           <Link href="/privacy">Privacy</Link>

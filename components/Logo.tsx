@@ -1,3 +1,4 @@
+/** Oriel icon (inline SVG). `dark` = white version for dark backgrounds. */
 export function OrielIcon({ dark = false, size = 28 }: { dark?: boolean; size?: number }) {
   const fg = dark ? "#FFFFFF" : "#111317";
   return (
@@ -10,7 +11,27 @@ export function OrielIcon({ dark = false, size = 28 }: { dark?: boolean; size?: 
     </svg>
   );
 }
-export function OrielLockup({ height = 28 }: { height?: number }) {
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/oriel-lockup-light.svg" alt="Oriel" style={{ height, width: "auto", display: "block" }} />;
+
+/** Icon + wordmark. Both theme variants are rendered; CSS shows the one matching the color scheme. */
+export function OrielLockup({ height = 26 }: { height?: number }) {
+  return (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="light" src="/oriel-lockup-light.svg" alt="Oriel" style={{ height, width: "auto" }} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="dark" src="/oriel-lockup-dark.svg" alt="Oriel" style={{ height, width: "auto" }} />
+    </>
+  );
+}
+
+/** Small icon mark that follows the color scheme (used as the assistant avatar). */
+export function OrielMark({ size = 16 }: { size?: number }) {
+  return (
+    <span className="oriel-mark" style={{ width: size, height: size, display: "inline-grid" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="light" src="/oriel-icon-light.svg" alt="" width={size} height={size} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="dark" src="/oriel-icon-dark.svg" alt="" width={size} height={size} />
+    </span>
+  );
 }

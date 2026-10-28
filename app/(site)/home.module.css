@@ -1,0 +1,30 @@
+/* Home page only. Everything else comes from the global design system. */
+.hero { padding: 96px 0 72px; display: grid; justify-items: center; text-align: center; gap: 20px; }
+.hero .lead { max-width: 54ch; }
+.prompt { width: 100%; max-width: 720px; margin-top: 16px; text-align: left; }
+.examples { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 720px; }
+.note { display: flex; align-items: center; gap: 8px; }
+
+.sectionHead { display: grid; gap: 10px; margin-bottom: 36px; max-width: 60ch; }
+.tile { display: grid; gap: 10px; align-content: start; }
+.tileIcon { width: 38px; height: 38px; border-radius: var(--r); display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-2); }
+.tileIcon svg { width: 18px; height: 18px; }
+
+.stepNum { font: 500 13px/1 var(--font-mono); color: var(--mute); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line-strong); }
+
+.econ { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 56px; align-items: center; }
+.split { display: grid; gap: 18px; }
+.splitRow { display: grid; gap: 8px; }
+
+.shot { padding: 0; overflow: hidden; }
+.frame { height: 200px; overflow: hidden; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+.frame iframe { width: 1280px; height: 800px; border: 0; transform: scale(0.3); transform-origin: 0 0; pointer-events: none; background: #fff; }
+.shotBody { padding: 14px 16px; display: grid; gap: 2px; }
+
+.cta { padding: 64px 32px; text-align: center; display: grid; justify-items: center; gap: 16px; }
+
+@media (max-width: 860px) {
+  .hero { padding: 56px 0 48px; }
+  .econ { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .cta { padding: 44px 20px; }
+}
