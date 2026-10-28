@@ -34,12 +34,8 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ id: str
   if (busy) throw new HttpError(409, "A build is already running on this project. Wait until it finishes.");
   if ((await getBalance(user.id)).total < 1) throw new HttpError(402, "Not enough credits. Top up or upgrade your tier.");
 
-  const runId = await enqueueRun(user.id, id, message.trim());
+  const runId = await enqueueRun(user.id, id, message.trim(), attachments.length ? attachments : undefined);
   if (!runId) throw new HttpError(409, "A build is still running. Wait until it finishes or stop it.");
-  if (attachments.length) {
-    const { data: msg } = await db.from("messages").select("id").eq("project_id", id).eq("role", "user").order("id", { ascending: false }).limit(1).single();
-    if (msg) await db.from("messages").update({ attachments }).eq("id", msg.id);
-  }
   await kick(runId);
   return NextResponse.json({ runId });
 });

@@ -24,12 +24,12 @@ export async function emitEvent(runId: number, e: AgentEvent) {
 }
 
 /** Save the request to the chat and queue it. Returns null when this user already has a build running. */
-export async function enqueueRun(userId: string, projectId: string, message: string) {
+export async function enqueueRun(userId: string, projectId: string, message: string, attachments?: Json) {
   const db = admin();
   const { data: runId, error } = await db.rpc("enqueue_agent_run", { p_user: userId, p_project: projectId, p_message: message });
   if (error) throw error;
   if (!runId) return null;
-  await db.from("messages").insert({ project_id: projectId, role: "user", content: message });
+  await db.from("messages").insert({ project_id: projectId, role: "user", content: message, attachments: attachments ?? null });
   return runId;
 }
 
