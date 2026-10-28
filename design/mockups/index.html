@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Oriel — mockup halaman</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4F5F7;--ink:#111317;--mute:#5B616B;--line:#E2E5EA;--card:#FFFFFF;--acc:#FF7A3D;--soft:#ECEEF1;
+--d:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;--b:'Geist',ui-sans-serif,system-ui,sans-serif;--m:'Geist Mono',ui-monospace,Menlo,monospace;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--b);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:rgba(244,245,247,.92)}
+h1,h2,h3{font-family:var(--d);font-weight:800;letter-spacing:-.035em;line-height:1.02;margin:0}
+h1{font-size:clamp(44px,7vw,92px)}h2{font-size:clamp(30px,4vw,48px)}h3{font-size:22px;letter-spacing:-.02em;font-weight:700}
+p{margin:0}.mute{color:var(--mute)}.mono{font-family:var(--m);font-size:13px}
+a{color:inherit}button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.lock{height:28px;width:auto;display:block}.ic{width:18px;height:18px;color:var(--ink)}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:rgba(244,245,247,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{max-width:1240px;margin:auto;display:flex;align-items:center;gap:28px;padding:14px 24px}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;flex:1;scrollbar-width:none}
+nav.tabs a{padding:8px 14px;border-radius:999px;text-decoration:none;font-size:14px;white-space:nowrap;color:var(--mute)}
+nav.tabs a[aria-current]{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:12px 22px;border:1px solid var(--line);background:var(--card);font-weight:500;cursor:pointer;text-decoration:none;font-size:15px}
+.pill.ink{background:var(--ink);color:#fff;border-color:var(--ink)}.pill.acc{background:var(--acc);color:var(--ink);border-color:var(--acc)}
+.pill.sm{padding:7px 14px;font-size:13px}
+.credit{font-family:var(--m);font-size:13px;padding:7px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);white-space:nowrap}
+.credit b{font-weight:500}
+main section.page{display:none;max-width:1240px;margin:auto;padding:56px 24px 96px}
+main section.page.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:28px}
+.grid{display:grid;gap:16px}
+/* HOME */
+.hero{display:grid;grid-template-columns:1fr 1.05fr;gap:48px;align-items:center}
+.hero p.lead{font-size:20px;max-width:30ch;margin:24px 0 32px;color:var(--mute)}
+.prompt{display:flex;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 22px;max-width:520px}
+.prompt input{flex:1;border:0;outline:0;font:inherit;background:transparent;min-width:0}
+.build{background:var(--card);border:1px solid var(--line);border-radius:28px;overflow:hidden}
+.build .bh{display:flex;gap:8px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.build .url{font-family:var(--m);font-size:12px;color:var(--mute);background:var(--bg);border-radius:999px;padding:5px 12px;flex:1}
+.blocks{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;padding:18px}
+.blk{border-radius:12px;background:var(--soft);height:44px}
+.blk.done{background:var(--ink)}.blk.lit{background:var(--acc)}
+.blk.w6{grid-column:span 6;height:110px}.blk.w4{grid-column:span 4}.blk.w2{grid-column:span 2}.blk.w3{grid-column:span 3;height:90px}
+.steps{list-style:none;margin:0;padding:0 18px 18px;display:grid;gap:6px}
+.steps li{display:flex;justify-content:space-between;font-family:var(--m);font-size:12px;color:var(--mute);padding:8px 12px;border-radius:10px;background:var(--bg)}
+.steps li.now{color:var(--ink);box-shadow:inset 3px 0 0 var(--acc)}
+.trio{grid-template-columns:repeat(3,1fr);margin-top:96px}
+.trio .card h3{margin-bottom:10px}
+.kinds{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.kinds span{padding:6px 12px;border-radius:999px;background:var(--bg);font-size:13px}
+.econ{margin-top:96px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.flow{display:grid;gap:10px}
+.flow .row{display:grid;grid-template-columns:1fr auto;align-items:center;padding:16px 20px;border-radius:18px;background:var(--card);border:1px solid var(--line)}
+.flow .row .mono{font-size:15px}
+.bar2{height:8px;border-radius:99px;background:var(--soft);margin-top:10px;grid-column:1/-1;overflow:hidden}
+.bar2 i{display:block;height:100%;background:var(--ink)}.bar2 i.a{background:var(--acc)}
+/* WORKSPACE */
+.ws{display:grid;grid-template-columns:380px 1fr;gap:16px;height:calc(100vh - 170px);min-height:560px}
+.chat{display:flex;flex-direction:column;padding:0;overflow:hidden}
+.chat .msgs{flex:1;overflow:auto;padding:20px;display:grid;gap:14px;align-content:start}
+.m{max-width:88%;padding:12px 16px;border-radius:18px;font-size:14.5px}
+.m.u{justify-self:end;background:var(--ink);color:#fff;border-bottom-right-radius:6px}
+.m.a{background:var(--bg);border-bottom-left-radius:6px}
+.m .cost{display:block;font-family:var(--m);font-size:11px;color:var(--mute);margin-top:6px}
+.chat .in{border-top:1px solid var(--line);padding:12px;display:flex;gap:8px}
+.chat textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:18px;padding:10px 14px;font:inherit;font-size:14px;background:var(--bg);height:46px}
+.pv{padding:0;display:flex;flex-direction:column;overflow:hidden}
+.pv .bh{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--bg);border-radius:999px;padding:3px}.seg button{border:0;background:none;padding:6px 12px;border-radius:999px;font-size:13px;cursor:pointer}.seg button.on{background:var(--card);box-shadow:0 0 0 1px var(--line)}
+.site{flex:1;overflow:auto;background:#FBF8F3;padding:40px}
+.site .sn{display:flex;justify-content:space-between;font:600 14px var(--b);margin-bottom:56px}
+.site h4{font:700 48px/1 Georgia,serif;letter-spacing:-.02em;margin:0 0 16px;max-width:12ch}
+.site .ph{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:32px}.site .ph div{background:#E9DFD1;border-radius:14px;height:180px}
+.wsmeta{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+/* TIERS */
+.tiers{grid-template-columns:repeat(4,1fr);margin-top:40px}
+.tier{display:flex;flex-direction:column;gap:18px}
+.tier.feat{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.price{font:800 44px/1 var(--d);letter-spacing:-.04em}.price small{font:400 14px var(--b);color:var(--mute);letter-spacing:0}
+.or{font-size:13px;color:var(--mute);border-top:1px dashed var(--line);padding-top:12px}
+.or b{font-family:var(--m);font-weight:500;color:var(--ink)}
+.tier ul{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:14px}
+.tier li{padding-left:18px;position:relative}.tier li::before{content:"";position:absolute;left:0;top:.6em;width:8px;height:2px;background:var(--ink)}
+.tier .pill{justify-content:center;margin-top:auto}
+table.cost{width:100%;border-collapse:collapse;font-size:15px}
+table.cost td{padding:14px 0;border-bottom:1px solid var(--line)}table.cost td:last-child{text-align:right;font-family:var(--m)}
+.packs{grid-template-columns:repeat(3,1fr)}
+.pack .n{font:800 36px var(--d);letter-spacing:-.04em}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+/* STAKE */
+.stake{display:grid;grid-template-columns:1.1fr 1fr;gap:16px;margin-top:40px}
+label.f{display:grid;gap:8px;font-size:14px;color:var(--mute)}
+label.f>*{min-width:0}
+.inp{min-width:0;display:flex;align-items:center;border:1px solid var(--line);border-radius:18px;padding:4px 6px 4px 18px;background:var(--bg)}
+.inp input{flex:1;border:0;background:none;font:500 28px var(--m);padding:10px 0;outline:0;min-width:0}
+.big{font:800 64px/1 var(--d);letter-spacing:-.04em}
+.ladder{display:grid;gap:8px;margin-top:20px}
+.rung{display:grid;grid-template-columns:90px 1fr 70px;gap:12px;align-items:center;font-size:14px}
+.rung .t{height:10px;border-radius:99px;background:var(--soft);position:relative;overflow:hidden}
+.rung .t i{position:absolute;inset:0 auto 0 0;background:var(--ink);border-radius:99px}
+.rung.on .t i{background:var(--acc)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:12px 20px;font-size:14px;margin-top:20px}.kv span:nth-child(even){font-family:var(--m)}
+.note{font-size:13px;color:var(--mute);background:var(--bg);border-radius:16px;padding:14px 16px;margin-top:20px}
+/* TEMPLATES */
+.tbar{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0}
+.tpl{grid-template-columns:repeat(3,1fr)}
+.tc{padding:0;overflow:hidden}
+.thumb{height:180px;background:var(--soft);display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:18px}
+.thumb i{background:#fff;border-radius:8px}.thumb i:first-child{grid-column:1/-1}
+.tc .bd{padding:18px 20px;display:grid;gap:6px}
+.tc .ft{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--mute);margin-top:6px}
+/* CONNECTORS */
+.cons{grid-template-columns:repeat(3,1fr);margin-top:28px}
+.con{display:grid;gap:12px}
+.con .hd{display:flex;justify-content:space-between;align-items:center}
+.lg{width:40px;height:40px;border-radius:12px;background:var(--bg);display:grid;place-items:center;font:700 15px var(--d)}
+.st{font-size:12px;font-family:var(--m);padding:4px 10px;border-radius:999px;background:var(--bg)}.st.ok{background:var(--ink);color:#fff}
+.dom{margin-top:16px;display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+.dns{font-family:var(--m);font-size:13px;background:var(--bg);border-radius:16px;padding:16px;display:grid;grid-template-columns:auto 1fr;gap:6px 18px;overflow-x:auto}
+.stepl{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:10px;counter-reset:s}
+.stepl li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:12px;font-size:14px}
+.stepl li::before{content:counter(s);width:28px;height:28px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font:500 12px var(--m)}
+.stepl li.ok::before{background:var(--ink);color:#fff}
+.mobnav{display:none}
+.hero>*,.econ>*,.stake>*,.dom>*,.two>*,.ws>*,.grid>*{min-width:0}
+@media (max-width:900px){
+ .bar{padding:12px 16px;gap:12px}.bar .credit,.bar .pill{display:none}
+ nav.tabs{display:none}
+ main section.page{padding:32px 16px 120px}
+ .hero,.econ,.stake,.dom,.two{grid-template-columns:1fr;gap:28px}
+ .trio,.tiers,.packs,.tpl,.cons{grid-template-columns:1fr}
+ .trio,.econ{margin-top:56px}
+ .ws{grid-template-columns:1fr;height:auto}
+ .chat{height:420px;order:2}.pv{height:520px}
+ .site{padding:22px}.site h4{font-size:32px}
+ .big{font-size:48px}
+ .mobnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:9;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));justify-content:space-around}
+ .mobnav a{text-decoration:none;font-size:11px;color:var(--mute);display:grid;justify-items:center;gap:3px;padding:4px 6px}
+ .mobnav a[aria-current]{color:var(--ink)}
+ .mobnav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6}
+}
+@media (prefers-reduced-motion:no-preference){.blk.lit{animation:p 1.6s ease-in-out infinite}@keyframes p{50%{opacity:.55}}}
+</style></head>
+<body>
+<header class="top"><div class="bar">
+ <a href="#home" aria-label="Oriel home"><svg class="lock" viewBox="0 0 274 100" xmlns="http://www.w3.org/2000/svg"><path d="M18 50a32 32 0 0 1 64 0h-16a16 16 0 0 0-32 0z" fill="#111317"/><rect x="18" y="54" width="16" height="27" rx="3" fill="#111317"/><rect x="66" y="54" width="16" height="27" rx="3" fill="#111317"/><rect x="12" y="84" width="76" height="7" rx="3" fill="#111317"/><rect x="45" y="44" width="10" height="34" rx="5" fill="#FF7A3D"/><path d="M139.688 85.176Q133.304 85.176 128.348 82.614Q123.392 80.05199999999999 120.62 74.886Q117.848 69.72 117.848 61.908Q117.848 53.76 120.74600000000001 48.593999999999994Q123.644 43.428 128.642 40.949999999999996Q133.64 38.471999999999994 139.94 38.471999999999994Q146.492 38.471999999999994 151.406 41.03399999999999Q156.32 43.596 159.05 48.762Q161.78 53.928 161.78 61.824Q161.78 69.972 158.882 75.138Q155.984 80.304 150.986 82.74000000000001Q145.988 85.176 139.688 85.176ZM140.024 75.18Q142.628 75.18 144.392 73.71000000000001Q146.156 72.24 147.08 69.38399999999999Q148.00400000000002 66.52799999999999 148.00400000000002 62.58Q148.00400000000002 58.212 146.996 55.230000000000004Q145.988 52.248 144.098 50.652Q142.208 49.056 139.52 49.056Q137.0 49.056 135.236 50.525999999999996Q133.472 51.995999999999995 132.548 54.852Q131.624 57.708 131.624 61.739999999999995Q131.624 68.124 133.85 71.652Q136.076 75.18 140.024 75.18Z M163.292 84.0V59.891999999999996V39.647999999999996H175.052V57.288H175.724Q176.228 50.232 177.698 46.158Q179.168 42.083999999999996 181.394 40.361999999999995Q183.62 38.64 186.392 38.64Q187.904 38.64 189.542 39.06Q191.18 39.48 192.776 40.403999999999996L192.104 55.524Q190.256 54.432 188.49200000000002 53.886Q186.728 53.34 185.132 53.34Q182.44400000000002 53.34 180.596 54.852000000000004Q178.748 56.364 177.78199999999998 59.304Q176.816 62.244 176.816 66.444V84.0Z M193.532 84.0V39.647999999999996H207.14000000000001V84.0ZM200.252 36.455999999999996Q196.388 36.455999999999996 194.33 34.818Q192.27200000000002 33.17999999999999 192.27200000000002 30.071999999999996Q192.27200000000002 26.879999999999995 194.33 25.241999999999994Q196.388 23.603999999999992 200.252 23.603999999999992Q204.20000000000002 23.603999999999992 206.258 25.283999999999992Q208.316 26.96399999999999 208.316 30.071999999999996Q208.316 33.096 206.258 34.775999999999996Q204.20000000000002 36.455999999999996 200.252 36.455999999999996Z M230.912 85.176Q224.612 85.176 220.37 83.37Q216.12800000000001 81.564 213.524 78.41399999999999Q210.92000000000002 75.264 209.786 71.232Q208.65200000000002 67.2 208.65200000000002 62.748Q208.65200000000002 57.959999999999994 209.87 53.592Q211.088 49.224 213.64999999999998 45.821999999999996Q216.212 42.419999999999995 220.286 40.446Q224.36 38.471999999999994 230.072 38.471999999999994Q235.784 38.471999999999994 239.858 40.446Q243.93200000000002 42.419999999999995 246.368 45.94799999999999Q248.804 49.476 249.518 54.096Q250.232 58.715999999999994 249.308 64.092L217.136 64.596V57.20399999999999L238.892 56.784L237.12800000000001 61.068Q237.632 57.20399999999999 237.002 54.55799999999999Q236.372 51.912 234.692 50.525999999999996Q233.012 49.14 230.072 49.14Q226.964 49.14 225.11599999999999 50.736Q223.268 52.331999999999994 222.512 55.23Q221.756 58.128 221.756 62.07599999999999Q221.756 68.88 224.024 71.988Q226.292 75.096 230.996 75.096Q233.012 75.096 234.356 74.592Q235.7 74.088 236.54 73.122Q237.38 72.156 237.716 70.77000000000001Q238.052 69.384 237.96800000000002 67.62L250.4 68.292Q250.65200000000002 71.064 249.854 74.00399999999999Q249.056 76.944 246.872 79.464Q244.688 81.984 240.78199999999998 83.58Q236.876 85.176 230.912 85.176Z M251.57600000000002 84.0V25.199999999999996H265.184V84.0Z" fill="#111317"/></svg></a>
+ <nav class="tabs" aria-label="Halaman">
+  <a href="#home">Home</a><a href="#workspace">Workspace</a><a href="#tiers">Tiers &amp; Credits</a><a href="#stake">Stake</a><a href="#templates">Templates</a><a href="#connectors">Connectors &amp; Domains</a>
+ </nav>
+ <span class="credit"><b>2.418</b> kredit</span>
+ <a class="pill ink sm" href="#workspace">Mulai build</a>
+</div></header>
+<main>
+<!-- HOME -->
+<section class="page" id="p-home">
+ <div class="hero">
+  <div>
+   <h1>Build anything. Own a piece of it.</h1>
+   <p class="lead">Ceritakan apa yang kamu mau. Oriel membangunnya, menayangkannya dengan link, dan kamu bisa terus mengubahnya lewat chat.</p>
+   <div class="prompt"><input aria-label="Apa yang mau kamu buat" value="Web portofolio untuk studio keramik saya"><a class="pill ink" href="#workspace">Build</a></div>
+   <p class="mono mute" style="margin-top:14px">Gratis 60 kredit per bulan. Tanpa kartu kredit.</p>
+  </div>
+  <div class="build" aria-label="Contoh proses build">
+   <div class="bh"><svg viewBox="0 0 100 100" class="ic"><path d="M18 50a32 32 0 0 1 64 0h-16a16 16 0 0 0-32 0z" fill="currentColor"/><rect x="18" y="54" width="16" height="27" rx="3" fill="currentColor"/><rect x="66" y="54" width="16" height="27" rx="3" fill="currentColor"/><rect x="12" y="84" width="76" height="7" rx="3" fill="currentColor"/><rect x="45" y="44" width="10" height="34" rx="5" fill="#FF7A3D"/></svg><span class="url">tanahliat.buildoriel.com</span><span class="mono mute">142 / 210</span></div>
+   <div class="blocks"><div class="blk done w2"></div><div class="blk done w4"></div><div class="blk done w6"></div><div class="blk done w3"></div><div class="blk lit w3"></div><div class="blk w4"></div><div class="blk w2"></div></div>
+   <ol class="steps"><li><span>Rencana halaman</span><span>selesai</span></li><li><span>Hero + navigasi</span><span>selesai</span></li><li class="now"><span>Galeri karya</span><span>menulis</span></li><li><span>Form kontak</span><span>antre</span></li></ol>
+  </div>
+ </div>
+ <div class="grid trio">
+  <div class="card"><h3>Web apa saja</h3><p class="mute">Landing page, toko online, blog, web komunitas, web bisnis. Langsung live di subdomain sendiri.</p><div class="kinds"><span>Portofolio</span><span>Toko</span><span>Blog</span></div></div>
+  <div class="card"><h3>Alat interaktif</h3><p class="mute">Dashboard, kalkulator, form, mini-game. Bisa disambungkan ke database Supabase milikmu.</p><div class="kinds"><span>Dashboard</span><span>Form</span><span>Game</span></div></div>
+  <div class="card"><h3>Desain dan dokumen</h3><p class="mute">Logo, poster, banner, mockup aplikasi, proposal, deck. Semua bisa diedit lagi lewat chat.</p><div class="kinds"><span>Logo</span><span>Poster</span><span>Deck</span></div></div>
+ </div>
+ <div class="econ">
+  <div><h2>Stake instead of subscribe.</h2><p class="mute" style="margin-top:18px;max-width:40ch">Kunci $ORIEL senilai harga tier, pakai kreditnya setiap bulan, tarik kembali kapan saja. Staker juga menerima bagian dari margin dalam stablecoin.</p><a class="pill" style="margin-top:24px" href="#stake">Hitung nilai stake</a></div>
+  <div class="flow" aria-label="Contoh pembagian margin bulanan">
+   <div class="row"><span>Margin kotor bulan lalu</span><span class="mono">$10.000</span></div>
+   <div class="row"><span>Kredit untuk staker</span><span class="mono">$4.000</span><div class="bar2"><i style="width:40%"></i></div></div>
+   <div class="row"><span>Bagi hasil ke staker</span><span class="mono">$3.000</span><div class="bar2"><i class="a" style="width:30%"></i></div></div>
+   <div class="row"><span>Operasional</span><span class="mono">$1.800</span><div class="bar2"><i style="width:18%"></i></div></div>
+   <div class="row"><span>Buyback $ORIEL</span><span class="mono">$1.200</span><div class="bar2"><i style="width:12%"></i></div></div>
+  </div>
+ </div>
+</section>
+<!-- WORKSPACE -->
+<section class="page" id="p-workspace">
+ <div class="wsmeta"><div><h2 style="font-size:32px">Tanah Liat Studio</h2><p class="mono mute">tanahliat.buildoriel.com  ·  draf v7</p></div><div style="display:flex;gap:8px;align-items:center"><span class="credit"><b>2.418</b> kredit</span><a class="pill sm" href="#connectors">Push ke GitHub</a><button class="pill ink sm">Publish</button></div></div>
+ <div class="ws">
+  <div class="card chat">
+   <div class="msgs">
+    <div class="m u">Buat web portofolio untuk studio keramik saya. Nuansa hangat, ada galeri dan form pesan.</div>
+    <div class="m a">Saya buat 4 bagian: hero, galeri karya, cerita studio, dan form pesan. Palet krem dan tanah liat, judul serif.<span class="cost">build penuh  ·  198 kredit</span></div>
+    <div class="m u">Judulnya lebih besar, dan tambahkan harga di tiap karya.</div>
+    <div class="m a">Judul hero dinaikkan ke 64px dan label harga ditambahkan di 12 kartu galeri.<span class="cost">edit  ·  2 kredit</span></div>
+   </div>
+   <div class="in"><textarea aria-label="Pesan">Ganti foto hero dengan…</textarea><button class="pill ink sm">Kirim</button></div>
+  </div>
+  <div class="card pv">
+   <div class="bh"><div class="seg" role="group" aria-label="Ukuran pratinjau"><button class="on">Desktop</button><button>HP</button></div><div class="seg"><button class="on">Pratinjau</button><button>Kode</button></div><span class="mono mute" style="margin-left:auto">Tersimpan</span></div>
+   <div class="site"><div class="sn"><span>Tanah Liat</span><span>Karya   Cerita   Pesan</span></div><h4>Dibentuk pelan, dipakai setiap hari.</h4><p style="max-width:40ch;color:#6b5a48">Keramik tangan dari Bandung. Setiap mangkuk dibakar dua kali dan diglasir satu per satu.</p><div class="ph"><div></div><div></div></div></div>
+  </div>
+ </div>
+</section>
+<!-- TIERS -->
+<section class="page" id="p-tiers">
+ <h2>Tiers &amp; Credits</h2><p class="mute" style="margin-top:12px;max-width:56ch">Beli bulanan, atau stake $ORIEL senilai 10x harga bulanan. Model AI dipilih otomatis sesuai permintaan, sampai batas tier-mu.</p>
+ <div class="grid tiers">
+  <div class="card tier"><div><h3>Free</h3><p class="mono mute">60 kredit / bulan</p></div><div class="price">$0</div><ul><li>Sekitar 3 build cepat atau 20 edit</li><li>1 proyek di subdomain</li><li>Download ZIP</li><li>Model: Haiku 5.5</li></ul><a class="pill" href="#workspace">Mulai gratis</a></div>
+  <div class="card tier"><div><h3>Builder</h3><p class="mono mute">1.000 kredit / bulan</p></div><div class="price">$20<small> / bulan</small></div><div class="or">atau stake senilai <b>$200</b></div><ul><li>Sekitar 4 build penuh, 100 edit</li><li>5 proyek</li><li>Konektor GitHub</li><li>Bagi hasil</li></ul><a class="pill" href="#stake">Pilih Builder</a></div>
+  <div class="card tier feat"><div><h3>Pro</h3><p class="mono mute">2.500 kredit / bulan</p></div><div class="price">$50<small> / bulan</small></div><div class="or">atau stake senilai <b>$500</b></div><ul><li>Sekitar 8 build + 1 premium</li><li>20 proyek, custom domain</li><li>GitHub, Vercel, Netlify, Supabase, Drive</li><li>Bagi hasil lebih besar</li></ul><a class="pill ink" href="#stake">Pilih Pro</a></div>
+  <div class="card tier"><div><h3>Studio</h3><p class="mono mute">10.000 kredit / bulan</p></div><div class="price">$200<small> / bulan</small></div><div class="or">atau stake senilai <b>$2.000</b></div><ul><li>Sekitar 15 build premium</li><li>Proyek dan domain tanpa batas</li><li>1 domain gratis per tahun</li><li>Semua konektor, bagi hasil terbesar</li></ul><a class="pill" href="#stake">Pilih Studio</a></div>
+ </div>
+ <div class="two">
+  <div class="card"><h3 style="margin-bottom:8px">Perkiraan biaya</h3><p class="mono mute">1 kredit = $0,02</p><table class="cost"><tr><td>Edit kecil</td><td>~1</td></tr><tr><td>Build web cepat</td><td>~10</td></tr><tr><td>Build web penuh</td><td>~210</td></tr><tr><td>Build premium</td><td>~420</td></tr><tr><td>Proyek besar multi-halaman</td><td>~3.100</td></tr></table></div>
+  <div class="card"><h3 style="margin-bottom:8px">Top-up</h3><p class="mute" style="font-size:14px;margin-bottom:18px">Tidak hangus. Bayar dengan USDG atau $ORIEL di Robinhood Chain.</p><div class="grid packs">
+   <div class="card pack" style="padding:20px"><div class="n">500</div><p class="mono mute">kredit</p><button class="pill sm" style="margin-top:14px">$10</button></div>
+   <div class="card pack" style="padding:20px"><div class="n">2.500</div><p class="mono mute">kredit</p><button class="pill ink sm" style="margin-top:14px">$50</button></div>
+   <div class="card pack" style="padding:20px"><div class="n">10.000</div><p class="mono mute">kredit</p><button class="pill sm" style="margin-top:14px">$200</button></div></div></div>
+ </div>
+</section>
+<!-- STAKE -->
+<section class="page" id="p-stake">
+ <h2>Stake $ORIEL</h2><p class="mute" style="margin-top:12px;max-width:56ch">Tier dihitung dari nilai dolar stake-mu, memakai harga rata-rata 7 hari pool $ORIEL di Pons. Dievaluasi setiap tanggal 1.</p>
+ <div class="stake">
+  <div class="card">
+   <label class="f">Jumlah $ORIEL yang di-stake<div class="inp"><input id="amt" inputmode="decimal" value="48000"><span class="pill sm">Maks</span></div></label>
+   <div class="kv"><span class="mute">Harga TWAP 7 hari</span><span id="px">$0,0112</span><span class="mute">Harga sekarang</span><span>$0,0119</span></div>
+   <p class="mute" style="margin-top:28px;font-size:14px">Nilai stake</p>
+   <div class="big" id="val">$537,60</div>
+   <div class="ladder" id="lad"></div>
+   <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:24px"><button class="pill ink" style="justify-content:center">Stake</button><button class="pill" style="justify-content:center">Unstake</button></div>
+  </div>
+  <div class="card">
+   <h3>Posisimu</h3>
+   <div class="kv"><span class="mute">Tier sekarang</span><span id="tnow">Pro</span><span class="mute">Kredit bulan depan</span><span id="cr">2.500</span><span class="mute">Batas aman (buffer 10%)</span><span id="buf">$450</span><span class="mute">Evaluasi berikutnya</span><span>1 Nov 2026</span><span class="mute">Bagi hasil bulan lalu</span><span>14,82 USDG</span></div>
+   <div class="note">Kalau nilai stake turun di bawah batas aman, kamu tetap di tier ini selama 1 bulan masa tenggang dan akan mendapat notifikasi sebelum turun tier.</div>
+   <div class="note">Unstake kapan saja. Kredit yang sudah diisi bulan ini tetap bisa dipakai.</div>
+  </div>
+ </div>
+</section>
+<!-- TEMPLATES -->
+<section class="page" id="p-templates">
+ <div style="display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap"><div><h2>Templates</h2><p class="mute" style="margin-top:12px;max-width:52ch">Mulai dari karya orang lain. Kreator menerima royalti USDG setiap kali template-nya dipakai.</p></div><button class="pill">Jual template</button></div>
+ <div class="tbar"><button class="pill sm ink">Semua</button><button class="pill sm">Landing page</button><button class="pill sm">Toko</button><button class="pill sm">Portofolio</button><button class="pill sm">Dashboard</button><button class="pill sm">Deck</button></div>
+ <div class="grid tpl">
+  <div class="card tc"><div class="thumb"><i></i><i></i><i></i></div><div class="bd"><h3>Kedai Kopi</h3><p class="mute" style="font-size:14px">Menu, lokasi, pesan lewat WhatsApp</p><div class="ft"><span>oleh @rumahseduh  ·  1,2rb pakai</span><span class="mono">40 kredit</span></div></div></div>
+  <div class="card tc"><div class="thumb"><i></i><i></i><i></i></div><div class="bd"><h3>Portofolio Fotografer</h3><p class="mute" style="font-size:14px">Galeri grid, halaman paket, booking</p><div class="ft"><span>oleh @lensasore  ·  860 pakai</span><span class="mono">60 kredit</span></div></div></div>
+  <div class="card tc"><div class="thumb"><i></i><i></i><i></i></div><div class="bd"><h3>Dashboard Penjualan</h3><p class="mute" style="font-size:14px">Grafik harian, tabel order, Supabase</p><div class="ft"><span>oleh @datakecil  ·  540 pakai</span><span class="mono">90 kredit</span></div></div></div>
+  <div class="card tc"><div class="thumb"><i></i><i></i><i></i></div><div class="bd"><h3>Toko Batik</h3><p class="mute" style="font-size:14px">Katalog, keranjang, checkout</p><div class="ft"><span>oleh @kainkita  ·  410 pakai</span><span class="mono">80 kredit</span></div></div></div>
+  <div class="card tc"><div class="thumb"><i></i><i></i><i></i></div><div class="bd"><h3>Pitch Deck Startup</h3><p class="mute" style="font-size:14px">12 slide, siap diekspor</p><div class="ft"><span>oleh @foundernote  ·  390 pakai</span><span class="mono">50 kredit</span></div></div></div>
+  <div class="card tc"><div class="thumb"><i></i><i></i><i></i></div><div class="bd"><h3>Web Komunitas</h3><p class="mute" style="font-size:14px">Acara, anggota, papan pengumuman</p><div class="ft"><span>oleh @kumpulyuk  ·  300 pakai</span><span class="mono">45 kredit</span></div></div></div>
+ </div>
+</section>
+<!-- CONNECTORS -->
+<section class="page" id="p-connectors">
+ <h2>Connectors &amp; Domains</h2><p class="mute" style="margin-top:12px;max-width:56ch">Sambungkan akunmu dengan izin seminimal mungkin. Putuskan kapan saja. Push dan deploy selalu minta konfirmasi.</p>
+ <div class="grid cons">
+  <div class="card con"><div class="hd"><span class="lg">Gh</span><span class="st ok">Tersambung</span></div><h3>GitHub</h3><p class="mute" style="font-size:14px">Simpan kode ke repo milikmu. Setiap edit menjadi commit.</p><button class="pill sm">Putuskan</button></div>
+  <div class="card con"><div class="hd"><span class="lg">Ve</span><span class="st">Pro</span></div><h3>Vercel</h3><p class="mute" style="font-size:14px">Deploy proyek ke akun Vercel-mu.</p><button class="pill sm ink">Sambungkan</button></div>
+  <div class="card con"><div class="hd"><span class="lg">Ne</span><span class="st">Pro</span></div><h3>Netlify</h3><p class="mute" style="font-size:14px">Deploy proyek ke akun Netlify-mu.</p><button class="pill sm ink">Sambungkan</button></div>
+  <div class="card con"><div class="hd"><span class="lg">Sb</span><span class="st">Pro</span></div><h3>Supabase</h3><p class="mute" style="font-size:14px">Database untuk form, toko, dan dashboard.</p><button class="pill sm ink">Sambungkan</button></div>
+  <div class="card con"><div class="hd"><span class="lg">Gd</span><span class="st">Pro</span></div><h3>Google Drive</h3><p class="mute" style="font-size:14px">Simpan dokumen dan deck ke Drive.</p><button class="pill sm ink">Sambungkan</button></div>
+  <div class="card con"><div class="hd"><span class="lg">Cf</span><span class="st">Studio</span></div><h3>Cloudflare DNS</h3><p class="mute" style="font-size:14px">Atur DNS custom domain secara otomatis.</p><button class="pill sm">Upgrade ke Studio</button></div>
+ </div>
+ <div class="dom">
+  <div class="card"><h3>Sambungkan domain</h3><p class="mute" style="font-size:14px;margin:8px 0 16px">Tambahkan record ini di pengelola domainmu.</p>
+   <div class="inp" style="margin-bottom:16px"><input style="font-size:18px" value="tanahliat.id" aria-label="Domain"><button class="pill sm ink">Cek</button></div>
+   <div class="dns"><span class="mute">Tipe</span><span>CNAME</span><span class="mute">Nama</span><span>www</span><span class="mute">Nilai</span><span>sites.buildoriel.com</span></div></div>
+  <div class="card"><h3>Status</h3><ol class="stepl"><li class="ok">Domain ditambahkan</li><li class="ok">Record CNAME ditemukan</li><li>Menerbitkan sertifikat HTTPS</li><li>Aktif</li></ol></div>
+ </div>
+</section>
+</main>
+<nav class="mobnav" aria-label="Halaman">
+ <a href="#home"><svg viewBox="0 0 24 24"><path d="M4 11l8-6 8 6v8H4z"/></svg>Home</a>
+ <a href="#workspace"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 5v14"/></svg>Build</a>
+ <a href="#tiers"><svg viewBox="0 0 24 24"><path d="M5 18V12M12 18V8M19 18V5"/></svg>Tiers</a>
+ <a href="#stake"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v5c0 1.7 3 3 7 3s7-1.3 7-3V7M5 12v5c0 1.7 3 3 7 3s7-1.3 7-3v-5"/></svg>Stake</a>
+ <a href="#templates"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="16" height="7" rx="2"/></svg>Template</a>
+ <a href="#connectors"><svg viewBox="0 0 24 24"><path d="M9 15l6-6M8 12l-2 2a3 3 0 004 4l2-2M16 12l2-2a3 3 0 00-4-4l-2 2"/></svg>Konektor</a>
+</nav>
+<script>
+const pages=["home","workspace","tiers","stake","templates","connectors"];
+function show(){const h=(location.hash||"#home").slice(1);const id=pages.includes(h)?h:"home";
+document.querySelectorAll("section.page").forEach(s=>s.classList.toggle("on",s.id==="p-"+id));
+document.querySelectorAll('nav a').forEach(a=>{a.getAttribute("href")==="#"+id?a.setAttribute("aria-current","page"):a.removeAttribute("aria-current")});window.scrollTo(0,0)}
+addEventListener("hashchange",show);show();
+const T=[["Builder",200,1000],["Pro",500,2500],["Studio",2000,10000]],P=0.0112;
+const fmt=n=>"$"+n.toLocaleString("id-ID",{minimumFractionDigits:2,maximumFractionDigits:2});
+function calc(){const a=parseFloat(document.getElementById("amt").value.replace(/\./g,"").replace(",","."))||0,v=a*P;
+document.getElementById("val").textContent=fmt(v);let cur=["Free",0,60];T.forEach(t=>{if(v>=t[1])cur=t});
+document.getElementById("tnow").textContent=cur[0];document.getElementById("cr").textContent=cur[2].toLocaleString("id-ID");
+document.getElementById("buf").textContent=cur[1]?"$"+(cur[1]*.9).toLocaleString("id-ID"):"-";
+document.getElementById("lad").innerHTML=T.map(t=>'<div class="rung'+(t[0]===cur[0]?' on':'')+'"><span>'+t[0]+'</span><span class="t"><i style="width:'+Math.min(100,v/t[1]*100)+'%"></i></span><span class="mono">$'+t[1].toLocaleString("id-ID")+'</span></div>').join("")}
+document.getElementById("amt").addEventListener("input",calc);calc();
+</script>
+</body></html>
