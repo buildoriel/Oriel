@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Halden Studio — Architecture &amp; Interiors, Copenhagen</title>
+  <meta name="description" content="Halden Studio is a small architecture and interiors practice in Copenhagen designing quiet buildings, rooms and renovations built around daylight.">
+  <meta name="theme-color" content="#F4EFE7">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F4EFE7'/%3E%3Cpath d='M9 26V14a7 7 0 0 1 14 0v12' fill='none' stroke='%23A0503A' stroke-width='3'/%3E%3C/svg%3E">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header" id="top">
+    <div class="wrap site-header__inner">
+      <a class="wordmark" href="#top" aria-label="Halden Studio, back to top">
+        <span class="wordmark__name">Halden</span><span class="wordmark__sub">Studio</span>
+      </a>
+      <nav class="nav" id="site-nav" aria-label="Primary">
+        <a href="#work"><span class="nav__no">01</span>Work</a>
+        <a href="#studio"><span class="nav__no">02</span>Studio</a>
+        <a href="#contact"><span class="nav__no">03</span>Contact</a>
+      </nav>
+      <p class="clock" aria-live="off">
+        <span class="clock__dot" aria-hidden="true"></span>
+        <span class="clock__label">Copenhagen</span>
+        <time class="clock__time" data-clock>--:--:--</time>
+        <span class="clock__status" data-clock-status></span>
+      </p>
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ============ HERO ============ -->
+    <section class="hero wrap grid" aria-labelledby="hero-title">
+      <div class="hero__text">
+        <p class="label reveal">Architecture &amp; Interiors <span class="sep">/</span> Copenhagen, since 2011</p>
+        <h1 class="hero__title reveal" id="hero-title">
+          <span class="line">Quiet rooms,</span>
+          <span class="line">built to hold</span>
+          <span class="line"><em>the light.</em></span>
+        </h1>
+        <div class="hero__foot reveal">
+          <p class="hero__lede">We are a studio of eleven architects and makers designing houses, public rooms and careful renovations across Denmark — few at a time, with few materials, for a long life.</p>
+          <div class="hero__links">
+            <a class="link-arrow" href="#work">Selected work <span aria-hidden="true">→</span></a>
+            <a class="link-arrow link-arrow--quiet" href="#contact">Start a project <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </div>
+
+      <figure class="hero__figure reveal">
+        <button class="hero__plate plate" type="button" data-hero-plate aria-label="Open featured project">
+          <!-- featured composition injected by app.js -->
+        </button>
+        <span class="note note--a" aria-hidden="true"><i></i>North light, 07:40</span>
+        <span class="note note--b" aria-hidden="true"><i></i>Kiln wall, 1898 brick</span>
+        <span class="note note--c" aria-hidden="true"><i></i>Lime plaster, hand-floated</span>
+        <figcaption class="hero__caption">
+          <span class="label">Featured <span class="sep">/</span> <span data-hero-no>01</span></span>
+          <span class="hero__caption-name" data-hero-name>Kalkværket Bathhouse</span>
+          <span class="hero__caption-meta" data-hero-meta>Nordhavn, 2024</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ WORK INDEX ============ -->
+    <section class="work wrap" id="work" aria-labelledby="work-title">
+      <div class="section-head grid">
+        <p class="label section-head__no">01 — Index</p>
+        <h2 class="section-head__title reveal" id="work-title">Selected work, <em>2019–2026</em></h2>
+      </div>
+
+      <div class="work__controls grid">
+        <div class="filters" role="group" aria-label="Filter projects by type" data-filters>
+          <!-- filter buttons injected by app.js -->
+        </div>
+        <div class="view-toggle" role="group" aria-label="Layout">
+          <button type="button" data-view="list" aria-pressed="true">List</button>
+          <button type="button" data-view="grid" aria-pressed="false">Grid</button>
+        </div>
+        <p class="work__count" aria-live="polite" data-count></p>
+      </div>
+
+      <ol class="index" data-view-mode="list" data-index>
+        <!-- project items injected by app.js from the PROJECTS list -->
+      </ol>
+      <noscript><p class="label">Enable JavaScript to browse the project index.</p></noscript>
+    </section>
+
+    <!-- floating hover preview for list rows (desktop) -->
+    <div class="peek" aria-hidden="true" data-peek></div>
+
+    <!-- ============ STUDIO ============ -->
+    <section class="studio wrap" id="studio" aria-labelledby="studio-title">
+      <div class="section-head grid">
+        <p class="label section-head__no">02 — Studio</p>
+        <h2 class="visually-hidden" id="studio-title">The studio</h2>
+        <p class="studio__statement reveal">Halden Studio works from a former print shop in Copenhagen K. We take on six to eight commissions a year and stay with each one from the first site walk to the last <em>snag list</em> — because the details that matter most are usually decided on site.</p>
+      </div>
+
+      <div class="studio__band grid">
+        <figure class="studio__figure reveal">
+          <div class="plate plate--wide" data-art="colonnade" data-mat="stone" data-label="A brick arcade in long afternoon shadow"></div>
+          <figcaption class="caption">Vadehavet Archive, Ribe — the tide arcade, under construction.</figcaption>
+        </figure>
+        <div class="stats reveal">
+          <dl>
+          <div><dt>Years in practice</dt><dd>15</dd></div>
+          <div><dt>Built works</dt><dd>42</dd></div>
+          <div><dt>People in the studio</dt><dd>11</dd></div>
+          <div><dt>Materials we return to</dt><dd>5</dd></div>
+          </dl>
+          <p class="stats__note">Lime, brick, oak, larch and linen. We would rather know five materials deeply than fifty from a catalogue.</p>
+        </div>
+      </div>
+
+      <div class="principles grid">
+        <h3 class="label principles__label">Principles</h3>
+        <article class="principle reveal">
+          <span class="principle__no">I.</span>
+          <h4>Light before form</h4>
+          <p>We draw sun paths before we draw walls. Every room is placed for the hour of the day it will be used most.</p>
+        </article>
+        <article class="principle reveal">
+          <span class="principle__no">II.</span>
+          <h4>Few materials, honestly joined</h4>
+          <p>Surfaces are what they appear to be. Joints are visible, considered and made to be understood.</p>
+        </article>
+        <article class="principle reveal">
+          <span class="principle__no">III.</span>
+          <h4>Built to be repaired</h4>
+          <p>Lime over cement, screws over glue, timber that can be sanded back. Buildings should get better as they age.</p>
+        </article>
+        <article class="principle reveal">
+          <span class="principle__no">IV.</span>
+          <h4>Rooms before objects</h4>
+          <p>We would rather design one generous room well than a house of clever ones. Proportion does most of the work.</p>
+        </article>
+      </div>
+
+      <div class="studio__lists grid">
+        <div class="team reveal">
+          <h3 class="label">People</h3>
+          <ul class="rows">
+            <li><span class="rows__main">Ida Halden</span><span class="rows__meta">Founding partner, architect MAA</span><span class="rows__end">2011</span></li>
+            <li><span class="rows__main">Mikkel Aabo</span><span class="rows__meta">Partner, architect MAA</span><span class="rows__end">2014</span></li>
+            <li><span class="rows__main">Astrid Nørgaard</span><span class="rows__meta">Model maker &amp; studio manager</span><span class="rows__end">2013</span></li>
+            <li><span class="rows__main">Sofie Lindqvist</span><span class="rows__meta">Head of interiors</span><span class="rows__end">2016</span></li>
+            <li><span class="rows__main">Jonas Ravn</span><span class="rows__meta">Project architect</span><span class="rows__end">2019</span></li>
+            <li><span class="rows__main">Nora Esbensen</span><span class="rows__meta">Landscape &amp; materials</span><span class="rows__end">2021</span></li>
+          </ul>
+          <p class="caption">+ five architects, a carpenter and a rotating desk for one student each semester.</p>
+        </div>
+
+        <div class="recognition reveal">
+          <h3 class="label">Awards</h3>
+          <ul class="rows">
+            <li><span class="rows__end">2025</span><span class="rows__main">Nordic Daylight Award</span><span class="rows__meta">Winner — Kalkværket Bathhouse</span></li>
+            <li><span class="rows__end">2024</span><span class="rows__main">Baltic Timber Prize</span><span class="rows__meta">Shortlist — Villa Sølvhøj</span></li>
+            <li><span class="rows__end">2023</span><span class="rows__main">Copenhagen Interior Prize</span><span class="rows__meta">Winner — Thorvaldsensvej</span></li>
+            <li><span class="rows__end">2021</span><span class="rows__main">Small Buildings of Europe</span><span class="rows__meta">Commendation — Chapel of Rest</span></li>
+          </ul>
+          <h3 class="label recognition__press">Press</h3>
+          <ul class="rows">
+            <li><span class="rows__end">2025</span><span class="rows__main">Plan &amp; Form, No. 38</span><span class="rows__meta">“The architecture of steam”</span></li>
+            <li><span class="rows__end">2024</span><span class="rows__main">Radio Nord, Rooms</span><span class="rows__meta">“Buildings that wait” — interview</span></li>
+            <li><span class="rows__end">2023</span><span class="rows__main">The Northern Interior</span><span class="rows__meta">“Eleven rooms become five”</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section class="contact wrap" id="contact" aria-labelledby="contact-title">
+      <div class="section-head grid">
+        <p class="label section-head__no">03 — Contact</p>
+        <h2 class="section-head__title reveal" id="contact-title">Tell us about the place <em>you have in mind.</em></h2>
+      </div>
+
+      <div class="contact__body grid">
+        <form class="inquiry reveal" novalidate data-form>
+          <fieldset class="inquiry__types">
+            <legend class="label">Type of project</legend>
+            <div class="chips">
+              <label><input type="radio" name="type" value="Residential" checked><span>Residential</span></label>
+              <label><input type="radio" name="type" value="Hospitality"><span>Hospitality</span></label>
+              <label><input type="radio" name="type" value="Cultural"><span>Cultural</span></label>
+              <label><input type="radio" name="type" value="Interiors"><span>Interiors</span></label>
+            </div>
+          </fieldset>
+          <div class="field">
+            <label for="f-name">Your name</label>
+            <input id="f-name" name="name" type="text" autocomplete="name" required>
+            <span class="field__error" id="f-name-err"></span>
+          </div>
+          <div class="field">
+            <label for="f-email">Email</label>
+            <input id="f-email" name="email" type="email" autocomplete="email" required>
+            <span class="field__error" id="f-email-err"></span>
+          </div>
+          <div class="field">
+            <label for="f-place">Site or address <span class="opt">(optional)</span></label>
+            <input id="f-place" name="place" type="text" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="f-when">Hoped-for start</label>
+            <select id="f-when" name="when">
+              <option>Within 6 months</option>
+              <option selected>In 2027</option>
+              <option>Later — just exploring</option>
+            </select>
+          </div>
+          <div class="field field--full">
+            <label for="f-msg">A few lines about the project</label>
+            <textarea id="f-msg" name="message" rows="4" required></textarea>
+            <span class="field__error" id="f-msg-err"></span>
+          </div>
+          <div class="inquiry__submit">
+            <button class="btn" type="submit">Send inquiry <span aria-hidden="true">→</span></button>
+            <p class="caption">We reply to every letter within five working days.</p>
+          </div>
+        </form>
+        <div class="inquiry__done" role="status" tabindex="-1" hidden data-form-done></div>
+
+        <aside class="details reveal" aria-label="Studio details">
+          <div class="details__block">
+            <h3 class="label">Studio</h3>
+            <address>Wildersgade 41, 2nd floor<br>1408 Copenhagen K<br>Denmark</address>
+          </div>
+          <div class="details__block">
+            <h3 class="label">Hours</h3>
+            <p>Mon–Thu 09:00–17:30<br>Fri 09:00–15:00<br>Visits by appointment</p>
+          </div>
+          <div class="details__block">
+            <h3 class="label">Write or call</h3>
+            <p><button class="copy" type="button" data-copy="studio@halden-studio.dk">studio@halden-studio.dk</button><br>+45 32 57 18 40</p>
+          </div>
+          <div class="details__block details__block--note">
+            <h3 class="label">Now</h3>
+            <p>Taking on two residential commissions for 2027, anywhere within a day’s drive of Copenhagen.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <p class="site-footer__mark" aria-hidden="true">Halden <em>Studio</em></p>
+      <div class="site-footer__row">
+        <p>© 2026 Halden Studio ApS</p>
+        <p class="site-footer__clock">Copenhagen <time data-clock-short>--:--</time></p>
+        <button class="grid-toggle" type="button" aria-pressed="false" data-grid-toggle>Show grid <kbd>G</kbd></button>
+        <a href="#top" class="link-arrow">Back to top <span aria-hidden="true">↑</span></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 12-column overlay (toggle with G) -->
+  <div class="grid-overlay" aria-hidden="true" data-grid-overlay><div class="wrap grid"></div></div>
+
+  <!-- ============ PROJECT DETAIL DIALOG ============ -->
+  <dialog class="project" aria-labelledby="p-title" data-dialog>
+    <div class="project__inner">
+      <header class="project__bar">
+        <p class="label"><span data-p-no></span> <span class="sep">/</span> <span data-p-type></span></p>
+        <button class="project__close" type="button" data-close>Close <span aria-hidden="true">✕</span></button>
+      </header>
+      <div class="project__body">
+        <div class="gallery" aria-roledescription="carousel" aria-label="Project images">
+          <div class="gallery__stage plate" data-g-stage></div>
+          <div class="gallery__bar">
+            <p class="caption gallery__caption" aria-live="polite" data-g-caption></p>
+            <div class="gallery__nav">
+              <span class="gallery__count" data-g-count></span>
+              <button type="button" data-g-prev aria-label="Previous image">←</button>
+              <button type="button" data-g-next aria-label="Next image">→</button>
+            </div>
+          </div>
+          <div class="gallery__thumbs" data-g-thumbs></div>
+        </div>
+        <div class="project__info">
+          <h2 class="project__title" id="p-title" data-p-title></h2>
+          <p class="project__summary" data-p-summary></p>
+          <dl class="facts" data-p-facts></dl>
+          <div class="project__text" data-p-text></div>
+          <p class="caption project__hint">Use ← → to browse images, Esc to close.</p>
+          <button class="project__next" type="button" data-p-next>
+            <span class="label">Next project</span>
+            <span class="project__next-name" data-p-next-name></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

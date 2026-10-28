@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tideline — Seed Deck 2026</title>
+<meta name="description" content="Tideline is carbon accounting that small manufacturers can actually finish. Seed round pitch deck, Q4 2026.">
+<meta name="theme-color" content="#040b1a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%235ef2c2'/%3E%3Cpath d='M6 13c3.3-2.7 6.7-2.7 10 0s6.7 2.7 10 0M6 19.5c3.3-2.7 6.7-2.7 10 0s6.7 2.7 10 0' fill='none' stroke='%23071632' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Shared SVG symbols + gradients (referenced by every slide, so clones/thumbnails never duplicate ids) -->
+<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="g-tide" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#5ef2c2" stop-opacity="0"/>
+      <stop offset=".35" stop-color="#5ef2c2" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#9ff5dc"/>
+    </linearGradient>
+    <linearGradient id="g-tide2" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#5ef2c2" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#9ff5dc"/>
+      <stop offset="1" stop-color="#5ef2c2" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="g-scrim" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#071632" stop-opacity=".9"/>
+      <stop offset=".42" stop-color="#071632" stop-opacity=".55"/>
+      <stop offset=".62" stop-color="#071632" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="g-sea" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#071632"/>
+      <stop offset="1" stop-color="#040b1a"/>
+    </linearGradient>
+    <linearGradient id="g-flow" x1="0" x2="1">
+      <stop offset="0" stop-color="#5ef2c2" stop-opacity=".08"/>
+      <stop offset="1" stop-color="#5ef2c2" stop-opacity=".38"/>
+    </linearGradient>
+    <linearGradient id="g-bar" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#7ff6d0"/>
+      <stop offset="1" stop-color="#1fb48e"/>
+    </linearGradient>
+    <pattern id="p-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="10" height="10" fill="rgba(94,242,194,.10)"/>
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#5ef2c2" stroke-width="3" stroke-opacity=".55"/>
+    </pattern>
+    <radialGradient id="g-glow" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#ff9661" stop-opacity=".42"/>
+      <stop offset=".45" stop-color="#ff9661" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#ff9661" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g-sun" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#ffd29a"/>
+      <stop offset=".55" stop-color="#ff9661"/>
+      <stop offset="1" stop-color="#ff7a52"/>
+    </radialGradient>
+  </defs>
+  <symbol id="i-mark" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M6 13c3.3-2.7 6.7-2.7 10 0s6.7 2.7 10 0M6 19.5c3.3-2.7 6.7-2.7 10 0s6.7 2.7 10 0" fill="none" stroke="var(--mark-ink, #071632)" stroke-width="2.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="4.5" width="7" height="6" rx="1.5"/><rect x="13.5" y="4.5" width="7" height="6" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="6" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="6" rx="1.5"/></g></symbol>
+  <symbol id="i-notes" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="3.5" width="16" height="17" rx="2.5"/><path d="M8 9h8M8 13h8M8 17h5"/></g></symbol>
+  <symbol id="i-full" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4v7M21 4v7M7 11h18v5a9 9 0 0 1-18 0zM16 25v4"/></g></symbol>
+  <symbol id="i-calc" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 26V6M5 26h22"/><path d="M9 21l5-6 4 3 7-9" stroke-linejoin="round"/></g></symbol>
+  <symbol id="i-doc" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h11l6 6v20H8z"/><path d="M19 3v6h6M12 18l3 3 6-6"/></g></symbol>
+</svg>
+
+<div class="app" id="app">
+  <a class="skip" href="#deck">Skip to slides</a>
+
+  <main class="stage" id="stage" aria-roledescription="carousel" aria-label="Tideline seed deck">
+    <div class="frame" id="frame">
+      <div class="deck" id="deck" tabindex="-1">
+
+        <!-- ============ 01 · TITLE ============ -->
+        <section class="slide theme-dark s-title" data-title="Title" data-foot="none">
+          <svg class="tide" data-tide="title" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+          <header class="title-top" data-a>
+            <span class="logo"><svg class="mark"><use href="#i-mark"/></svg>Tideline</span>
+            <span class="pill">Seed round · Q4 2026 · Confidential</span>
+          </header>
+          <div class="title-main">
+            <p class="eyebrow" data-a>Carbon accounting for small manufacturers</p>
+            <h1 class="display" data-a>Carbon accounting small manufacturers can actually <span class="hl">finish.</span></h1>
+            <p class="lede" data-a>Tideline turns utility bills, invoices and ERP data into an audit‑ready footprint in a week — and answers every customer questionnaire for you.</p>
+          </div>
+          <dl class="title-stats" data-a>
+            <div><dt>Raising</dt><dd data-count="6" data-prefix="$" data-suffix="M">$6M</dd></div>
+            <div><dt>ARR, Sep 2026</dt><dd data-count="1.06" data-decimals="2" data-prefix="$" data-suffix="M">$1.06M</dd></div>
+            <div><dt>Manufacturers</dt><dd data-count="214">214</dd></div>
+            <div><dt>Net retention</dt><dd data-count="128" data-suffix="%">128%</dd></div>
+          </dl>
+          <div class="glass-card" data-a="scale" aria-label="Product preview: Brindle Castings, 2026 year to date footprint of 1,284 tonnes CO2e, down 12.4 percent">
+            <div class="gc-top"><span class="gc-dot"></span>Brindle Castings · Plant 2</div>
+            <div class="gc-label">2026 footprint, year to date</div>
+            <div class="gc-value">1,284 <small>tCO₂e</small></div>
+            <svg class="gc-spark" viewBox="0 0 300 64" aria-hidden="true"><path class="draw" pathLength="1" d="M0 18 L33 14 L66 22 L100 26 L133 31 L166 38 L200 41 L233 39 L266 46 L300 50" fill="none" stroke="#5ef2c2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="gc-row"><span class="chip mint">↓ 12.4% vs 2025</span><span class="chip">CBAM Q3 · Ready</span></div>
+          </div>
+          <aside class="slide-notes">Open with the customer moment, not the climate moment: a 140‑person foundry gets an email from its largest buyer asking for a carbon footprint in 90 days. Tideline is the product that lets them say yes in a week. We're raising a $6M seed on $1.06M ARR and 214 paying manufacturers.</aside>
+        </section>
+
+        <!-- ============ 02 · PROBLEM ============ -->
+        <section class="slide theme-light s-problem" data-title="Problem">
+          <div class="s-head">
+            <p class="eyebrow" data-a>02 · The problem</p>
+            <h2 data-a>Your biggest customer just asked for your carbon footprint. <span class="hl">You have 90 days.</span></h2>
+          </div>
+          <div class="problem-body">
+            <div class="inbox" data-a aria-label="Example inbox with three customer carbon data requests">
+              <div class="mail m3"><b>Aster Medical Devices</b><span>Supplier PCF per SKU — due 15 Jan</span></div>
+              <div class="mail m2"><b>Nordvik Rail</b><span>Scope 3 supplier questionnaire (62 questions)</span></div>
+              <div class="mail m1"><span class="mail-flag">Urgent</span><b>Halvorsen Automotive · Procurement</b><span>Action required: CBAM embedded-emissions data for Q3 shipments. Contracts renewing in 2027 will require annual footprints.</span><i>Due 30 Nov</i></div>
+            </div>
+            <div class="stat-grid">
+              <div class="stat" data-a><b data-count="71" data-suffix="%">71%</b><p>of manufacturers with 20–500 staff got a carbon data request from a customer in 2025</p></div>
+              <div class="stat" data-a><b data-count="212" data-suffix=" h">212 h</b><p>average time to finish a first inventory in spreadsheets — usually by the quality manager</p></div>
+              <div class="stat" data-a><b data-count="38" data-prefix="$" data-suffix="k">$38k</b><p>typical consultant quote for a one‑off footprint, repeated every single year</p></div>
+              <div class="stat warm" data-a><b>1 in 4</b><p>lost a bid or had a contract put on hold over missing emissions data</p></div>
+            </div>
+          </div>
+          <p class="source" data-a>Source: Tideline survey of 640 manufacturers in Germany, the Netherlands, Poland, the UK and the US, March 2026.</p>
+          <aside class="slide-notes">This is the pain we hear in every discovery call. The request comes from procurement, lands on whoever runs quality or EHS, and they have no method, no data model and no budget. The 1‑in‑4 number is the one that makes owners act: carbon data is becoming a condition of doing business, not a nice‑to‑have.</aside>
+        </section>
+
+        <!-- ============ 03 · WHY NOW ============ -->
+        <section class="slide theme-dark s-why" data-title="Why now">
+          <div class="s-head">
+            <p class="eyebrow" data-a>03 · Why now</p>
+            <h2 data-a>Climate regulation is flowing downstream — <span class="hl">straight to the factory floor.</span></h2>
+          </div>
+          <div class="cascade">
+            <div class="tier t1" data-a><span class="tier-k">Regulation</span><b>CSRD · CBAM · SB 253</b><p>Rules that make large companies account for emissions across their value chain.</p></div>
+            <svg class="flow" viewBox="0 0 200 340" preserveAspectRatio="none" aria-hidden="true" data-a="fade"><path d="M0 50 C100 50 100 25 200 25 L200 315 C100 315 100 290 0 290Z" fill="url(#g-flow)"/></svg>
+            <div class="tier t2" data-a><span class="tier-k">Large buyers</span><b data-count="40000" data-prefix="~">~40,000</b><p>companies in the EU and US now reporting Scope 3 — mostly their suppliers’ emissions.</p></div>
+            <svg class="flow" viewBox="0 0 200 340" preserveAspectRatio="none" aria-hidden="true" data-a="fade"><path d="M0 25 C100 25 100 0 200 0 L200 340 C100 340 100 315 0 315Z" fill="url(#g-flow)"/></svg>
+            <div class="tier t3" data-a><span class="tier-k">Their suppliers</span><b data-count="1.2" data-decimals="1" data-suffix="M">1.2M</b><p>small manufacturers being asked for primary data — with no team, tools or budget to produce it.</p></div>
+          </div>
+          <ol class="timeline" data-a>
+            <li><b>2025</b><span>First CSRD reports cite supplier data; questionnaires go out</span></li>
+            <li><b>Jan 2026</b><span>CBAM definitive phase: importers pay for embedded carbon</span></li>
+            <li><b>2027</b><span>California SB 253 requires Scope 3 disclosure</span></li>
+            <li class="now"><b>2027+</b><span>OEMs write emissions data into supplier contracts</span></li>
+          </ol>
+          <aside class="slide-notes">The key insight: regulation targets big companies, but the work lands on small ones. Every large buyer that must disclose Scope 3 sends requests to hundreds of suppliers. That turns a compliance niche into a mass market of 1.2 million manufacturers who never planned to buy carbon software.</aside>
+        </section>
+
+        <!-- ============ 04 · SOLUTION ============ -->
+        <section class="slide theme-dark s-solution" data-title="Solution">
+          <div class="sol-copy">
+            <p class="eyebrow" data-a>04 · Solution</p>
+            <h2 data-a>Measure, cut and report emissions — <span class="hl">built for plants, not consultants.</span></h2>
+            <ul class="ticks">
+              <li data-a><svg><use href="#i-check"/></svg><span><b>Automatic footprint</b> from the bills and invoices you already have</span></li>
+              <li data-a><svg><use href="#i-check"/></svg><span><b>Buyer-ready reports</b> for CBAM, CSRD/VSME and custom questionnaires</span></li>
+              <li data-a><svg><use href="#i-check"/></svg><span><b>Reduction plan</b> ranked by tonnes saved per euro spent</span></li>
+            </ul>
+          </div>
+          <div class="app-win" data-a="right" role="img" aria-label="Tideline app screenshot: 2026 year-to-date footprint of 1,284 tCO2e with a monthly chart by scope, top emission sources and three buyer requests">
+            <div class="aw-bar"><i></i><i></i><i></i><span>app.tideline · Brindle Castings — Plant 2</span></div>
+            <div class="aw-body">
+              <nav class="aw-side" aria-hidden="true"><svg class="mark"><use href="#i-mark"/></svg><span class="on"></span><span></span><span></span><span></span><span></span></nav>
+              <div class="aw-main">
+                <div class="aw-head">
+                  <div><small>Footprint · 2026 YTD</small><strong>1,284 <em>tCO₂e</em></strong></div>
+                  <span class="chip mint">↓ 12.4% vs 2025</span>
+                </div>
+                <svg class="aw-chart" viewBox="0 0 470 190" aria-hidden="true"
+                  data-stack="J,F,M,A,M,J,J,A,S,O"
+                  data-s1="58,61,55,50,46,41,38,40,45,49"
+                  data-s2="30,31,28,27,25,24,24,23,25,26"
+                  data-s3="52,55,57,54,52,51,48,55,58,56"></svg>
+                <div class="aw-legend"><span class="k1">Scope 1</span><span class="k2">Scope 2</span><span class="k3">Scope 3</span></div>
+                <div class="aw-sources">
+                  <div><span>Natural gas · melting furnaces</span><i style="--w:.31"></i><b>31%</b></div>
+                  <div><span>Purchased aluminium ingot</span><i style="--w:.27"></i><b>27%</b></div>
+                  <div><span>Grid electricity</span><i style="--w:.20"></i><b>20%</b></div>
+                  <div><span>Inbound freight</span><i style="--w:.09"></i><b>9%</b></div>
+                  <div><span>Other (packaging, waste, travel)</span><i style="--w:.13"></i><b>13%</b></div>
+                </div>
+              </div>
+              <div class="aw-req">
+                <small>Buyer requests</small>
+                <div class="req"><b>Halvorsen Automotive</b><span>CBAM · Q3 shipments</span><em class="ok">Ready to send</em></div>
+                <div class="req"><b>Nordvik Rail</b><span>Scope 3 questionnaire</span><div class="prog"><i style="--w:.92"></i></div><em>92% auto-filled</em></div>
+                <div class="req"><b>Aster Medical</b><span>PCF per SKU · 38 parts</span><em class="warm">In review</em></div>
+                <div class="req cut"><small>Top reduction</small><b>−86 tCO₂e/yr</b><span>Furnace 2 heat recovery · 2.1-year payback</span></div>
+              </div>
+            </div>
+          </div>
+          <aside class="slide-notes">Walk the screen left to right: the footprint is computed from real documents, broken down by scope and source, and the right-hand column is what customers actually pay for — buyer requests that are answered and ready to send. 92% auto-fill on a 62‑question Scope 3 questionnaire is a typical result.</aside>
+        </section>
+
+        <!-- ============ 05 · HOW IT WORKS ============ -->
+        <section class="slide theme-dark s-how" data-title="How it works">
+          <div class="s-head">
+            <p class="eyebrow" data-a>05 · How it works</p>
+            <h2 data-a>From shoebox of invoices to audit-ready in three steps.</h2>
+          </div>
+          <ol class="steps">
+            <li class="step" data-a>
+              <span class="step-n">01</span>
+              <svg class="step-i"><use href="#i-plug"/></svg>
+              <h3>Connect</h3>
+              <p>Link utility accounts, ERP and accounting in about 20 minutes. Drop in PDFs for everything else.</p>
+              <div class="tags"><span>Utility bills</span><span>ERP</span><span>Ledger</span><span>Fuel cards</span><span>Freight</span></div>
+            </li>
+            <li class="step" data-a>
+              <span class="step-n">02</span>
+              <svg class="step-i"><use href="#i-calc"/></svg>
+              <h3>Calculate</h3>
+              <p>Every line item is matched to one of 48,000 emission factors, with a confidence score and full audit trail.</p>
+              <div class="match"><span>INV‑4471 · 12.4 t aluminium ingot</span><b>→ 104.2 tCO₂e</b><i>Primary Al, EU mix · 94% match</i></div>
+            </li>
+            <li class="step" data-a>
+              <span class="step-n">03</span>
+              <svg class="step-i"><use href="#i-doc"/></svg>
+              <h3>Comply</h3>
+              <p>Export CBAM declarations, VSME disclosures and any buyer questionnaire in one click — reviewed by our climate team.</p>
+              <div class="tags"><span>CBAM</span><span>VSME</span><span>GHG Protocol</span><span>PCF per SKU</span></div>
+            </li>
+          </ol>
+          <p class="banner" data-a><span>Median time to a first complete footprint</span><b data-count="6.5" data-decimals="1" data-suffix=" days">6.5 days</b><em>vs. 212 hours in spreadsheets</em></p>
+          <aside class="slide-notes">The moat is step two. Our matching model maps messy line items — “ALU INGOT 6063 12.4T” — to the right factor, and every number carries a source and confidence score, which is why auditors and buyers accept our output. Step three is human-in-the-loop for first reports, then fully self-serve.</aside>
+        </section>
+
+        <!-- ============ 06 · MARKET ============ -->
+        <section class="slide theme-dark s-market" data-title="Market">
+          <div class="s-head">
+            <p class="eyebrow" data-a>06 · Market</p>
+            <h2 data-a>A <span class="hl">$20.6B</span> market that didn’t exist five years ago.</h2>
+          </div>
+          <div class="market-body">
+            <svg class="circles" viewBox="0 0 560 560" role="img" aria-label="Nested circles: TAM $20.6 billion, SAM $3.3 billion, SOM $129 million">
+              <circle class="c c1" cx="280" cy="280" r="270"/>
+              <circle class="c c2" cx="280" cy="372" r="178"/>
+              <circle class="c c3" cx="280" cy="462" r="88"/>
+              <text class="ct" x="280" y="78">TAM</text><text class="cv" x="280" y="126">$20.6B</text>
+              <text class="ct" x="280" y="262">SAM</text><text class="cv" x="280" y="306">$3.3B</text>
+              <text class="ct dk" x="280" y="448">SOM</text><text class="cv dk" x="280" y="490">$129M</text>
+            </svg>
+            <dl class="market-defs">
+              <div data-a><dt><i class="d1"></i>TAM · $20.6B</dt><dd>2.4M small and mid-size manufacturers in regulated supply chains worldwide × $8.6k average annual spend on carbon software and reporting.</dd></div>
+              <div data-a><dt><i class="d2"></i>SAM · $3.3B</dt><dd>380k manufacturers with 20–500 staff in the EU, UK and North America that sell to in-scope buyers.</dd></div>
+              <div data-a><dt><i class="d3"></i>SOM · $129M</dt><dd>15,000 customers in five years — 4% of SAM — at today’s expansion-adjusted ACV of $8.6k.</dd></div>
+            </dl>
+          </div>
+          <aside class="slide-notes">Bottom-up sizing only. $8.6k is what our 2025 cohort pays after twelve months, including add-on sites and per-SKU product footprints. We are deliberately not counting the much larger services spend that currently goes to consultants — that is upside as we displace it.</aside>
+        </section>
+
+        <!-- ============ 07 · TRACTION ============ -->
+        <section class="slide theme-dark s-traction" data-title="Traction">
+          <div class="s-head">
+            <p class="eyebrow" data-a>07 · Traction</p>
+            <h2 data-a><span class="hl">$1.06M ARR</span> and 214 manufacturers — with no outbound sales until March.</h2>
+          </div>
+          <div class="traction-body">
+            <figure class="chart-card" data-a>
+              <figcaption><span class="lg lg-bar">ARR ($k)</span><span class="lg lg-line">Paying customers</span></figcaption>
+              <svg class="combo" viewBox="0 0 860 340" role="img" aria-label="ARR by quarter grew from $38k in Q1 2025 to $1,060k in Q3 2026; customers grew from 9 to 214"
+                data-labels="Q1 ’25,Q2 ’25,Q3 ’25,Q4 ’25,Q1 ’26,Q2 ’26,Q3 ’26"
+                data-arr="38,96,171,310,488,742,1060"
+                data-customers="9,24,41,72,109,158,214"></svg>
+            </figure>
+            <div class="kpis">
+              <div class="kpi" data-a><b data-count="128" data-suffix="%">128%</b><span>Net revenue retention</span></div>
+              <div class="kpi" data-a><b data-count="0.9" data-decimals="1" data-suffix="%">0.9%</b><span>Monthly logo churn</span></div>
+              <div class="kpi" data-a><b data-count="34" data-suffix="%">34%</b><span>New logos invited by their own buyers</span></div>
+            </div>
+          </div>
+          <div class="logos" data-a aria-label="Selected customers">
+            <span class="wm wm-brindle"><i></i>BRINDLE<small>castings</small></span>
+            <span class="wm wm-oster">Osterfeld</span>
+            <span class="wm wm-kova">kova<i></i></span>
+            <span class="wm wm-north"><i></i>NORTHMARK</span>
+            <span class="wm wm-pellar">Pellar &amp; Sons</span>
+            <span class="wm wm-ridge"><i></i>Ridgeway</span>
+          </div>
+          <aside class="slide-notes">Growth has been almost entirely inbound and buyer-driven: a third of new customers arrive because a large buyer pointed its suppliers to Tideline. Net revenue retention of 128% comes from adding sites and per-SKU product footprints. Churn is low because reporting is annual and recurring.</aside>
+        </section>
+
+        <!-- ============ 08 · BUSINESS MODEL ============ -->
+        <section class="slide theme-light s-model" data-title="Business model">
+          <div class="s-head">
+            <p class="eyebrow" data-a>08 · Business model</p>
+            <h2 data-a>Simple SaaS pricing. <span class="hl">Buyers bring us their suppliers.</span></h2>
+          </div>
+          <div class="tiers">
+            <article class="tier-card" data-a>
+              <h3>Starter</h3>
+              <p class="price"><b>$290</b>/ month</p>
+              <p class="for">One site, first footprint</p>
+              <ul><li>Scope 1 &amp; 2 automation</li><li>CBAM quarterly reports</li><li>2 buyer questionnaires / year</li></ul>
+            </article>
+            <article class="tier-card featured" data-a>
+              <span class="badge">62% of revenue</span>
+              <h3>Growth</h3>
+              <p class="price"><b>$790</b>/ month</p>
+              <p class="for">Up to 5 sites, full value chain</p>
+              <ul><li>Scope 3 with supplier data</li><li>Unlimited questionnaires</li><li>Reduction planner</li></ul>
+            </article>
+            <article class="tier-card" data-a>
+              <h3>Network</h3>
+              <p class="price"><b>$2.4k+</b>/ month</p>
+              <p class="for">Multi-plant groups &amp; buyers</p>
+              <ul><li>Product footprints per SKU</li><li>Supplier portal for buyers</li><li>Assurance-ready audit pack</li></ul>
+            </article>
+          </div>
+          <dl class="unit" data-a>
+            <div><dt>Blended ACV</dt><dd>$4.9k</dd></div>
+            <div><dt>Gross margin</dt><dd>81%</dd></div>
+            <div><dt>CAC payback</dt><dd>6.5 mo</dd></div>
+            <div><dt>LTV : CAC</dt><dd>5.8×</dd></div>
+          </dl>
+          <aside class="slide-notes">Growth is the workhorse tier. The Network tier is where distribution compounds: large buyers use our supplier portal to collect data, and each supplier they invite gets a free first footprint and converts to paid at 41%. That's why CAC payback is under seven months.</aside>
+        </section>
+
+        <!-- ============ 09 · COMPETITION ============ -->
+        <section class="slide theme-dark s-comp" data-title="Competition">
+          <div class="s-head">
+            <p class="eyebrow" data-a>09 · Competition</p>
+            <h2 data-a>Everyone else is built for the buyer. <span class="hl">We’re built for the supplier.</span></h2>
+          </div>
+          <div class="comp-body">
+            <div class="quad" data-a role="img" aria-label="Positioning chart. Horizontal axis: built for enterprises to built for small plants. Vertical axis: manual and services-led to automated software. Tideline sits alone in the top-right quadrant.">
+              <span class="ax ax-y1">Automated software</span>
+              <span class="ax ax-y0">Manual / services-led</span>
+              <span class="ax ax-x0">Built for enterprises</span>
+              <span class="ax ax-x1">Built for small plants</span>
+              <span class="dot" style="--x:.1;--y:.24">Enterprise ESG suites</span>
+              <span class="dot" style="--x:.48;--y:.42">Horizontal carbon apps</span>
+              <span class="dot" style="--x:.08;--y:.76">Sustainability consultancies</span>
+              <span class="dot" style="--x:.58;--y:.84">Spreadsheet templates</span>
+              <span class="dot us" style="--x:.8;--y:.18">Tideline</span>
+            </div>
+            <ul class="why-win">
+              <li data-a><b>Priced for a 60-person plant</b><span>Enterprise suites start near $50k a year and need a sustainability team to run them.</span></li>
+              <li data-a><b>Manufacturing-native data model</b><span>Furnaces, alloys, scrap rates and freight lanes — not office travel and laptops.</span></li>
+              <li data-a><b>Distribution through buyers</b><span>Every enterprise buyer on our portal becomes a channel to hundreds of suppliers.</span></li>
+            </ul>
+          </div>
+          <aside class="slide-notes">We rarely lose to another software product; we lose to “do nothing” or to a spreadsheet. Enterprise ESG suites are a partner, not a rival — they need supplier data, and we are the cheapest way for their customers to get it. Horizontal carbon apps are built for offices and services companies.</aside>
+        </section>
+
+        <!-- ============ 10 · TEAM ============ -->
+        <section class="slide theme-dark s-team" data-title="Team">
+          <div class="s-head">
+            <p class="eyebrow" data-a>10 · Team</p>
+            <h2 data-a>Operators who’ve run the plant, <span class="hl">and engineers who’ve built the ledger.</span></h2>
+          </div>
+          <div class="team">
+            <article class="person" data-a><svg class="portrait" data-seed="1" viewBox="0 0 200 200" aria-hidden="true"></svg><h3>Maren Okafor</h3><p class="role">CEO &amp; co‑founder</p><p>Ran operations at a 340‑person metal stamping plant; answered her first carbon questionnaire by hand.</p></article>
+            <article class="person" data-a><svg class="portrait" data-seed="2" viewBox="0 0 200 200" aria-hidden="true"></svg><h3>Dev Raghunathan</h3><p class="role">CTO &amp; co‑founder</p><p>Built the double-entry ledger platform at Fernway Payments, processing $9B a year.</p></article>
+            <article class="person" data-a><svg class="portrait" data-seed="3" viewBox="0 0 200 200" aria-hidden="true"></svg><h3>Ilse Brandvold</h3><p class="role">Head of Climate Science</p><p>PhD in life-cycle assessment; nine years building emission-factor databases.</p></article>
+            <article class="person" data-a><svg class="portrait" data-seed="4" viewBox="0 0 200 200" aria-hidden="true"></svg><h3>Tomás Ferreira</h3><p class="role">Head of Go-to-Market</p><p>Scaled Gridline Industrial Software from $2M to $30M ARR selling to plant managers.</p></article>
+          </div>
+          <p class="advisors" data-a><b>Advisors</b> Former head of supplier sustainability at a top‑five European automaker · Ex‑partner at a carbon assurance firm · Founder of a 1,200‑person contract manufacturer</p>
+          <aside class="slide-notes">Founder–market fit is the story: Maren lived this problem as an operator, Dev built financial-grade ledgers, which is exactly what carbon accounting needs to be auditable. Team is 19 people today, 7 in engineering and 3 climate scientists.</aside>
+        </section>
+
+        <!-- ============ 11 · ROADMAP & FINANCIALS ============ -->
+        <section class="slide theme-dark s-road" data-title="Roadmap &amp; financials">
+          <div class="s-head">
+            <p class="eyebrow" data-a>11 · Roadmap &amp; financials</p>
+            <h2 data-a>A path to <span class="hl">$9.8M ARR</span> by the end of 2028.</h2>
+          </div>
+          <div class="road-body">
+            <figure class="chart-card" data-a>
+              <figcaption><span class="lg lg-bar">Actual</span><span class="lg lg-hatch">Plan</span><span class="cap-r">Year-end ARR</span></figcaption>
+              <svg class="proj" viewBox="0 0 640 320" role="img" aria-label="Year-end ARR: 2025 actual $0.31M, 2026 plan $1.4M, 2027 plan $4.2M, 2028 plan $9.8M"
+                data-labels="2025,2026,2027,2028" data-values="0.31,1.4,4.2,9.8" data-actual="1"></svg>
+              <table class="fin">
+                <tr><th scope="row">Customers</th><td>72</td><td>290</td><td>840</td><td>1,650</td></tr>
+                <tr><th scope="row">Gross margin</th><td>74%</td><td>81%</td><td>83%</td><td>84%</td></tr>
+              </table>
+            </figure>
+            <ol class="roadmap">
+              <li data-a><time>Q4 2026</time><b>Seed closes</b><span>Hire 9: engineering, climate science, sales</span></li>
+              <li data-a><time>Q1 2027</time><b>Product footprints per SKU</b><span>Unlocks automotive and medical buyers</span></li>
+              <li data-a><time>Q2 2027</time><b>Paid supplier portal for buyers</b><span>Turns enterprise buyers into a channel</span></li>
+              <li data-a><time>Q3 2027</time><b>US launch</b><span>Timed to SB 253 Scope 3 disclosures</span></li>
+              <li class="goal" data-a><time>Q1 2028</time><b>Series A ready</b><span>$4M ARR · 650 customers</span></li>
+            </ol>
+          </div>
+          <aside class="slide-notes">The plan assumes 3× growth in 2027, below the 3.4× we did this year. Product footprints per SKU are the biggest expansion lever: automotive buyers want carbon per part number, which roughly doubles ACV for customers who adopt it.</aside>
+        </section>
+
+        <!-- ============ 12 · THE ASK ============ -->
+        <section class="slide theme-mint s-ask" data-title="The ask">
+          <div class="ask-copy">
+            <p class="eyebrow" data-a>12 · The ask</p>
+            <p class="ask-big" data-a><span data-count="6" data-prefix="$" data-suffix="M">$6M</span><small>Seed round</small></p>
+            <h2 data-a>to make every small manufacturer footprint-ready.</h2>
+            <ul class="ask-goals" data-a>
+              <li><b>24 mo</b>runway</li>
+              <li><b>$4M</b>ARR target</li>
+              <li><b>650</b>customers</li>
+            </ul>
+          </div>
+          <div class="ask-chart" data-a="scale">
+            <svg class="donut" viewBox="0 0 320 320" role="img" aria-label="Use of funds: product and engineering 45%, go-to-market 30%, climate science and data 15%, operations 10%"
+              data-values="45,30,15,10"></svg>
+            <div class="donut-center"><b>Use of funds</b><span>24 months</span></div>
+          </div>
+          <ul class="funds">
+            <li data-a><i class="f1"></i><b>45%</b><span>Product &amp; engineering</span><em>$2.7M</em></li>
+            <li data-a><i class="f2"></i><b>30%</b><span>Go-to-market</span><em>$1.8M</em></li>
+            <li data-a><i class="f3"></i><b>15%</b><span>Climate science &amp; data</span><em>$0.9M</em></li>
+            <li data-a><i class="f4"></i><b>10%</b><span>Operations &amp; reserve</span><em>$0.6M</em></li>
+          </ul>
+          <aside class="slide-notes">$6M on a post-money we're happy to discuss in the room. $2.5M is already committed by our pre-seed lead and two operator angels. We are looking for a lead who knows industrial or vertical SaaS distribution and can help us with the US launch.</aside>
+        </section>
+
+        <!-- ============ 13 · CLOSING ============ -->
+        <section class="slide theme-dark s-close" data-title="Thank you" data-foot="none">
+          <svg class="tide" data-tide="close" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+          <span class="logo big" data-a><svg class="mark"><use href="#i-mark"/></svg>Tideline</span>
+          <h2 class="display" data-a>Every supplier, <span class="hl">footprint‑ready.</span></h2>
+          <div class="contact" data-a>
+            <div><small>Maren Okafor, CEO</small><a href="mailto:maren@tideline.example">maren@tideline.example</a></div>
+            <div><small>Data room</small><span>Available on request</span></div>
+            <div><small>Based in</small><span>Rotterdam &amp; Pittsburgh</span></div>
+          </div>
+          <aside class="slide-notes">Close on the vision: today a supplier footprint is a painful annual project; with Tideline it becomes a live number that travels with every shipment. Thank them, and propose a follow-up with two customers they can call.</aside>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Speaker notes panel (toggle with N) -->
+  <section class="notes" id="notes" aria-label="Speaker notes" hidden>
+    <div class="notes-head"><span>Speaker notes · <b id="notes-slide">01</b></span><button class="ibtn sm" type="button" data-action="notes" aria-label="Close speaker notes"><svg><use href="#i-close"/></svg></button></div>
+    <p id="notes-text"></p>
+  </section>
+
+  <!-- Presenter controls -->
+  <nav class="hud" aria-label="Deck controls">
+    <div class="hud-brand"><svg class="mark"><use href="#i-mark"/></svg><span>Tideline <em>Seed deck</em></span></div>
+    <div class="hud-center">
+      <button class="ibtn" type="button" data-action="prev" aria-label="Previous slide" title="Previous (←)"><svg><use href="#i-prev"/></svg></button>
+      <span class="counter" id="counter" aria-hidden="true"><b>01</b> / 13</span>
+      <div class="progress" id="progress" aria-hidden="true"></div>
+      <button class="ibtn" type="button" data-action="next" aria-label="Next slide" title="Next (→)"><svg><use href="#i-next"/></svg></button>
+    </div>
+    <div class="hud-tools">
+      <button class="ibtn" type="button" data-action="notes" aria-pressed="false" aria-label="Speaker notes" title="Speaker notes (N)"><svg><use href="#i-notes"/></svg></button>
+      <button class="ibtn" type="button" data-action="grid" aria-label="Slide overview" title="Overview (G)"><svg><use href="#i-grid"/></svg></button>
+      <button class="ibtn" type="button" data-action="full" id="btn-full" aria-label="Fullscreen" title="Fullscreen (F)"><svg><use href="#i-full"/></svg></button>
+    </div>
+    <div class="hud-bar" aria-hidden="true"><i id="hud-bar"></i></div>
+  </nav>
+
+  <p class="sr-only" id="live" aria-live="polite"></p>
+</div>
+
+<!-- Grid overview (toggle with G) -->
+<div class="overview" id="overview" role="dialog" aria-modal="true" aria-label="All slides" hidden>
+  <div class="ov-head">
+    <h2>All slides <span>Press a slide to jump · Esc to close</span></h2>
+    <button class="ibtn" type="button" data-action="grid" aria-label="Close overview"><svg><use href="#i-close"/></svg></button>
+  </div>
+  <div class="ov-grid" id="ov-grid"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

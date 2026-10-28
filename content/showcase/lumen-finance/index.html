@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lumen — Personal finance, in focus</title>
+  <meta name="description" content="Lumen is a calm, precise personal finance dashboard: cash flow, transactions, budgets and savings goals in one place.">
+  <meta name="theme-color" content="#0a0b0d">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23c8f560'/%3E%3Cpath d='M9 22a7 7 0 0 1 14 0' fill='none' stroke='%230a0b0d' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='11' r='2.5' fill='%230a0b0d'/%3E%3C/svg%3E">
+  <script>
+    /* Apply the saved theme before first paint (dark is the default). */
+    try { var t = localStorage.getItem('lumen.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="app">
+    <!-- ============ Sidebar (becomes a bottom tab bar on mobile) ============ -->
+    <aside class="sidebar">
+      <a class="brand" href="#overview" aria-label="Lumen home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="9" fill="var(--accent)"/>
+          <path d="M9 22a7 7 0 0 1 14 0" fill="none" stroke="var(--accent-ink)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="16" cy="11" r="2.5" fill="var(--accent-ink)"/>
+        </svg>
+        <span>Lumen</span>
+      </a>
+
+      <nav class="nav" aria-label="Main">
+        <a class="nav-item" href="#overview" data-nav="overview">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5"/></svg>
+          <span>Overview</span><kbd>1</kbd>
+        </a>
+        <a class="nav-item" href="#transactions" data-nav="transactions">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6h12M4 10h12M4 14h8"/></svg>
+          <span>Transactions</span><kbd>2</kbd>
+        </a>
+        <a class="nav-item" href="#budgets" data-nav="budgets">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3a7 7 0 1 0 7 7h-7z"/><path d="M13 3.6A7 7 0 0 1 16.4 7H13z"/></svg>
+          <span>Budgets</span><kbd>3</kbd>
+        </a>
+        <a class="nav-item" href="#goals" data-nav="goals">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.5"/><circle cx="10" cy="10" r=".6"/></svg>
+          <span>Goals</span><kbd>4</kbd>
+        </a>
+      </nav>
+
+      <section class="accounts" aria-labelledby="acc-title">
+        <h2 id="acc-title" class="side-label">Accounts</h2>
+        <ul id="accounts" class="acc-list"></ul>
+      </section>
+
+      <div class="side-foot">
+        <div class="me">
+          <span class="me-avatar" aria-hidden="true">NL</span>
+          <span class="me-text"><b>Nora Lindqvist</b><small>Personal · Plus plan</small></span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============ Main column ============ -->
+    <div class="main-col">
+      <header class="topbar">
+        <a class="topbar-brand" href="#overview" aria-label="Lumen home">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="9" fill="var(--accent)"/>
+            <path d="M9 22a7 7 0 0 1 14 0" fill="none" stroke="var(--accent-ink)" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="16" cy="11" r="2.5" fill="var(--accent-ink)"/>
+          </svg>
+        </a>
+        <div class="crumb"><span>Personal</span><span class="crumb-sep" aria-hidden="true">/</span><b id="crumb-view">Overview</b></div>
+
+        <div class="search">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="5.5"/><path d="m13.2 13.2 3.3 3.3"/></svg>
+          <input id="search" type="search" placeholder="Search merchants, categories…" aria-label="Search transactions" autocomplete="off" spellcheck="false">
+          <kbd aria-hidden="true">/</kbd>
+        </div>
+
+        <div class="month-picker">
+          <button class="icon-btn" id="month-prev" aria-label="Previous month"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 5-5 5 5 5"/></svg></button>
+          <button class="month-btn" id="month-btn" aria-haspopup="dialog" aria-expanded="false" aria-controls="month-pop">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4.5" width="14" height="12" rx="2"/><path d="M3 8.5h14M7 3v3M13 3v3"/></svg>
+            <span id="month-label">October 2026</span>
+          </button>
+          <button class="icon-btn" id="month-next" aria-label="Next month"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 5 5-5 5"/></svg></button>
+          <div class="month-pop" id="month-pop" role="dialog" aria-label="Choose month" hidden></div>
+        </div>
+
+        <button class="icon-btn theme-btn" id="theme-btn" aria-label="Switch to light theme">
+          <svg class="i-sun" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.5"/><path d="M10 2.5v1.8M10 15.7v1.8M2.5 10h1.8M15.7 10h1.8M4.7 4.7l1.3 1.3M14 14l1.3 1.3M4.7 15.3 6 14M14 6l1.3-1.3"/></svg>
+          <svg class="i-moon" viewBox="0 0 20 20" aria-hidden="true"><path d="M16 12.5A6.5 6.5 0 0 1 7.5 4a6.5 6.5 0 1 0 8.5 8.5z"/></svg>
+        </button>
+      </header>
+
+      <main id="main" tabindex="-1">
+        <!-- Overview -->
+        <section class="view" id="view-overview" data-view="overview" aria-labelledby="h-overview">
+          <header class="page-head">
+            <div>
+              <p class="eyebrow" id="today-label">Wednesday, October 28</p>
+              <h1 id="h-overview" tabindex="-1">Good evening, Nora</h1>
+            </div>
+            <p class="sync"><span class="pulse" aria-hidden="true"></span>4 accounts synced · 2 min ago</p>
+          </header>
+
+          <div class="kpis" id="kpis"></div>
+
+          <div class="grid-main">
+            <article class="card chart-card" aria-labelledby="cf-title">
+              <header class="card-head">
+                <div>
+                  <h2 id="cf-title">Cash flow</h2>
+                  <p class="card-sub" id="cf-sub">Income vs. spending, last 12 months</p>
+                </div>
+                <div class="card-tools">
+                  <ul class="legend-inline" aria-hidden="true">
+                    <li><i style="background:var(--accent-line)"></i>Income</li>
+                    <li><i style="background:var(--secondary)"></i>Spending</li>
+                  </ul>
+                  <div class="seg" role="group" aria-label="Chart range">
+                    <button data-range="6" aria-pressed="false">6M</button>
+                    <button data-range="12" aria-pressed="true">12M</button>
+                  </div>
+                </div>
+              </header>
+              <div class="chart" id="cash-chart"></div>
+            </article>
+
+            <article class="card donut-card" aria-labelledby="dn-title">
+              <header class="card-head">
+                <div>
+                  <h2 id="dn-title">Spending by category</h2>
+                  <p class="card-sub" id="dn-sub">October 2026</p>
+                </div>
+              </header>
+              <div class="donut-wrap">
+                <div class="donut" id="donut"></div>
+                <ul class="donut-legend" id="donut-legend" aria-label="Categories — select to include or exclude"></ul>
+              </div>
+            </article>
+          </div>
+
+          <div class="grid-lower">
+            <article class="card" aria-labelledby="bills-title">
+              <header class="card-head">
+                <div>
+                  <h2 id="bills-title">Upcoming bills</h2>
+                  <p class="card-sub" id="bills-sub">Next 14 days</p>
+                </div>
+              </header>
+              <ul class="bills" id="bills"></ul>
+            </article>
+            <article class="card" aria-labelledby="recent-title">
+              <header class="card-head">
+                <div>
+                  <h2 id="recent-title">Recent activity</h2>
+                  <p class="card-sub" id="recent-sub">Latest in October</p>
+                </div>
+                <a class="link-btn" href="#transactions">View all</a>
+              </header>
+              <ul class="recent" id="recent"></ul>
+            </article>
+          </div>
+        </section>
+
+        <!-- Transactions -->
+        <section class="view" id="view-transactions" data-view="transactions" aria-labelledby="h-transactions" hidden>
+          <header class="page-head">
+            <div>
+              <p class="eyebrow" id="tx-eyebrow">October 2026</p>
+              <h1 id="h-transactions" tabindex="-1">Transactions</h1>
+            </div>
+            <div class="seg" role="group" aria-label="Date scope" id="tx-scope">
+              <button data-scope="month" aria-pressed="true">This month</button>
+              <button data-scope="all" aria-pressed="false">All 12 months</button>
+            </div>
+          </header>
+          <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+          <div class="card table-card">
+            <div class="tx-summary" id="tx-summary" aria-live="polite"></div>
+            <table class="tx-table">
+              <caption class="sr-only">Transactions list</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Merchant</th>
+                  <th scope="col">Category</th>
+                  <th scope="col" aria-sort="descending"><button class="sort-btn" data-sort="date">Date <span class="sort-ic" aria-hidden="true"></span></button></th>
+                  <th scope="col" class="num" aria-sort="none"><button class="sort-btn" data-sort="amount">Amount <span class="sort-ic" aria-hidden="true"></span></button></th>
+                </tr>
+              </thead>
+              <tbody id="tx-body"></tbody>
+            </table>
+            <div class="empty" id="tx-empty" hidden>
+              <p><b>No transactions match.</b> Try a different search or clear the category filters.</p>
+              <button class="btn" id="tx-clear">Clear filters</button>
+            </div>
+            <nav class="pager" id="pager" aria-label="Pagination"></nav>
+          </div>
+        </section>
+
+        <!-- Budgets -->
+        <section class="view" id="view-budgets" data-view="budgets" aria-labelledby="h-budgets" hidden>
+          <header class="page-head">
+            <div>
+              <p class="eyebrow" id="bd-eyebrow">October 2026</p>
+              <h1 id="h-budgets" tabindex="-1">Budgets</h1>
+            </div>
+            <button class="link-btn" id="bd-reset">Reset to defaults</button>
+          </header>
+          <div class="card bd-summary" id="bd-summary"></div>
+          <ul class="bd-list" id="bd-list"></ul>
+        </section>
+
+        <!-- Goals -->
+        <section class="view" id="view-goals" data-view="goals" aria-labelledby="h-goals" hidden>
+          <header class="page-head">
+            <div>
+              <p class="eyebrow">Savings goals</p>
+              <h1 id="h-goals" tabindex="-1">Goals</h1>
+            </div>
+            <p class="goals-total" id="goals-total"></p>
+          </header>
+          <div class="goals" id="goals"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

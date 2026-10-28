@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meridian 2027 — Design × AI Conference, Lisbon · 14–15 May</title>
+  <meta name="description" content="Meridian 2027 is a two-day conference on design and AI. 24 sessions across Design, AI and Engineering tracks at Armazém Meridiano, Lisbon, 14–15 May 2027.">
+  <meta name="theme-color" content="#0A0A0F">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230A0A0F'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23FF6A55' stroke-width='2.4'/%3E%3Cellipse cx='16' cy='16' rx='4.5' ry='10' fill='none' stroke='%23FFB547' stroke-width='2.4'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============ HEADER (condenses on scroll) ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a class="brand" href="#top" aria-label="Meridian 2027 — back to top">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <defs>
+            <linearGradient id="bmGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#8B6CFF"/><stop offset=".55" stop-color="#FF6A55"/><stop offset="1" stop-color="#FFB547"/>
+            </linearGradient>
+          </defs>
+          <circle cx="16" cy="16" r="13" fill="none" stroke="url(#bmGrad)" stroke-width="2.4"/>
+          <ellipse cx="16" cy="16" rx="5.5" ry="13" fill="none" stroke="url(#bmGrad)" stroke-width="2.4"/>
+          <path d="M3 16h26" stroke="url(#bmGrad)" stroke-width="2.4"/>
+        </svg>
+        <span class="brand-word">Meridian<span class="brand-year">’27</span></span>
+      </a>
+
+      <nav class="main-nav" id="mainNav" aria-label="Primary">
+        <ul>
+          <li><a href="#speakers">Speakers</a></li>
+          <li><a href="#schedule">Schedule</a></li>
+          <li><a href="#tickets">Tickets</a></li>
+          <li><a href="#venue">Venue</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <a class="btn btn-primary btn-sm" href="#tickets">Get tickets</a>
+        <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="mainNav" aria-label="Open menu">
+          <span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="top" aria-labelledby="heroTitle">
+      <!-- Generative "meridian" visual. Drawn by app.js -> initHeroCanvas() -->
+      <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
+      <div class="hero-vignette" aria-hidden="true"></div>
+
+      <div class="container hero-inner">
+        <p class="eyebrow hero-eyebrow">
+          <span class="live-dot" aria-hidden="true"></span>
+          Design × AI Conference · 2nd edition
+        </p>
+
+        <h1 class="hero-title" id="heroTitle">
+          <span class="hero-line">Meridian</span>
+          <span class="hero-line hero-line-2"><span class="grad-text">2027</span><span class="hero-sub">Two days on the line where design meets intelligence.</span></span>
+        </h1>
+
+        <div class="hero-bottom">
+          <div class="hero-meta">
+            <p class="hero-when">
+              <span class="mono-label">When</span>
+              <strong>Fri 14 – Sat 15 May 2027</strong>
+            </p>
+            <p class="hero-where">
+              <span class="mono-label">Where</span>
+              <strong>Armazém Meridiano, Lisbon</strong>
+            </p>
+            <div class="hero-ctas">
+              <a class="btn btn-primary btn-lg" href="#tickets">
+                Get tickets <span class="btn-note">from €249</span>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
+              <a class="btn btn-ghost btn-lg" href="#schedule">See the schedule</a>
+            </div>
+          </div>
+
+          <!-- Live countdown to the opening keynote (target set in app.js: EVENT_START) -->
+          <div class="countdown" role="timer" aria-labelledby="cdLabel">
+            <p class="countdown-label" id="cdLabel"><span class="mono-label">Doors open in</span></p>
+            <div class="countdown-grid" id="countdown" aria-live="off">
+              <div class="cd-cell"><span class="cd-num" data-cd="days">000</span><span class="cd-unit">Days</span></div>
+              <div class="cd-cell"><span class="cd-num" data-cd="hours">00</span><span class="cd-unit">Hours</span></div>
+              <div class="cd-cell"><span class="cd-num" data-cd="minutes">00</span><span class="cd-unit">Min</span></div>
+              <div class="cd-cell"><span class="cd-num" data-cd="seconds">00</span><span class="cd-unit">Sec</span></div>
+            </div>
+            <p class="countdown-foot">Early-bird pricing ends <strong>31 Jan 2027</strong></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MARQUEE BAND (section transition) ============ -->
+    <div class="band" aria-hidden="true">
+      <div class="band-track">
+        <span>Design</span><i>✦</i><span>Artificial Intelligence</span><i>✦</i><span>Engineering</span><i>✦</i><span>Lisbon</span><i>✦</i><span>14–15 May 2027</span><i>✦</i>
+        <span>Design</span><i>✦</i><span>Artificial Intelligence</span><i>✦</i><span>Engineering</span><i>✦</i><span>Lisbon</span><i>✦</i><span>14–15 May 2027</span><i>✦</i>
+      </div>
+    </div>
+
+    <!-- ============ ABOUT / STATS ============ -->
+    <section class="section about" id="about" aria-labelledby="aboutTitle">
+      <div class="container">
+        <p class="eyebrow" data-reveal>Why Meridian</p>
+        <h2 class="statement" id="aboutTitle" data-reveal>
+          Software stopped being static. Now it <em class="grad-text">listens, guesses, and talks back.</em>
+          Meridian is where the people designing that shift compare notes — in the open, by the river, for two days.
+        </h2>
+
+        <ul class="stats" role="list">
+          <li data-reveal><span class="stat-num">1,200</span><span class="stat-label">designers, researchers &amp; engineers</span></li>
+          <li data-reveal><span class="stat-num">24</span><span class="stat-label">talks, panels &amp; hands-on workshops</span></li>
+          <li data-reveal><span class="stat-num">3</span><span class="stat-label">tracks: Design, AI, Engineering</span></li>
+          <li data-reveal><span class="stat-num">1</span><span class="stat-label">riverside terrace with the best sunset in Lisbon</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SPEAKERS (rendered from SPEAKERS in app.js) ============ -->
+    <section class="section speakers" id="speakers" aria-labelledby="speakersTitle">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow" data-reveal>Speakers</p>
+            <h2 class="h2" id="speakersTitle" data-reveal>People building the next interface</h2>
+          </div>
+          <p class="section-lede" data-reveal>Designers who ship models, researchers who sketch, engineers who care about the last 8 pixels. Select a speaker for their bio and sessions.</p>
+        </div>
+        <ul class="speaker-grid" id="speakerGrid" role="list"></ul>
+      </div>
+    </section>
+
+    <!-- ============ SCHEDULE (rendered from SESSIONS in app.js) ============ -->
+    <section class="section schedule" id="schedule" aria-labelledby="scheduleTitle">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow" data-reveal>Schedule</p>
+            <h2 class="h2" id="scheduleTitle" data-reveal>Two days, three tracks</h2>
+          </div>
+          <p class="section-lede" data-reveal>Star the sessions you don’t want to miss — your agenda is saved on this device.</p>
+        </div>
+
+        <div class="schedule-controls">
+          <div class="day-tabs" role="tablist" aria-label="Conference day">
+            <button class="day-tab" role="tab" id="tab-d1" aria-selected="true" aria-controls="schedulePanel" data-day="1">
+              <span class="day-tab-k">Day 1</span><span class="day-tab-d">Fri 14 May</span>
+            </button>
+            <button class="day-tab" role="tab" id="tab-d2" aria-selected="false" aria-controls="schedulePanel" data-day="2" tabindex="-1">
+              <span class="day-tab-k">Day 2</span><span class="day-tab-d">Sat 15 May</span>
+            </button>
+          </div>
+
+          <div class="filters" role="group" aria-label="Filter by track">
+            <button class="chip" data-track="all" aria-pressed="true">All tracks</button>
+            <button class="chip chip-design" data-track="design" aria-pressed="false"><span class="dot"></span>Design</button>
+            <button class="chip chip-ai" data-track="ai" aria-pressed="false"><span class="dot"></span>AI</button>
+            <button class="chip chip-eng" data-track="eng" aria-pressed="false"><span class="dot"></span>Engineering</button>
+            <button class="chip chip-agenda" id="agendaToggle" aria-pressed="false">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2.5 2.3 4.8 5.2.7-3.8 3.6.9 5.2L10 14.3l-4.6 2.5.9-5.2-3.8-3.6 5.2-.7z"/></svg>
+              My agenda <span class="agenda-count" id="agendaCount">0</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="schedule-panel" id="schedulePanel" role="tabpanel" aria-labelledby="tab-d1">
+          <ol class="timeline" id="timeline"></ol>
+          <p class="empty" id="scheduleEmpty" hidden></p>
+        </div>
+        <p class="sr-only" id="scheduleStatus" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- ============ TICKETS ============ -->
+    <!-- Edit tiers here: data-tier, data-price (EUR, early bird) are read by app.js for checkout -->
+    <section class="section tickets" id="tickets" aria-labelledby="ticketsTitle">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow" data-reveal>Tickets</p>
+            <h2 class="h2" id="ticketsTitle" data-reveal>Early-bird is open</h2>
+          </div>
+          <p class="section-lede" data-reveal>Prices in EUR, 23% VAT included. Teams of 5 or more save an extra 10% automatically at checkout.</p>
+        </div>
+
+        <div class="tier-grid">
+          <article class="tier" data-tier="day" data-name="Day Pass" data-price="249" data-reveal>
+            <header>
+              <h3 class="tier-name">Day Pass</h3>
+              <p class="tier-desc">One day, every track. Pick Friday or Saturday.</p>
+            </header>
+            <p class="tier-price"><span class="price">€249</span> <s aria-label="Regular price €349">€349</s></p>
+            <ul class="tier-features" role="list">
+              <li>All talks &amp; panels on your chosen day</li>
+              <li>Lunch, coffee &amp; pastéis de nata</li>
+              <li>Session recordings after the event</li>
+            </ul>
+            <div class="tier-buy">
+              <div class="qty" role="group" aria-label="Day Pass quantity">
+                <button type="button" class="qty-btn" data-step="-1" aria-label="Decrease quantity">−</button>
+                <output class="qty-val" aria-live="polite">1</output>
+                <button type="button" class="qty-btn" data-step="1" aria-label="Increase quantity">+</button>
+              </div>
+              <button type="button" class="btn btn-ghost buy-btn">Choose Day Pass</button>
+            </div>
+          </article>
+
+          <article class="tier tier-featured" data-tier="conf" data-name="Conference Pass" data-price="449" data-reveal>
+            <span class="tier-badge">Most popular</span>
+            <header>
+              <h3 class="tier-name">Conference Pass</h3>
+              <p class="tier-desc">The full Meridian: both days, all three tracks.</p>
+            </header>
+            <p class="tier-price"><span class="price">€449</span> <s aria-label="Regular price €620">€620</s></p>
+            <ul class="tier-features" role="list">
+              <li>Everything across 14–15 May</li>
+              <li>Opening party on the riverside terrace</li>
+              <li>Session recordings &amp; slide archive</li>
+              <li>12 months in the Meridian member community</li>
+            </ul>
+            <div class="tier-buy">
+              <div class="qty" role="group" aria-label="Conference Pass quantity">
+                <button type="button" class="qty-btn" data-step="-1" aria-label="Decrease quantity">−</button>
+                <output class="qty-val" aria-live="polite">1</output>
+                <button type="button" class="qty-btn" data-step="1" aria-label="Increase quantity">+</button>
+              </div>
+              <button type="button" class="btn btn-primary buy-btn">Choose Conference Pass</button>
+            </div>
+          </article>
+
+          <article class="tier" data-tier="studio" data-name="Studio Pass" data-price="890" data-reveal>
+            <header>
+              <h3 class="tier-name">Studio Pass</h3>
+              <p class="tier-desc">For leads who want the room behind the room.</p>
+            </header>
+            <p class="tier-price"><span class="price">€890</span> <s aria-label="Regular price €1,190">€1,190</s></p>
+            <ul class="tier-features" role="list">
+              <li>Everything in Conference Pass</li>
+              <li>Pre-conference workshop day, Thu 13 May</li>
+              <li>Speakers’ dinner in Alfama</li>
+              <li>Reserved seating &amp; priority badge pickup</li>
+            </ul>
+            <div class="tier-buy">
+              <div class="qty" role="group" aria-label="Studio Pass quantity">
+                <button type="button" class="qty-btn" data-step="-1" aria-label="Decrease quantity">−</button>
+                <output class="qty-val" aria-live="polite">1</output>
+                <button type="button" class="qty-btn" data-step="1" aria-label="Increase quantity">+</button>
+              </div>
+              <button type="button" class="btn btn-ghost buy-btn">Choose Studio Pass</button>
+            </div>
+          </article>
+        </div>
+        <p class="tickets-note" data-reveal>Student, educator and community scholarships: 60 free passes, applications open until 1 March 2027.</p>
+      </div>
+    </section>
+
+    <!-- ============ VENUE (light section) ============ -->
+    <section class="section venue" id="venue" aria-labelledby="venueTitle">
+      <div class="container venue-grid">
+        <div class="venue-copy">
+          <p class="eyebrow" data-reveal>Venue</p>
+          <h2 class="h2" id="venueTitle" data-reveal>Armazém Meridiano</h2>
+          <p class="venue-lede" data-reveal>A restored 1920s cork warehouse on the Marvila waterfront: three halls under steel trusses, a terrace over the Tagus, and enough natural light to make projector people nervous.</p>
+          <address class="venue-address" data-reveal>Rua do Meridiano 48, Marvila<br>1950-312 Lisbon, Portugal</address>
+
+          <h3 class="venue-sub">Getting there</h3>
+          <ul class="travel" role="list" id="travelList">
+            <li><button type="button" class="travel-item" data-pin="1"><span class="travel-n">01</span><span><strong>From the airport</strong> 15 minutes by taxi or rideshare. Ask for the riverside entrance on Avenida Ribeirinha.</span></button></li>
+            <li><button type="button" class="travel-item" data-pin="2"><span class="travel-n">02</span><span><strong>By train</strong> Braço de Prata station is a 6-minute walk. Trains from Santa Apolónia every 10 minutes.</span></button></li>
+            <li><button type="button" class="travel-item" data-pin="3"><span class="travel-n">03</span><span><strong>Where to stay</strong> Partner hotels nearby offer 15% off with code <code>MERIDIAN27</code> until 1 April.</span></button></li>
+            <li><button type="button" class="travel-item" data-pin="4"><span class="travel-n">04</span><span><strong>By bike</strong> The riverside cycle path runs past the door, with 120 secure bike spaces on site.</span></button></li>
+          </ul>
+          <p class="venue-weather">Mid-May in Lisbon averages 18–24 °C. Bring a light layer for the terrace after sunset.</p>
+        </div>
+
+        <!-- Stylized neighbourhood map. Pins are linked to the travel list via data-pin -->
+        <figure class="map-card" data-reveal>
+          <svg class="map" id="venueMap" viewBox="0 0 640 520" role="img" aria-labelledby="mapTitle mapDesc">
+            <title id="mapTitle">Stylized map of Marvila, Lisbon</title>
+            <desc id="mapDesc">Armazém Meridiano sits between Rua do Meridiano and the Tagus riverfront. Braço de Prata train station is to the north-east, partner hotels to the west, and the riverside cycle path runs along the water.</desc>
+            <defs>
+              <linearGradient id="river" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#5B45D6"/><stop offset="1" stop-color="#2A1F6B"/>
+              </linearGradient>
+              <pattern id="dots" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.3" fill="#3F6B4E"/></pattern>
+              <path id="riverPath" d="M-20 470 C 160 430, 330 470, 660 330"/>
+            </defs>
+            <rect width="640" height="520" fill="#15131C"/>
+            <!-- blocks -->
+            <g fill="#1F1C28">
+              <rect x="30" y="30" width="120" height="90" rx="6"/><rect x="170" y="30" width="150" height="90" rx="6"/>
+              <rect x="340" y="30" width="110" height="60" rx="6"/><rect x="470" y="30" width="150" height="60" rx="6"/>
+              <rect x="30" y="140" width="90" height="110" rx="6"/><rect x="140" y="140" width="110" height="110" rx="6"/>
+              <rect x="470" y="110" width="150" height="80" rx="6"/><rect x="30" y="270" width="140" height="80" rx="6"/>
+              <rect x="190" y="270" width="80" height="70" rx="6"/><rect x="460" y="210" width="80" height="60" rx="6"/>
+            </g>
+            <rect x="270" y="140" width="170" height="110" rx="8" fill="url(#dots)" opacity=".9"/>
+            <text x="355" y="200" class="map-label map-label-park" text-anchor="middle">Jardim do Cais</text>
+            <!-- river -->
+            <path d="M-20 470 C 160 430, 330 470, 660 330 L 660 540 L -20 540 Z" fill="url(#river)"/>
+            <path d="M-20 456 C 160 416, 330 456, 660 316" fill="none" stroke="#FFB547" stroke-width="2.5" stroke-dasharray="2 7" stroke-linecap="round" opacity=".85"/>
+            <text class="map-river"><textPath href="#riverPath" startOffset="12%">T A G U S &#160; R I V E R</textPath></text>
+            <!-- streets -->
+            <g fill="none" stroke="#34303F" stroke-linecap="round">
+              <path d="M0 130h640" stroke-width="10"/>
+              <path d="M0 260h460c60 0 90-20 180-40" stroke-width="14"/>
+              <path d="M160 0v360" stroke-width="8"/>
+              <path d="M460 0v260" stroke-width="8"/>
+                            <path d="M0 395 C 160 365, 330 400, 640 285" stroke-width="12"/>
+            </g>
+            <!-- railway -->
+            <path d="M560 0 C 540 120, 600 220, 640 250" fill="none" stroke="#6E6880" stroke-width="3" stroke-dasharray="10 6"/>
+            <text x="20" y="123" class="map-label">Rua do Meridiano</text>
+            <text x="618" y="146" class="map-label" text-anchor="end">Braço de Prata</text>
+            <text x="20" y="386" class="map-label" transform="rotate(-4 20 386)">Avenida Ribeirinha</text>
+            <!-- venue -->
+            <g class="map-venue" transform="translate(300 330)">
+              <circle r="34" class="pulse" fill="none" stroke="#FF6A55" stroke-width="2"/>
+              <circle r="20" fill="#FF6A55"/>
+              <path d="M-7 5V-4l7-5 7 5v9z" fill="#0A0A0F"/>
+              <rect x="-96" y="30" width="192" height="30" rx="15" fill="#F5F2EC"/>
+              <text y="50" text-anchor="middle" class="map-venue-label">Armazém Meridiano</text>
+            </g>
+            <!-- numbered pins (match travel list) -->
+            <g class="map-pin" data-pin="1" transform="translate(232 384)"><circle r="17"/><text y="5" text-anchor="middle">01</text></g>
+            <g class="map-pin" data-pin="2" transform="translate(575 105)"><circle r="17"/><text y="5" text-anchor="middle">02</text></g>
+            <g class="map-pin" data-pin="3" transform="translate(85 195)"><circle r="17"/><text y="5" text-anchor="middle">03</text></g>
+            <g class="map-pin" data-pin="4" transform="translate(470 352)"><circle r="17"/><text y="5" text-anchor="middle">04</text></g>
+            <!-- compass + scale -->
+            <g transform="translate(600 470)" class="map-compass"><circle r="18" fill="#0A0A0F" stroke="#4A4558"/><path d="M0-12 5 4 0 0-5 4z" fill="#F5F2EC"/><text y="-24" text-anchor="middle">N</text></g>
+            <g transform="translate(24 495)"><path d="M0 0h80" stroke="#F5F2EC" stroke-width="2"/><path d="M0-4v8M80-4v8" stroke="#F5F2EC" stroke-width="2"/><text x="90" y="4" class="map-label">200 m</text></g>
+          </svg>
+          <figcaption class="map-caption">Marvila, eastern Lisbon · not to scale</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="section faq" id="faq" aria-labelledby="faqTitle">
+      <div class="container faq-grid">
+        <div>
+          <p class="eyebrow" data-reveal>FAQ</p>
+          <h2 class="h2" id="faqTitle" data-reveal>Good questions</h2>
+          <p class="section-lede" data-reveal>Anything else? Our team answers within one working day via the newsletter form below.</p>
+        </div>
+        <div class="accordion">
+          <details data-reveal>
+            <summary>Will the talks be recorded?</summary>
+            <div class="acc-body"><p>Yes. Every main-stage and track talk is recorded and shared with ticket holders within two weeks. Workshops are not recorded, so the room can stay candid.</p></div>
+          </details>
+          <details data-reveal>
+            <summary>Can I transfer my ticket to a colleague?</summary>
+            <div class="acc-body"><p>Absolutely. Name changes are free until 7 May 2027 from the link in your confirmation email. After that, bring photo ID and we’ll sort it at the desk.</p></div>
+          </details>
+          <details data-reveal>
+            <summary>What is the refund policy?</summary>
+            <div class="acc-body"><p>Full refunds until 1 March 2027, 50% until 1 April 2027. After that tickets are non-refundable but always transferable.</p></div>
+          </details>
+          <details data-reveal>
+            <summary>Do you offer scholarships?</summary>
+            <div class="acc-body"><p>We reserve 60 free Conference Passes for students, educators and people from groups under-represented in tech and design. Applications are reviewed blind by a volunteer panel.</p></div>
+          </details>
+          <details data-reveal>
+            <summary>Is the venue accessible?</summary>
+            <div class="acc-body"><p>All halls are step-free with lifts to the terrace. Every talk has live captions, there is a quiet room on the mezzanine, and gender-neutral bathrooms on each floor.</p></div>
+          </details>
+          <details data-reveal>
+            <summary>Do I need to bring a laptop?</summary>
+            <div class="acc-body"><p>Only for hands-on workshops — each workshop page lists its setup. Power and fast Wi-Fi are available everywhere in the building.</p></div>
+          </details>
+          <details data-reveal>
+            <summary>Is there a code of conduct?</summary>
+            <div class="acc-body"><p>Yes, and we enforce it. Meridian is a harassment-free event for everyone. Staff in coral lanyards are on hand throughout both days.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PARTNERS (fictional wordmarks) ============ -->
+    <section class="section partners" id="partners" aria-labelledby="partnersTitle">
+      <div class="container">
+        <h2 class="eyebrow center" id="partnersTitle" data-reveal>Made possible by</h2>
+        <ul class="logo-row logo-row-lg" role="list" data-reveal>
+          <li class="wm wm-halcyon" aria-label="Halcyon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M3 12h18" stroke="currentColor" stroke-width="2.4"/></svg>halcyon</li>
+          <li class="wm wm-parallax" aria-label="Parallax AI">PARALLAX<sup>AI</sup></li>
+        </ul>
+        <ul class="logo-row" role="list" data-reveal>
+          <li class="wm wm-ostra">Ostra</li>
+          <li class="wm wm-lumen">Lumen<b>Systems</b></li>
+          <li class="wm wm-vectorial"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4l9 16 9-16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/></svg>vectorial</li>
+          <li class="wm wm-kestrel">KESTREL</li>
+          <li class="wm wm-fieldnote">fieldnote.</li>
+          <li class="wm wm-orbitale"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="10" ry="4.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.4" fill="currentColor"/></svg>Orbitale</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ NEWSLETTER ============ -->
+    <section class="section newsletter" id="newsletter" aria-labelledby="nlTitle">
+      <div class="container">
+        <div class="nl-card" data-reveal>
+          <div>
+            <h2 class="h2 nl-title" id="nlTitle">Be first to the <span class="grad-text">program drops</span></h2>
+            <p class="section-lede">Speaker reveals, workshop sign-ups and one genuinely good link per month. No spam, unsubscribe anytime.</p>
+          </div>
+          <form class="nl-form" id="nlForm" novalidate>
+            <label class="sr-only" for="nlEmail">Email address</label>
+            <input class="input" id="nlEmail" name="email" type="email" autocomplete="email" placeholder="you@studio.com" required>
+            <button class="btn btn-primary" type="submit">Subscribe</button>
+            <p class="form-msg" id="nlMsg" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <p class="footer-word">Meridian<span class="grad-text">’27</span></p>
+        <p class="muted">14–15 May 2027 · Armazém Meridiano, Lisbon.<br>Organised by the Meridian Collective, an independent non-profit.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Footer">
+        <ul>
+          <li><a href="#speakers">Speakers</a></li>
+          <li><a href="#schedule">Schedule</a></li>
+          <li><a href="#tickets">Tickets</a></li>
+        </ul>
+        <ul>
+          <li><a href="#venue">Venue &amp; travel</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#newsletter">Newsletter</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="container footer-bottom">
+      <p>© 2027 Meridian Collective</p>
+      <a href="#top" class="to-top">Back to top ↑</a>
+    </div>
+  </footer>
+
+  <!-- ============ SPEAKER DIALOG ============ -->
+  <dialog class="dialog speaker-dialog" id="speakerDialog" aria-labelledby="sdName">
+    <button class="dialog-close" type="button" data-close aria-label="Close">×</button>
+    <div class="sd-layout">
+      <div class="sd-portrait" id="sdPortrait"></div>
+      <div class="sd-body">
+        <p class="mono-label" id="sdTrack"></p>
+        <h2 class="sd-name" id="sdName"></h2>
+        <p class="sd-role" id="sdRole"></p>
+        <p class="sd-bio" id="sdBio"></p>
+        <h3 class="sd-sub">Sessions</h3>
+        <ul class="sd-sessions" id="sdSessions" role="list"></ul>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============ CHECKOUT DIALOG (mock, no payment) ============ -->
+  <dialog class="dialog checkout-dialog" id="checkoutDialog" aria-labelledby="coTitle">
+    <button class="dialog-close" type="button" data-close aria-label="Close">×</button>
+    <div id="coStep">
+      <p class="mono-label">Checkout · demo, no payment taken</p>
+      <h2 class="co-title" id="coTitle">Reserve your tickets</h2>
+      <div class="co-summary" id="coSummary"></div>
+      <form class="co-form" id="coForm" novalidate>
+        <div class="field">
+          <label for="coName">Full name</label>
+          <input class="input" id="coName" name="name" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="coEmail">Email</label>
+          <input class="input" id="coEmail" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="field" id="coDayField">
+          <label for="coDay">Day</label>
+          <select class="input" id="coDay" name="day">
+            <option value="Fri 14 May">Friday 14 May</option>
+            <option value="Sat 15 May">Saturday 15 May</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="coCompany">Company <span class="muted">(optional)</span></label>
+          <input class="input" id="coCompany" name="company" autocomplete="organization">
+        </div>
+        <p class="form-msg" id="coMsg" role="alert"></p>
+        <button class="btn btn-primary btn-block" type="submit" id="coSubmit">Confirm reservation</button>
+      </form>
+    </div>
+    <div class="co-done" id="coDone" hidden tabindex="-1">
+      <div class="co-check" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M13 25l7 7 15-16" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h2 class="co-title" id="coDoneTitle">You’re in.</h2>
+      <p id="coDoneText"></p>
+      <p class="co-ref mono-label" id="coRef"></p>
+      <button class="btn btn-ghost btn-block" type="button" data-close>Back to Meridian</button>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
