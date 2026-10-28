@@ -20,7 +20,12 @@ const TREASURY = process.env.NEXT_PUBLIC_TREASURY_ADDRESS as Address;
 const STAKING = process.env.NEXT_PUBLIC_STAKING_CONTRACT_ADDRESS as Address;
 
 /** Which payment tokens are live (addresses configured). Until then the buttons say payments open soon. */
-export const PAYMENTS = { USDG: !!TOKENS.USDG && !!TREASURY, ORIEL: !!TOKENS.ORIEL && !!TREASURY, STAKING: !!TOKENS.ORIEL && !!STAKING };
+// $ORIEL payments wait for a week of price data (7-day TWAP): turned on with NEXT_PUBLIC_ORIEL_PAYMENTS=on
+export const PAYMENTS = {
+  USDG: !!TOKENS.USDG && !!TREASURY,
+  ORIEL: !!TOKENS.ORIEL && !!TREASURY && process.env.NEXT_PUBLIC_ORIEL_PAYMENTS === "on",
+  STAKING: !!TOKENS.ORIEL && !!STAKING,
+};
 
 type Eip1193 = { request: (a: { method: string; params?: any[] }) => Promise<any> }; // eslint-disable-line @typescript-eslint/no-explicit-any
 let provide: (() => Promise<Eip1193>) | null = null;
