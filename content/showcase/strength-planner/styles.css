@@ -76,6 +76,7 @@ a { color: inherit; }
 h1, h2, h3 { margin: 0; }
 p { margin: 0; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+section[id] { scroll-margin-top: 64px; }
 .wrap { width: 100%; max-width: var(--wrap); margin: 0 auto; padding: 0 24px; }
 .skip { position: absolute; left: 12px; top: -60px; z-index: 50; background: var(--accent); color: var(--on-accent); padding: 10px 14px; border-radius: 10px; font-weight: 600; text-decoration: none; }
 .skip:focus { top: 12px; }
@@ -411,7 +412,7 @@ svg path, svg circle, svg rect { vector-effect: non-scaling-stroke; }
 .lib-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .lib-item { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0; transition: opacity var(--t), border-color var(--t); }
 .lib-item:hover { border-color: var(--line-strong); }
-.lib-item.off { opacity: .55; }
+.lib-item.off { opacity: .72; }
 .li-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
 .li-pat { font: 600 10px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); }
 .diff { display: inline-flex; gap: 3px; }
