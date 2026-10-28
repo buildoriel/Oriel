@@ -56,7 +56,7 @@ export default function Docs() {
             <section id="publishing">
               <h2>Publishing and versions</h2>
               <p>The preview shows your latest changes privately. <b>Publish</b> takes a snapshot of the project as a new version and puts it live at <code>your-project.buildoriel.com</code>. Every site is checked automatically before it goes live.</p>
-              <p>Each publish is kept. Open the version history from the project menu in the workspace to see earlier versions and roll the live site back to any of them.</p>
+              <p>Each publish is kept. Open the version history from the project menu in the workspace to see earlier versions and roll the live site back to any of them. To take a site offline without deleting anything, choose <b>Unpublish</b> in the same menu; publish again whenever you like.</p>
               <h3>Downloading and deleting</h3>
               <p>Download any project as a ZIP from the project menu, on every plan. Deleting a project takes its site offline, releases its subdomain, and frees up a project slot on your plan.</p>
             </section>
