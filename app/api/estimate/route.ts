@@ -5,9 +5,11 @@ import { projectAccess } from "@/lib/projects";
 import { estimate } from "@/lib/agent/estimate";
 import type { TierId } from "@/lib/config";
 import { handle } from "@/lib/http";
+import { limitByIp } from "@/lib/ratelimit";
 
 /** Rough credit estimate for a message before it is sent (no AI call). Body: { message, projectId? } */
 export const POST = handle(async (req: Request) => {
+  await limitByIp(req, "estimate", 90);
   const user = await requireUser();
   const { message, projectId } = await req.json().catch(() => ({}));
   const db = admin();
