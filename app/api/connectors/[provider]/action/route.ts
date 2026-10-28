@@ -1,26 +1,48 @@
 import { NextResponse } from "next/server";
 import { requireUser, HttpError } from "@/lib/supabase/server";
+import { admin } from "@/lib/supabase/admin";
 import { ownProject } from "@/lib/projects";
-import { githubPush, vercelDeploy, netlifyDeploy, driveUpload, supabaseProjects } from "@/lib/connectors/actions";
+import { requireTier } from "@/lib/tier-guard";
+import { MIN_TIER, type ProviderId } from "@/lib/connectors/providers";
+import {
+  githubPush, vercelDeploy, netlifyDeploy, driveUpload, supabaseProjects, supabaseLink, supabaseApplySchema, bytesOf, isBinary,
+} from "@/lib/connectors/actions";
 import { handle } from "@/lib/http";
 
-/** Aksi besar (push/deploy) WAJIB membawa confirm:true dari dialog konfirmasi di UI. */
+export const maxDuration = 120;
+
+/**
+ * Aksi konektor untuk satu proyek. Aksi besar (push, deploy, menjalankan SQL) WAJIB membawa confirm:true
+ * dari dialog konfirmasi di UI. Tier dicek ulang setiap aksi: konektor berhenti bekerja bila tier turun.
+ */
 export const POST = handle(async (req: Request, ctx: { params: Promise<{ provider: string }> }) => {
   const user = await requireUser();
-  const { provider } = await ctx.params;
-  const { projectId, confirm, message, path } = await req.json();
-  if (provider === "supabase") return NextResponse.json(await supabaseProjects(user.id));
-  if (confirm !== true) throw new HttpError(400, "Aksi ini perlu konfirmasi.");
+  const provider = (await ctx.params).provider as ProviderId;
+  if (!(provider in MIN_TIER)) throw new HttpError(404, "Konektor tidak dikenal.");
+  await requireTier(user.id, MIN_TIER[provider], `Konektor ${provider}`);
+  const { projectId, confirm, message, path, op, ref, autocommit } = await req.json();
+
+  if (provider === "supabase" && op === "list") return NextResponse.json({ projects: await supabaseProjects(user.id) });
   const p = await ownProject(user.id, projectId);
+  if (provider === "supabase" && op === "link") return NextResponse.json(await supabaseLink(user.id, p.id, String(ref ?? "")));
+  if (confirm !== true) throw new HttpError(400, "Aksi ini perlu konfirmasi.");
+
   switch (provider) {
-    case "github": return NextResponse.json(await githubPush(user.id, projectId, message || `Update dari Oriel`));
-    case "vercel": return NextResponse.json(await vercelDeploy(user.id, projectId));
-    case "netlify": return NextResponse.json(await netlifyDeploy(user.id, projectId));
+    case "github": {
+      const r = await githubPush(user.id, p.id, message || "Update dari Oriel");
+      if (typeof autocommit === "boolean") await admin().from("projects").update({ github_autocommit: autocommit }).eq("id", p.id);
+      return NextResponse.json(r);
+    }
+    case "vercel": return NextResponse.json(await vercelDeploy(user.id, p.id));
+    case "netlify": return NextResponse.json(await netlifyDeploy(user.id, p.id));
+    case "supabase": return NextResponse.json(await supabaseApplySchema(user.id, p.id));
     case "google_drive": {
-      const { admin } = await import("@/lib/supabase/admin");
-      const { data: f } = await admin().from("project_files").select("content").eq("project_id", projectId).eq("path", path ?? "index.html").single();
-      const csv = String(path).endsWith(".csv");
-      return NextResponse.json(await driveUpload(user.id, `${p.name} - ${path ?? "index.html"}`, f.content, csv ? "text/csv" : "text/html"));
+      const file = String(path || "index.html");
+      const { data: f } = await admin().from("project_files").select("path, content").eq("project_id", p.id).eq("path", file).maybeSingle();
+      if (!f) throw new HttpError(404, `File ${file} tidak ada.`);
+      if (isBinary(f)) throw new HttpError(400, "Simpan ke Drive hanya untuk dokumen teks (HTML, CSV, Markdown).");
+      const mime = file.endsWith(".csv") ? "text/csv" : file.endsWith(".md") ? "text/markdown" : "text/html";
+      return NextResponse.json(await driveUpload(user.id, `${p.name} - ${file}`, bytesOf(f).toString("utf8"), mime));
     }
     default: throw new HttpError(404, "Aksi tidak dikenal.");
   }

@@ -1,4 +1,6 @@
 import { admin } from "../supabase/admin";
+import { HttpError } from "../supabase/server";
+import { PRIVATE_FILE, dataUrlBytes, isDataUrl } from "../agent/tools";
 
 export const SITES_BUCKET = "sites";
 const MIME: Record<string, string> = {
@@ -9,19 +11,31 @@ const MIME: Record<string, string> = {
 };
 export const mimeOf = (p: string) => MIME[p.split(".").pop()!.toLowerCase()] ?? "application/octet-stream";
 
+/** Isi file siap disajikan: gambar (data URL) menjadi byte, teks apa adanya. */
+export function fileBody(content: string): string | Uint8Array<ArrayBuffer> {
+  if (!isDataUrl(content)) return content;
+  const b = dataUrlBytes(content);
+  const out = new Uint8Array(new ArrayBuffer(b.length));
+  out.set(b);
+  return out;
+}
+/** File yang boleh tampil di internet (skema SQL dll. hanya untuk pemilik). */
+export const isPublicFile = (path: string) => !PRIVATE_FILE.test(path);
+
 /** Salin file kerja proyek menjadi versi immutable di Storage: sites/<projectId>/v<N>/<path> */
 export async function publishProject(projectId: string) {
   const db = admin();
-  const { data: files } = await db.from("project_files").select("path, content").eq("project_id", projectId);
-  if (!files?.length) throw new Error("Proyek belum punya file.");
-  if (!files.some((f: any) => f.path === "index.html")) throw new Error("index.html belum ada.");
+  const { data: all } = await db.from("project_files").select("path, content").eq("project_id", projectId);
+  const files = (all ?? []).filter((f: any) => isPublicFile(f.path));
+  if (!files.length) throw new HttpError(400, "Proyek belum punya file.");
+  if (!files.some((f: any) => f.path === "index.html")) throw new HttpError(400, "index.html belum ada. Minta agent membuat halaman utama dulu.");
 
   const { data: last } = await db.from("project_versions").select("version").eq("project_id", projectId)
     .order("version", { ascending: false }).limit(1).maybeSingle();
   const version = (last?.version ?? 0) + 1;
   let bytes = 0;
   for (const f of files as { path: string; content: string }[]) {
-    const body = new Blob([f.content], { type: mimeOf(f.path) });
+    const body = new Blob([fileBody(f.content)], { type: mimeOf(f.path) });
     bytes += body.size;
     const { error } = await db.storage.from(SITES_BUCKET).upload(`${projectId}/v${version}/${f.path}`, body, {
       contentType: mimeOf(f.path), upsert: true, cacheControl: "31536000",

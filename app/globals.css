@@ -147,3 +147,26 @@ label.f>*{min-width:0}
 dialog{border:1px solid var(--line);border-radius:24px;padding:28px;max-width:440px;width:calc(100% - 32px)}
 dialog::backdrop{background:rgba(17,19,23,.35)}
 .pill[disabled]{opacity:.5;cursor:not-allowed}
+.linkish{border:0;background:none;padding:2px 0;font-size:12px;color:var(--mute);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.linkish:hover{color:var(--ink)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--acc);margin-left:6px;vertical-align:middle}
+.banner{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:18px;padding:14px 18px;margin-bottom:16px;font-size:14px}
+.acct{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:32px}
+.acct>*{min-width:0}
+.acct .wide{grid-column:1/-1}
+.copy{display:flex;gap:8px;align-items:center;background:var(--bg);border-radius:14px;padding:6px 6px 6px 14px;margin-top:14px}
+.copy code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:13px var(--m)}
+table.ledger{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+table.ledger td{padding:10px 0;border-bottom:1px solid var(--line)}
+table.ledger td:last-child{text-align:right;font-family:var(--m)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--line)}
+.show{grid-template-columns:repeat(3,1fr);margin-top:28px}
+.show a{text-decoration:none}
+.show .frame{height:200px;overflow:hidden;background:var(--soft);border-bottom:1px solid var(--line);position:relative}
+.show iframe{width:1280px;height:800px;border:0;transform:scale(.3);transform-origin:0 0;pointer-events:none;background:#fff}
+.chk{display:flex;gap:10px;align-items:center;font-size:14px;margin:4px 0 16px}
+@media (max-width:900px){.acct,.show{grid-template-columns:1fr}}
+.acct-link{text-decoration:none}
+@media (max-width:900px){.bar .acct-link,.bar .login-link{display:inline-flex;margin-left:auto}}
+.show-frame{height:180px;overflow:hidden;background:var(--soft);border-bottom:1px solid var(--line)}
+.show-frame iframe{width:1280px;height:800px;border:0;transform:scale(.3);transform-origin:0 0;pointer-events:none;background:#fff}

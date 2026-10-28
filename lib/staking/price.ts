@@ -50,3 +50,9 @@ export async function twap7d(at = new Date()) {
   if (xs.length < expected * 0.7) throw new Error(`Sampel harga kurang (${xs.length}/${expected}). Tier tidak dievaluasi.`);
   return xs.reduce((a: number, b: number) => a + b, 0) / xs.length;
 }
+
+/** Harga untuk menilai pembayaran $ORIEL: terendah antara spot dan TWAP 7 hari (pool tipis mudah dipompa sesaat). */
+export async function orielPriceUsd() {
+  const [spot, twap] = await Promise.all([readSpotPriceUsd().then((r) => r.priceUsd), twap7d()]);
+  return Math.min(spot, twap);
+}

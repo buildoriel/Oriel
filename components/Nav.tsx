@@ -16,7 +16,11 @@ const MOB: [string, string, string][] = [
 export function Nav() {
   const path = usePathname();
   const [credits, setCredits] = useState<number | null>(null);
-  useEffect(() => { fetch("/api/me").then((r) => (r.ok ? r.json() : null)).then((j) => j && setCredits(j.balance.total)).catch(() => {}); }, [path]);
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    fetch("/api/me").then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (j) { setCredits(j.balance.total); setUnread(j.notifications?.length ?? 0); } }).catch(() => {});
+  }, [path]);
   const on = (h: string) => (h === "/" ? path === "/" : path.startsWith(h));
   return (
     <>
@@ -25,8 +29,10 @@ export function Nav() {
         <nav className="tabs" aria-label="Halaman">
           {LINKS.map(([h, l]) => <Link key={h} href={h} aria-current={on(h) ? "page" : undefined}>{l}</Link>)}
         </nav>
-        {credits != null ? <span className="credit"><b>{credits.toLocaleString("id-ID")}</b> kredit</span>
-          : <Link className="pill sm" href="/login">Masuk</Link>}
+        {credits != null
+          ? <Link className="credit acct-link" href="/akun" aria-label={`Akun, ${credits} kredit${unread ? `, ${unread} notifikasi baru` : ""}`}>
+              <b>{credits.toLocaleString("id-ID")}</b> kredit{unread > 0 && <span className="dot" />}</Link>
+          : <Link className="pill sm login-link" href="/login">Masuk</Link>}
         <Link className="pill ink sm" href="/workspace">Mulai build</Link>
       </div></header>
       <nav className="mobnav" aria-label="Halaman">

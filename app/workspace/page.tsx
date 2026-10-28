@@ -6,7 +6,10 @@ import { useRouter } from "next/navigation";
 export default function Projects() {
   const [projects, setProjects] = useState<any[]>([]); const [name, setName] = useState(""); const [slug, setSlug] = useState(""); const [err, setErr] = useState("");
   const router = useRouter();
-  useEffect(() => { fetch("/api/projects").then((r) => r.json()).then((j) => setProjects(j.projects ?? [])); }, []);
+  useEffect(() => {
+    fetch("/api/projects").then((r) => r.json()).then((j) => setProjects(j.projects ?? []));
+    const e = new URLSearchParams(location.search).get("error"); if (e) setErr(e);
+  }, []);
   async function create(e: React.FormEvent) {
     e.preventDefault(); setErr("");
     const r = await fetch("/api/projects", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name, slug }) });

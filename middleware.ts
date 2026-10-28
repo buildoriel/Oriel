@@ -37,7 +37,7 @@ export async function middleware(req: NextRequest) {
     },
   });
   const { data } = await sb.auth.getUser();
-  const protectedPath = /^\/(workspace|stake|connectors)/.test(url.pathname);
+  const protectedPath = /^\/(workspace|stake|connectors|akun)/.test(url.pathname);
   if (protectedPath && !data.user) {
     url.pathname = "/login"; url.searchParams.set("next", req.nextUrl.pathname);
     return NextResponse.redirect(url);

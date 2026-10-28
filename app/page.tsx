@@ -1,7 +1,22 @@
 import Link from "next/link";
 import { OrielIcon } from "@/components/Logo";
+import { admin } from "@/lib/supabase/admin";
+import { ROOT_DOMAIN } from "@/lib/config";
 
-export default function Home() {
+export const revalidate = 300;
+
+/** Showcase: proyek yang pemiliknya ikut showcase DAN dipilih tim Oriel (featured_at diisi). */
+async function featured() {
+  try {
+    const { data } = await admin().from("projects").select("id, name, slug")
+      .eq("showcase_opt_in", true).not("featured_at", "is", null).not("published_version", "is", null)
+      .order("featured_at", { ascending: false }).limit(6);
+    return (data ?? []) as { id: string; name: string; slug: string }[];
+  } catch { return []; }
+}
+
+export default async function Home() {
+  const show = await featured();
   return (
     <section className="page">
       <div className="hero">
@@ -31,6 +46,15 @@ export default function Home() {
             <div className="card" key={t as string}><h3>{t}</h3><p className="mute">{d}</p>
               <div className="kinds">{(k as string[]).map((x) => <span key={x}>{x}</span>)}</div></div>))}
       </div>
+      {show.length > 0 && (
+        <div style={{ marginTop: 96 }}>
+          <h2>Dibuat di Oriel</h2>
+          <div className="grid show">{show.map((p) => (
+            <a key={p.id} className="card tc" href={`https://${p.slug}.${ROOT_DOMAIN}`} target="_blank" rel="noreferrer">
+              <div className="frame"><iframe src={`https://${p.slug}.${ROOT_DOMAIN}`} title={p.name} loading="lazy" tabIndex={-1} aria-hidden="true" sandbox="allow-scripts" /></div>
+              <div className="bd"><h3>{p.name}</h3><span className="mono mute">{p.slug}.{ROOT_DOMAIN}</span></div>
+            </a>))}</div>
+        </div>)}
       <div className="econ">
         <div>
           <h2>Stake instead of subscribe.</h2>

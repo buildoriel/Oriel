@@ -7,7 +7,7 @@ import { handle } from "@/lib/http";
 
 export const GET = handle(async (req: Request) => {
   const cat = new URL(req.url).searchParams.get("category");
-  let q = admin().from("templates").select("id, title, description, category, price_credits, uses, creator_id, profiles(handle)").eq("published", true).order("uses", { ascending: false }).limit(60);
+  let q = admin().from("templates").select("id, title, description, category, price_credits, uses, creator_id, profiles(handle), source:projects!templates_source_project_id_fkey(slug)").eq("published", true).order("uses", { ascending: false }).limit(60);
   if (cat) q = q.eq("category", cat);
   const { data } = await q;
   return NextResponse.json({ templates: data ?? [] });

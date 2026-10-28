@@ -56,3 +56,33 @@ export async function unstake(amount: string) {
   const dec = await pub.readContract({ address: TOKENS.ORIEL, abi: ERC20, functionName: "decimals" });
   return pub.waitForTransactionReceipt({ hash: await w.writeContract({ account, address: STAKING, abi: STAKE, functionName: "unstake", args: [parseUnits(amount, dec)] }) });
 }
+
+/** Tanda tangani pesan nonce lalu verifikasi di server. Mengembalikan kredit Free yang diberikan (0 bila sudah pernah). */
+export async function verifyWallet(): Promise<{ wallet: string; freeCredits: number }> {
+  const n = await fetch("/api/wallet/nonce", { method: "POST" });
+  if (!n.ok) throw new Error((await n.json().catch(() => ({}))).error ?? "Gagal meminta nonce.");
+  const { message } = await n.json();
+  const sig = await connectAndSign(message);
+  const v = await fetch("/api/wallet/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(sig) });
+  const j = await v.json();
+  if (!v.ok) throw new Error(j.error);
+  return j;
+}
+
+const DIST = parseAbi([
+  "function claim(uint256 epoch, address account, uint256 amount, bytes32[] proof)",
+  "function claimed(uint256 epoch, address account) view returns (bool)",
+]);
+
+/** Status klaim bagi hasil di kontrak (dibaca lewat RPC publik). */
+export async function isClaimed(distributor: Address, epoch: number, account: Address) {
+  const pub = createPublicClient({ chain, transport: http() });
+  return pub.readContract({ address: distributor, abi: DIST, functionName: "claimed", args: [BigInt(epoch), account] });
+}
+
+/** Klaim USDG bagi hasil satu epoch. Siapa pun boleh mengirim, dana selalu ke `account`. */
+export async function claimRevshare(distributor: Address, epoch: number, account: Address, amountRaw: string, proof: `0x${string}`[]) {
+  const { w, account: from, pub } = await wallet();
+  const hash = await w.writeContract({ account: from, address: distributor, abi: DIST, functionName: "claim", args: [BigInt(epoch), account, BigInt(amountRaw), proof] });
+  return pub.waitForTransactionReceipt({ hash });
+}
