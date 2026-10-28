@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { TokenCA } from "@/components/TokenCA";
 import { stake, unstake } from "@/lib/wallet-client";
 import s from "./stake.module.css";
 
@@ -31,6 +32,7 @@ export default function Stake() {
         <div>
           <h1 className="h1">Stake $ORIEL</h1>
           <p className="lead">Your tier is set by the dollar value of your stake, using the 7-day average price of the $ORIEL pool on Pons. Evaluated on the 1st of each month.</p>
+          <div style={{ marginTop: 14 }}><TokenCA /></div>
         </div>
       </div>
 

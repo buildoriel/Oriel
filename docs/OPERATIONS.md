@@ -62,6 +62,8 @@ Raster images: set `IMAGE_MODEL` to an image model slug on OpenRouter (e.g. `goo
 Costs are still computed from token counts and the price table in `lib/agent/models.ts`. OpenRouter's credit purchase fee is not included there, so either fold it into the model prices or treat it as a margin reduction. To switch to the Claude API directly, set `LLM_PROVIDER=anthropic` and fill in `ANTHROPIC_API_KEY`.
 
 ### 4. Contracts (Robinhood Chain)
+**The token address shows up by itself.** After $ORIEL launches from the dev wallet (`ORIEL_DEV_WALLET`), `/api/token` finds it on-chain within about a minute and the site shows the contract address (home page, footer, Stake page) with copy and explorer links. Only tokens with symbol ORIEL in transactions the dev wallet sent count, so look-alike tokens airdropped to it are ignored. `ORIEL_TOKEN_ADDRESS` in the environment always takes precedence. The detected address is stored in `app_settings` (key `oriel_token`).
+
 **From the browser (no tooling):** sign in and open `/admin/deploy`. Connect a wallet with some ETH on Robinhood Chain, enter the $ORIEL, USDG and treasury addresses (each is checked on-chain), then deploy `OrielStaking` and `RevenueDistributor`. The page reads each contract back after deploying and gives you the env block to paste into Vercel. The bytecode comes from `lib/contracts/artifacts.json`; rebuild it after changing a contract with `npx tsx scripts/compile-contracts.ts` (solc 0.8.24, optimizer 200 runs, EVM `paris`). `scripts/contracts.test.ts` runs both contracts in an in-memory EVM.
 
 **With Foundry:**
