@@ -65,6 +65,7 @@ export function CommandPalette({ projects, onToggleSidebar }: { projects: Projec
       { id: "t-system", group: "Theme", icon: "monitor", label: "Use system theme", run: () => setTheme("system") },
       { id: "t-light", group: "Theme", icon: "sun", label: "Light theme", run: () => setTheme("light") },
       { id: "t-dark", group: "Theme", icon: "moon", label: "Dark theme", run: () => setTheme("dark") },
+      { id: "logout", group: "Account", icon: "logout", label: "Sign out", run: () => { location.href = "/logout"; } },
       { id: "keys", group: "Help", icon: "keyboard", label: "Keyboard shortcuts", hint: "?", run: () => setHelp(true) },
     ];
     const s = q.trim().toLowerCase();

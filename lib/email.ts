@@ -1,3 +1,4 @@
+import { isPlaceholderEmail } from "./account-email";
 import { admin } from "./supabase/admin";
 
 /**
@@ -9,6 +10,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://buildoriel.com";
 
 export async function sendEmail(m: { to: string; subject: string; html: string; text: string }) {
   const key = process.env.RESEND_API_KEY;
+  if (isPlaceholderEmail(m.to)) return false; // wallet-only account: no mailbox
   if (!key) { console.info(`email skipped (RESEND_API_KEY not set): "${m.subject}"`); return false; }
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",

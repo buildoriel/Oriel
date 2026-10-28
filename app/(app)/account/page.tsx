@@ -82,9 +82,12 @@ export default function Account() {
       <div className="page-head">
         <div>
           <h1 className="h1">Account</h1>
-          <p className="mute">{me.email} · {p.handle ? `@${p.handle}` : "no handle yet"}</p>
+          <p className="mute">{[me.email, p.handle ? `@${p.handle}` : "no handle yet"].filter(Boolean).join(" · ")}</p>
         </div>
-        <button type="button" className="btn btn-sm" onClick={() => { setHandleErr(""); setHandle(p.handle ?? ""); }}><Icon name="pencil" />Edit handle</button>
+        <div className="row" style={{ gap: 8 }}>
+          <button type="button" className="btn btn-sm" onClick={() => { setHandleErr(""); setHandle(p.handle ?? ""); }}><Icon name="pencil" />Edit handle</button>
+          <a className="btn btn-sm btn-ghost" href="/logout"><Icon name="logout" />Sign out</a>
+        </div>
       </div>
       {msg && <div className="callout" role="status" style={{ marginBottom: 16 }}><Icon name="info" /><span className="callout-body">{msg}</span></div>}
 
