@@ -1,5 +1,5 @@
 "use client";
-import { createWalletClient, createPublicClient, custom, http, parseAbi, parseUnits, getAddress, type Address } from "viem";
+import { createWalletClient, createPublicClient, custom, http, parseAbi, parseUnits, getAddress, type Abi, type Address, type Hex } from "viem";
 
 const chain = {
   id: Number(process.env.NEXT_PUBLIC_RH_CHAIN_ID ?? 4663), name: "Robinhood Chain",
@@ -35,6 +35,23 @@ async function wallet() {
   const [account] = await w.requestAddresses();
   try { await w.switchChain({ id: chain.id }); } catch { await w.addChain({ chain }); }
   return { w, account: getAddress(account), pub: createPublicClient({ chain, transport: http() }) };
+}
+
+/** Public reads on Robinhood Chain (no wallet needed). */
+export const chainClient = () => createPublicClient({ chain, transport: http() });
+export const EXPLORER = chain.blockExplorers.default.url;
+export const CHAIN_ID = chain.id;
+
+/** The connected wallet address (switches the wallet to Robinhood Chain). */
+export async function connectedAddress() { return (await wallet()).account; }
+
+/** Deploy a contract from the connected wallet and wait for it to be mined. */
+export async function deployContract(abi: Abi, bytecode: Hex, args: readonly unknown[]) {
+  const { w, account, pub } = await wallet();
+  const hash = await w.deployContract({ account, chain, abi, bytecode, args });
+  const receipt = await pub.waitForTransactionReceipt({ hash });
+  if (receipt.status !== "success" || !receipt.contractAddress) throw new Error("The deployment transaction failed.");
+  return { address: getAddress(receipt.contractAddress), hash, from: account };
 }
 
 export async function connectAndSign(message: string) {
