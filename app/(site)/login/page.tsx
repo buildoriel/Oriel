@@ -1,24 +1,23 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { Icon } from "@/components/Icon";
 import { OrielMark } from "@/components/Logo";
-
+import { GoogleButton } from "@/components/GoogleButton";
+import { safeNext } from "@/lib/redirect";
 
 // shown once the Google provider is enabled in Supabase (Authentication > Providers)
 const GOOGLE = process.env.NEXT_PUBLIC_GOOGLE_AUTH === "on";
 export default function Login() {
   const [email, setEmail] = useState(""); const [sent, setSent] = useState(false); const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [next, setNext] = useState("/workspace");
+  useEffect(() => { setNext(safeNext(new URLSearchParams(location.search).get("next"))); }, []);
   async function send(e: React.FormEvent) {
     e.preventDefault(); setErr(""); setBusy(true);
-    const next = new URLSearchParams(location.search).get("next") ?? "/workspace";
     const { error } = await supabaseBrowser().auth.signInWithOtp({ email, options: { emailRedirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(next)}` } });
     setBusy(false);
     error ? setErr(error.message) : setSent(true);
-  }
-  async function google() {
-    await supabaseBrowser().auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${location.origin}/auth/callback` } });
   }
   return (
     <div className="site-main" style={{ display: "grid", placeItems: "center", minHeight: "calc(100dvh - 64px - 96px)", padding: "48px 16px" }}>
@@ -44,7 +43,7 @@ export default function Login() {
               <div className="row xs faint" style={{ gap: 12 }}>
                 <span className="grow" style={{ borderTop: "1px solid var(--line)" }} />or<span className="grow" style={{ borderTop: "1px solid var(--line)" }} />
               </div>
-              <button className="btn btn-lg btn-block" type="button" onClick={google}><Icon name="globe" />Continue with Google</button>
+              <GoogleButton next={next} onError={setErr} />
             </>}
             {err && <p className="err" role="alert">{err}</p>}
           </form>
