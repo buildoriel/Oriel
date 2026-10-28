@@ -140,7 +140,7 @@ em { font-style: italic; }
 .hero__text { grid-column: 1 / span 7; display: flex; flex-direction: column; justify-content: space-between; gap: 28px; min-width: 0; }
 .hero__title {
   margin: clamp(16px, 5vh, 56px) 0 0;
-  font: 400 clamp(52px, 8.6vw, 138px)/.9 var(--serif);
+  font: 400 clamp(52px, 9.8vw, 156px)/.9 var(--serif);
   letter-spacing: -.025em;
 }
 .hero__title .line { display: block; }
@@ -178,7 +178,7 @@ em { font-style: italic; }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .15 0 0 0 0 .1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: .32; mix-blend-mode: multiply;
 }
-.plate--wide { aspect-ratio: 16 / 10; }
+.plate--wide { aspect-ratio: 4 / 3; }
 
 /* ---------- Section heads ---------- */
 section { position: relative; }
@@ -362,7 +362,7 @@ section { position: relative; }
 
 /* ---------- Footer ---------- */
 .site-footer { border-top: 1px solid var(--ink); padding: 24px 0 28px; overflow: hidden; }
-.site-footer__mark { margin: 0 0 12px; font: 400 clamp(64px, 15.4vw, 236px)/.86 var(--serif); letter-spacing: -.035em; white-space: nowrap; }
+.site-footer__mark { margin: 0 0 12px; font: 400 clamp(60px, 19.5vw, 300px)/.86 var(--serif); letter-spacing: -.035em; white-space: nowrap; }
 .site-footer__mark em { color: var(--accent); }
 .site-footer__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 28px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-2); }
 .site-footer__row p { margin: 0; }
@@ -482,6 +482,7 @@ kbd { font: 500 10px/1 var(--sans); border: 1px solid var(--rule); border-radius
   .clock { margin-left: auto; padding-left: 0; border-left: 0; }
   .clock__label { display: none; }
   .wordmark { margin-right: 0; }
+  .hero__title { font-size: clamp(52px, 16vw, 84px); }
   .hero__lede, .hero__links { grid-column: 1 / -1; }
   .hero__links { flex-direction: row; flex-wrap: wrap; gap: 8px 24px; }
   .note { font-size: 9.5px; }
