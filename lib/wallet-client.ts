@@ -1,5 +1,5 @@
 "use client";
-import { createWalletClient, createPublicClient, custom, http, parseAbi, parseUnits, getAddress, type Abi, type Address, type Hex } from "viem";
+import { createWalletClient, createPublicClient, custom, fallback, http, parseAbi, parseUnits, getAddress, type Abi, type Address, type Hex } from "viem";
 
 const chain = {
   id: Number(process.env.NEXT_PUBLIC_RH_CHAIN_ID ?? 4663), name: "Robinhood Chain",
@@ -28,17 +28,26 @@ let provide: (() => Promise<Eip1193>) | null = null;
 /** The Privy wallet (embedded or external) registers here; without it a browser extension wallet is used. */
 export function registerWalletProvider(fn: (() => Promise<Eip1193>) | null) { provide = fn; }
 
+/**
+ * Chain reads go to our same-origin proxy first (wallet in-app browsers can stall on the public RPC),
+ * then to the public RPC. Short timeouts so a stuck request becomes an error instead of an endless spinner.
+ */
+const reads = () => fallback([
+  http(typeof location === "undefined" ? undefined : `${location.origin}/api/rpc`, { timeout: 10_000, retryCount: 1 }),
+  http(undefined, { timeout: 10_000, retryCount: 1 }),
+]);
+
 async function wallet() {
   const eth = provide ? await provide() : (window as any).ethereum;
   if (!eth) throw new Error("No wallet found. Sign in again, or install a wallet that supports Robinhood Chain.");
   const w = createWalletClient({ chain, transport: custom(eth) });
   const [account] = await w.requestAddresses();
   try { await w.switchChain({ id: chain.id }); } catch { await w.addChain({ chain }); }
-  return { w, account: getAddress(account), pub: createPublicClient({ chain, transport: http() }) };
+  return { w, account: getAddress(account), pub: createPublicClient({ chain, transport: reads() }) };
 }
 
 /** Public reads on Robinhood Chain (no wallet needed). */
-export const chainClient = () => createPublicClient({ chain, transport: http() });
+export const chainClient = () => createPublicClient({ chain, transport: reads() });
 export const EXPLORER = chain.blockExplorers.default.url;
 export const CHAIN_ID = chain.id;
 
@@ -102,7 +111,7 @@ const DIST = parseAbi([
 
 /** Revenue share claim status in the contract (read through the public RPC). */
 export async function isClaimed(distributor: Address, epoch: number, account: Address) {
-  const pub = createPublicClient({ chain, transport: http() });
+  const pub = createPublicClient({ chain, transport: reads() });
   return pub.readContract({ address: distributor, abi: DIST, functionName: "claimed", args: [BigInt(epoch), account] });
 }
 

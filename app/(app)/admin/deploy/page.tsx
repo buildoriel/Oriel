@@ -30,7 +30,10 @@ async function tokenInfo(a: string): Promise<TokenInfo> {
       c.readContract({ address: a, abi: ERC20, functionName: "decimals" }),
     ]);
     return { symbol, decimals };
-  } catch { return { error: "This contract doesn't look like an ERC-20 token." }; }
+  } catch (e: any) {
+    if (/timed? ?out|fetch|network|HTTP request failed/i.test(String(e?.shortMessage ?? e?.message))) return { error: "Couldn't reach Robinhood Chain. Check your connection and edit the address to retry." };
+    return { error: "This contract doesn't look like an ERC-20 token." };
+  }
 }
 
 /**
@@ -44,6 +47,7 @@ export default function DeployContracts() {
   const [done, setDone] = useState<Partial<Record<Kind, Deployed>>>({});
   const [busy, setBusy] = useState<Kind | "connect" | null>(null);
   const [err, setErr] = useState("");
+  const [stage, setStage] = useState("");
   const [copied, setCopied] = useState(false);
 
   useEffect(() => { try { const s = JSON.parse(localStorage.getItem(SAVED) ?? "{}"); if (s.done) setDone(s.done); if (s.form) setForm((f) => ({ ...f, ...s.form })); } catch { /* fresh start */ } }, []);
@@ -66,13 +70,15 @@ export default function DeployContracts() {
   }, [form.oriel, form.usdg, form.treasury]);
 
   async function connect() {
-    setBusy("connect"); setErr("");
+    setBusy("connect"); setErr(""); setStage("Approve the connection and the switch to Robinhood Chain in your wallet…");
     try {
       const address = await connectedAddress();
-      const eth = formatEther(await chainClient().getBalance({ address }));
+      setStage("Reading the ETH balance…");
+      // a failed balance read shouldn't block deployment: the wallet itself shows the gas cost
+      const eth = await chainClient().getBalance({ address }).then(formatEther).catch(() => "");
       setWallet({ address, eth });
     } catch (e: any) { setErr(e.shortMessage ?? e.message); }
-    setBusy(null);
+    setBusy(null); setStage("");
   }
 
   async function deploy(kind: Kind) {
@@ -138,15 +144,16 @@ export default function DeployContracts() {
         <div className="card-head"><h2 className="h3">1. Connect the deployer wallet</h2>{wallet && <span className="badge badge-ok"><span className="dot dot-ok" />Connected</span>}</div>
         {wallet ? (
           <p className="small">
-            <a className="link mono" href={link("address", wallet.address)} target="_blank" rel="noreferrer">{short(wallet.address)}</a>
-            <span className="mute"> · {Number(wallet.eth).toFixed(5)} ETH on Robinhood Chain</span>
-            {Number(wallet.eth) === 0 && <span style={{ color: "var(--bad)" }}> · add a little ETH for gas first</span>}
+            <a className="link mono" href={link("address", wallet.address)} target="_blank" rel="noreferrer" style={{ wordBreak: "break-all" }}>{wallet.address}</a>
+            <span className="mute"> · {wallet.eth ? `${Number(wallet.eth).toFixed(5)} ETH on Robinhood Chain` : "balance unavailable"}</span>
+            {wallet.eth && Number(wallet.eth) === 0 && <span style={{ color: "var(--bad)" }}> · add a little ETH for gas first</span>}
           </p>
         ) : (
           <button className="btn btn-primary" onClick={connect} disabled={busy === "connect"} style={{ justifySelf: "start" }}>
             {busy === "connect" ? <span className="spinner" /> : <Icon name="wallet" />}Connect wallet
           </button>
         )}
+        {stage && <p className="small mute">{stage}</p>}
       </section>
 
       <section className="card card-lg stack" style={{ gap: 14, marginBottom: 16 }}>
