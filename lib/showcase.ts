@@ -40,10 +40,12 @@ async function officialAccount() {
   return data.user.id;
 }
 
-export async function seedShowcase(): Promise<SeedResult[]> {
+/** Publishes every project in the manifest, or only `slugs` when given. */
+export async function seedShowcase(slugs?: string[]): Promise<SeedResult[]> {
   const db = admin();
   const owner = await officialAccount();
-  const entries: Entry[] = JSON.parse(await readFile(path.join(ROOT, "manifest.json"), "utf8"));
+  const all: Entry[] = JSON.parse(await readFile(path.join(ROOT, "manifest.json"), "utf8"));
+  const entries = slugs?.length ? all.filter((e) => slugs.includes(e.slug)) : all;
   const results: SeedResult[] = [];
   // featured_at orders the home page showcase (newest first), so the first manifest entry gets the latest time
   const now = Date.now();
