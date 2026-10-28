@@ -6,7 +6,7 @@ export const metadata = { title: "Docs", description: "How to build, publish, an
 const TOC: [string, string][] = [
   ["start", "Getting started"], ["prompts", "Writing good prompts"], ["attachments", "Attachments"],
   ["publishing", "Publishing and versions"], ["domains", "Custom domains"], ["connectors", "Connectors"],
-  ["teams", "Team projects"], ["credits", "Credits"], ["shortcuts", "Shortcuts and settings"],
+  ["teams", "Team projects"], ["credits", "Credits"], ["token", "$ORIEL and staking"], ["shortcuts", "Shortcuts and settings"],
 ];
 
 export default function Docs() {
@@ -95,6 +95,21 @@ export default function Docs() {
               <h2>Credits</h2>
               <p>One credit covers $0.01 of AI cost, and each request is charged by what it actually cost. Before you send, the composer shows a rough estimate. Small edits usually cost a few credits, and full builds cost more.</p>
               <p>Monthly credits expire at the end of their period, while top-up credits never expire. You can see every charge in your Account under Credit history. Compare plans and top-up packs on <Link href="/tiers">Plans &amp; credits</Link>, or stake $ORIEL instead of paying monthly on the <Link href="/stake">Stake</Link> page.</p>
+            </section>
+
+            <section id="token">
+              <h2>$ORIEL and staking</h2>
+              <p>$ORIEL is Oriel&apos;s token on Robinhood Chain. Instead of paying for a plan, you can stake $ORIEL worth 10 times its monthly price and receive that plan&apos;s credits every month, plus a share of the margin in USDG.</p>
+              <h3>Staking</h3>
+              <ol>
+                <li>Connect the wallet that holds your $ORIEL under Account, so your stake can be linked to you.</li>
+                <li>Open <Link href="/stake">Stake</Link>, enter the total you want staked, and confirm two transactions: an approval and the stake.</li>
+                <li>On the 1st of each month, your stake is valued with the 7-day average price and your tier is set. The first assignment is on December 1, 2026.</li>
+              </ol>
+              <p>You can unstake at any time. The staking contract has no owner and can&apos;t be paused or upgraded, so only your wallet can move your stake.</p>
+              <h3>Revenue share</h3>
+              <p>Each month, after staker credits, half of the remaining margin is shared with stakers in USDG. Your share appears under Account and can be claimed on-chain within a year. It depends on real margin and can be zero.</p>
+              <p>All official addresses, with live supply, burn and staking data, are on the <Link href="/token">$ORIEL page</Link>.</p>
             </section>
 
             <section id="shortcuts">

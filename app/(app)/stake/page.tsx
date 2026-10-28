@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { TokenCA } from "@/components/TokenCA";
+import { AddressRow } from "@/components/AddressRow";
 import { stake, unstake } from "@/lib/wallet-client";
 import s from "./stake.module.css";
 
@@ -13,8 +14,12 @@ export default function Stake() {
   const [info, setInfo] = useState<any>(null); const [amt, setAmt] = useState(""); const [msg, setMsg] = useState("");
   const load = () => fetch("/api/stake").then((r) => r.json()).then((j) => { setInfo(j); if (!amt) setAmt(String(j.staked ?? 0)); });
   useEffect(() => { load(); }, []);
+  const [stats, setStats] = useState<{ staking: string | null; staked: number | null } | null>(null);
+  useEffect(() => { fetch("/api/token/stats").then((r) => (r.ok ? r.json() : null)).then(setStats).catch(() => {}); }, []);
   const [demo, setDemo] = useState("0.01");
-  const twap = info?.twap ?? (info && !info.configured ? parseFloat(demo) || 0 : 0);
+  // until a week of price data exists, estimate with the current price (tiers themselves always use the 7-day average)
+  const estimated = !!info?.configured && !info?.twap && !!info?.spot;
+  const twap = info?.twap ?? (info && !info.configured ? parseFloat(demo) || 0 : info?.spot ?? 0);
   const v = (parseFloat(amt.replace(",", ".")) || 0) * twap;
   const cur = [...T].reverse().find((t) => v >= t[1]) ?? ["Free", 0, 60];
   async function act(kind: "stake" | "unstake") {
@@ -63,11 +68,11 @@ export default function Stake() {
           <div className={s.rows} style={{ marginTop: 14 }}>
             <div><span>7-day TWAP price</span><span className="mono">{info && !info.configured
               ? <input className={`input mono ${s.demo}`} aria-label="Example price per token (USD)" inputMode="decimal" value={demo} onChange={(e) => setDemo(e.target.value)} />
-              : twap ? `$${twap.toPrecision(3)}` : <span className="mute">not enough data yet</span>}</span></div>
+              : info?.twap ? `$${info.twap.toPrecision(3)}` : <span className="mute">collecting data (first full week on Dec 1)</span>}</span></div>
             <div><span>Current price</span><span className="mono">{info?.spot ? `$${info.spot.toPrecision(3)}` : "–"}</span></div>
           </div>
 
-          <p className="eyebrow" style={{ marginTop: 26 }}>Stake value</p>
+          <p className="eyebrow" style={{ marginTop: 26 }}>Stake value{estimated && <span className="mute"> · estimated at the current price</span>}</p>
           <div className={`${s.value} num`}>{usd(v)}</div>
 
           <div className={s.ladder}>{T.map((t) => (
@@ -95,6 +100,17 @@ export default function Stake() {
               {info?.graceUntil && <div><span>Grace period until</span><span className="mono">{info.graceUntil.slice(0, 10)}</span></div>}
             </div>
           </section>
+          {info?.configured && (
+            <div className="callout callout-accent"><Icon name="info" />
+              <span className="callout-body small">Tiers are assigned on the 1st of each month from the 7-day average price. $ORIEL launched on October 28, so the first assignment with a full week of price data is on <b>December 1</b>.</span></div>
+          )}
+          {stats?.staking && (
+            <section className="card">
+              <div className="row-between"><h2 className="h3">Staking contract</h2><span className="small mute">{stats.staked == null ? "" : `${stats.staked.toLocaleString("en-US", { maximumFractionDigits: 0 })} ORIEL staked`}</span></div>
+              <AddressRow label="OrielStaking" note="No owner, no pause" address={stats.staking} compact />
+              <p className="xs mute" style={{ marginTop: 8 }}>All official addresses and live data: <Link className="link" href="/token">$ORIEL token page</Link>.</p>
+            </section>
+          )}
           <div className="callout"><Icon name="shield" />
             <span className="callout-body small">If your stake value drops below the safe threshold, you keep this tier for a 1-month grace period and get notified before any downgrade.</span></div>
           <div className="callout"><Icon name="clock" />

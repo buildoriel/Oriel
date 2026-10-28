@@ -16,6 +16,7 @@ export function Footer() {
       <div className="foot-in">
         <div className="row small mute" style={{ gap: 14 }}><span className="row"><OrielMark size={18} /><span>© {new Date().getFullYear()} Oriel</span></span><ThemeToggle compact /></div>
         <nav aria-label="Help, legal and community">
+          <Link href="/token">$ORIEL</Link>
           <Link href="/docs">Docs</Link>
           <Link href="/faq">FAQ</Link>
           <Link href="/changelog">Changelog</Link>
