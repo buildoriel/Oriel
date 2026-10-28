@@ -337,7 +337,7 @@ export default function Workspace({ project: initial, role, initialMessages, ini
                 : <span className="truncate">{project.slug}.{ROOT} · draft</span>}
             </div>
           </div>
-          <Menu label="Project actions" items={items} />
+          <Menu label="Project actions" items={items} buttonClass="btn btn-sm" text="Menu" />
         </header>
 
         {(notice || lowCredit) && (

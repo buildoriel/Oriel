@@ -72,8 +72,8 @@ export function Composer({
 export type MenuEntry = { icon?: IconName; label: string; onSelect: () => void; disabled?: boolean; hint?: string } | "sep" | { section: string };
 
 /** Button that opens a small action menu. Closes on outside click, Escape, or selection. */
-export function Menu({ label, icon = "more", items, align = "right", buttonClass = "btn btn-ghost btn-icon btn-sm" }: {
-  label: string; icon?: IconName; items: MenuEntry[]; align?: "left" | "right"; buttonClass?: string;
+export function Menu({ label, icon = "more", items, align = "right", buttonClass = "btn btn-ghost btn-icon btn-sm", text }: {
+  label: string; icon?: IconName; items: MenuEntry[]; align?: "left" | "right"; buttonClass?: string; text?: string;
 }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -87,7 +87,7 @@ export function Menu({ label, icon = "more", items, align = "right", buttonClass
   return (
     <div ref={box} style={{ position: "relative" }}>
       <button type="button" className={buttonClass} aria-label={label} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-        <Icon name={icon} />
+        <Icon name={icon} />{text}
       </button>
       {open && (
         <div className="menu" role="menu" style={{ top: "calc(100% + 6px)", [align]: 0 }}>
