@@ -1,5 +1,5 @@
 "use client";
-import { PrivyProvider, useIdentityToken, useLogout, usePrivy, useWallets } from "@privy-io/react-auth";
+import { PrivyProvider, getIdentityToken, useIdentityToken, useLogout, usePrivy, useWallets } from "@privy-io/react-auth";
 import { useEffect, useRef, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { registerWalletProvider } from "@/lib/wallet-client";
@@ -44,9 +44,32 @@ export function PrivyAuthProvider({ children }: { children: React.ReactNode }) {
 export function PrivyLogin({ next }: { next: string }) {
   const { ready, authenticated, login } = usePrivy();
   const { identityToken } = useIdentityToken();
+  const { logout } = useLogout();
   const [state, setState] = useState<"idle" | "linking" | "error">("idle");
   const [err, setErr] = useState("");
+  const [slow, setSlow] = useState(false);
   const tried = useRef<string | null>(null);
+
+  const report = (message: string) => fetch("/api/errors", { method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ message: `[login] ${message}`, url: location.href }) }).catch(() => {});
+
+  // Privy never became ready (e.g. this domain is not in the Privy app's allowed origins)
+  useEffect(() => {
+    if (ready) return;
+    const t = setTimeout(() => { setSlow(true); report("Privy did not become ready within 12s"); }, 12_000);
+    return () => clearTimeout(t);
+  }, [ready]);
+
+  // signed in to Privy but no identity token yet: ask for one, then give up with a clear message
+  useEffect(() => {
+    if (!ready || !authenticated || identityToken) return;
+    getIdentityToken().catch(() => null);
+    const t = setTimeout(() => {
+      setState("error"); setErr("We couldn't finish signing you in. Sign out of the wallet session and try again.");
+      report("Authenticated in Privy but no identity token (enable identity tokens in the Privy dashboard)");
+    }, 8_000);
+    return () => clearTimeout(t);
+  }, [ready, authenticated, identityToken]);
 
   useEffect(() => {
     if (!ready || !authenticated || !identityToken || tried.current === identityToken) return;
@@ -60,14 +83,18 @@ export function PrivyLogin({ next }: { next: string }) {
       .catch((e) => { setState("error"); setErr(e.message); });
   }, [ready, authenticated, identityToken, next]);
 
-  const busy = !ready || state === "linking" || (authenticated && !identityToken && state !== "error");
+  const retry = async () => { setState("idle"); setErr(""); tried.current = null; await logout().catch(() => {}); login(); };
+  const busy = state !== "error" && (!ready || state === "linking" || (authenticated && !identityToken));
   return (
     <div className="stack" style={{ gap: 12 }}>
-      <button className="btn btn-primary btn-lg btn-block" type="button" disabled={busy} onClick={() => login()}>
-        {busy ? <span className="spinner" /> : <Icon name="wallet" />}
-        {state === "linking" ? "Signing you in…" : "Connect wallet or sign in"}
-      </button>
+      {state === "error"
+        ? <button className="btn btn-primary btn-lg btn-block" type="button" onClick={retry}><Icon name="refresh" />Try again</button>
+        : <button className="btn btn-primary btn-lg btn-block" type="button" disabled={busy} onClick={() => login()}>
+            {busy ? <span className="spinner" /> : <Icon name="wallet" />}
+            {state === "linking" || (authenticated && ready) ? "Signing you in…" : "Connect wallet or sign in"}
+          </button>}
       <p className="xs faint center">Wallet, email or Google. If you don&apos;t have a wallet, Oriel creates one for you.</p>
+      {slow && !ready && <p className="err" role="alert">Sign-in is taking longer than usual. Check your connection and reload the page.</p>}
       {err && <p className="err" role="alert">{err}</p>}
     </div>
   );
