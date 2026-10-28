@@ -517,6 +517,14 @@ dialog.cmdk { width: min(600px, calc(100% - 24px)); margin-top: 12vh; overflow: 
 .foot .token-ca-btn { color: var(--ink-2); }
 .foot-ca { max-width: 1160px; margin: 0 auto; padding: 20px 24px 0; }
 .foot-ca:empty { display: none; }
+.addr-row { display: grid; grid-template-columns: 200px minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.addr-row:last-child { border-bottom: 0; }
+.addr-meta { display: grid; gap: 2px; }
+.addr-label { font-weight: 600; font-size: 14px; color: var(--ink); }
+.addr-value { font: 13px var(--font-mono); color: var(--ink-2); overflow-wrap: anywhere; }
+.addr-actions { display: flex; gap: 4px; }
+.addr-compact { grid-template-columns: minmax(0, 1fr) auto; } .addr-compact .addr-actions { grid-column: 2; grid-row: 1; } .addr-compact .addr-value { grid-column: 1 / -1; grid-row: 2; }
+@media (max-width: 760px) { .addr-row { grid-template-columns: minmax(0, 1fr) auto; } .addr-actions { grid-column: 2; grid-row: 1; } .addr-value { grid-column: 1 / -1; grid-row: 2; } }
 @media (max-width: 860px) { .foot-in { padding: 24px 16px 32px; } }
 
 /* legal pages */

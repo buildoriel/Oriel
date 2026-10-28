@@ -6,6 +6,20 @@ export const metadata = { title: "Changelog", description: "What's new in Oriel.
 const ENTRIES: { date: string; title: string; body: React.ReactNode }[] = [
   {
     date: "October 28, 2026",
+    title: "$ORIEL is live",
+    body: <>
+      <p>$ORIEL launched on Pons, on Robinhood Chain, and staking is open.</p>
+      <ul>
+        <li><b>Staking:</b> stake $ORIEL instead of paying for a plan and get its credits every month. Tiers are assigned monthly from the 7-day average price, starting December 1.</li>
+        <li><b>Revenue share:</b> stakers receive a share of the margin in USDG, claimed on-chain.</li>
+        <li><b>$ORIEL page:</b> the official <Link href="/token">token and contract addresses</Link>, with live supply, burn and staking data.</li>
+        <li><b>Pay with USDG:</b> plans and top-ups can now be paid in USDG.</li>
+        <li><b>Free templates:</b> five complete projects to start from, in <Link href="/templates">Templates</Link>.</li>
+      </ul>
+    </>,
+  },
+  {
+    date: "October 28, 2026",
     title: "A new look, and the tools to run real projects",
     body: <>
       <p>Oriel has a new design, built to stay out of your way while you work. It comes with a set of features for running real projects.</p>

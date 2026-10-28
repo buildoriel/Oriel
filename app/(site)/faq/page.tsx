@@ -20,7 +20,7 @@ const GROUPS: { title: string; items: [string, React.ReactNode][] }[] = [
         <p>Monthly credits, from Free, a paid plan, or staking, expire at the end of their period. Top-up credits never expire while your account is active.</p>
       </>],
       ["How do I pay?", <>
-        <p>On-chain, in USDG or $ORIEL on Robinhood Chain. Payments are final once confirmed. Plans last 30 days, and top-up packs come in 500, 2,500, and 10,000 credits.</p>
+        <p>On-chain, in USDG on Robinhood Chain. Paying with $ORIEL opens once a full week of price data has been collected. Payments are final once confirmed. Plans last 30 days, and top-up packs come in 500, 2,500, and 10,000 credits.</p>
       </>],
       ["Can I get a refund?", <>
         <p>Credits have no cash value and aren&rsquo;t refundable, except where the law requires it. See the <Link href="/terms">Terms</Link> for details.</p>
@@ -33,6 +33,15 @@ const GROUPS: { title: string; items: [string, React.ReactNode][] }[] = [
   {
     title: "Staking and revenue share",
     items: [
+      ["What are the official $ORIEL addresses?", <>
+        <p>The token is <code>0x16258bea6cfc73Fd5D1f44FA8a1142F3F63bB9c5</code> on Robinhood Chain. The staking and revenue share contracts, with live supply, burn and staking numbers, are on the <Link href="/token">$ORIEL page</Link>. Only trust addresses shown there or posted by @buildoriel.</p>
+      </>],
+      ["Where can I get $ORIEL?", <>
+        <p>$ORIEL launched on Pons, a launchpad on Robinhood Chain, where it trades on a bonding curve. Nothing on Oriel is financial advice.</p>
+      </>],
+      ["When does my stake start counting?", <>
+        <p>Tiers are assigned on the 1st of each month, using the 7-day average price. $ORIEL launched on October 28, 2026, so November 1 doesn&rsquo;t have a full week of price data yet. The first assignment is on December 1. You can stake and unstake at any time before then.</p>
+      </>],
       ["How does staking replace a subscription?", <>
         <p>Stake $ORIEL worth 10 times a plan&rsquo;s monthly price and you get that plan&rsquo;s credits every month: $200 for Builder, $500 for Pro, $2,000 for Studio. Your stake is valued with the 7-day average price, on the 1st of each month.</p>
         <p>If the value drops, you keep your tier while it stays above 90% of the threshold. Below that, you get a one-month grace period and a notification before any downgrade.</p>
