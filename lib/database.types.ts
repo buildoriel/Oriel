@@ -722,6 +722,7 @@ export type Database = {
           email_build_done: boolean
           email_low_credits: boolean
           low_credits_emailed_at: string | null
+          privy_did: string | null
         }
         Insert: {
           created_at?: string
@@ -740,6 +741,7 @@ export type Database = {
           email_build_done?: boolean
           email_low_credits?: boolean
           low_credits_emailed_at?: string | null
+          privy_did?: string | null
         }
         Update: {
           created_at?: string
@@ -758,6 +760,7 @@ export type Database = {
           email_build_done?: boolean
           email_low_credits?: boolean
           low_credits_emailed_at?: string | null
+          privy_did?: string | null
         }
         Relationships: [
           {

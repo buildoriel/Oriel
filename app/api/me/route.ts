@@ -3,6 +3,7 @@ import { requireUser, HttpError } from "@/lib/supabase/server";
 import { admin } from "@/lib/supabase/admin";
 import { getBalance } from "@/lib/credits";
 import { handle } from "@/lib/http";
+import { isPlaceholderEmail } from "@/lib/account-email";
 
 export const GET = handle(async () => {
   const user = await requireUser();
@@ -14,7 +15,7 @@ export const GET = handle(async () => {
     db.from("notifications").select("id, body, created_at").eq("user_id", user.id).eq("read", false).order("id", { ascending: false }).limit(5),
     db.from("credit_ledger").select("id, delta, bucket, reason, created_at").eq("user_id", user.id).order("id", { ascending: false }).limit(15),
   ]);
-  return NextResponse.json({ email: user.email, profile, tier, balance, notifications: notes ?? [], ledger: ledger ?? [] });
+  return NextResponse.json({ email: isPlaceholderEmail(user.email) ? null : user.email, profile, tier, balance, notifications: notes ?? [], ledger: ledger ?? [] });
 });
 
 // change the public handle (shown in the template marketplace) and/or email notification preferences

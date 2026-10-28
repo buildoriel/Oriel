@@ -26,8 +26,8 @@ export default function Docs() {
             <section id="start">
               <h2>Getting started</h2>
               <ol>
-                <li><Link href="/login">Sign in</Link> with your email or Google.</li>
-                <li>On the Free plan, verify a Robinhood Chain wallet on your Account page to unlock 60 free credits a month. You only sign a message, with no transaction and no gas fee.</li>
+                <li><Link href="/login">Sign in</Link> with your wallet, email, or Google. If you sign in without a wallet, Oriel creates one for you.</li>
+                <li>On the Free plan, your first sign-in with a wallet unlocks 60 free credits a month. Signing in only signs a message, with no transaction and no gas fee.</li>
                 <li>Describe what you want in the workspace. Oriel creates a project with its own subdomain and starts building.</li>
                 <li>Watch the preview update as it works, then ask for changes in the same chat.</li>
                 <li>Press <b>Publish</b> when you&rsquo;re happy with it.</li>

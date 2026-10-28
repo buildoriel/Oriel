@@ -3,13 +3,30 @@ import { requireUser, HttpError } from "@/lib/supabase/server";
 import { admin } from "@/lib/supabase/admin";
 import { projectAccess } from "@/lib/projects";
 import { handle } from "@/lib/http";
+import { isPlaceholderEmail } from "@/lib/account-email";
 import { EMAIL_RE, canRemove, inviteBlocker, maskEmail } from "./rules";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 async function emailOf(userId: string) {
   const { data } = await admin().auth.admin.getUserById(userId);
-  return data?.user?.email ?? null;
+  const e = data?.user?.email ?? null;
+  return isPlaceholderEmail(e) ? null : e;
+}
+
+/** Invitee by email, @handle, or wallet address (wallet-only accounts have no email). */
+async function findInvitee(raw: string) {
+  const q = raw.trim().toLowerCase();
+  if (/^0x[0-9a-f]{40}$/.test(q)) {
+    const { data } = await admin().from("profiles").select("id").eq("wallet_address", q).maybeSingle();
+    return data?.id ?? null;
+  }
+  if (/^@?[a-z0-9_]{3,24}$/.test(q) && !q.includes(".")) {
+    const { data } = await admin().from("profiles").select("id").eq("handle", q.replace(/^@/, "")).maybeSingle();
+    return data?.id ?? null;
+  }
+  if (EMAIL_RE.test(q) && q.length <= 254) return userIdByEmail(q);
+  throw new HttpError(400, "Enter an email address, an @handle, or a wallet address.");
 }
 
 /** Auth users are not mirrored in profiles; user_id_by_email (service role only) looks them up. */
@@ -51,8 +68,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const user = await requireUser();
   const p = await projectAccess(user.id, (await ctx.params).id);
   const body = await req.json().catch(() => ({}));
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-  if (!EMAIL_RE.test(email) || email.length > 254) throw new HttpError(400, "Enter a valid email address.");
+  const target = typeof body.email === "string" ? body.email.slice(0, 254) : "";
+  if (!target.trim()) throw new HttpError(400, "Enter an email address, an @handle, or a wallet address.");
 
   const db = admin();
   const [{ count: memberCount }, { count: invitesToday }, tier] = await Promise.all([
@@ -64,16 +81,16 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const blocked = inviteBlocker({ isOwner: p.role === "owner", ownerTier: tier, memberCount: memberCount ?? 0, invitesToday: invitesToday ?? 0 });
   if (blocked) throw new HttpError(403, blocked);
 
-  if (email === user.email?.toLowerCase()) throw new HttpError(400, "You already own this project.");
-  const invitee = await userIdByEmail(email);
-  if (!invitee) throw new HttpError(404, "No Oriel account uses that email. Ask them to sign in to Oriel once, then invite them again.");
+  const invitee = await findInvitee(target);
+  if (!invitee) throw new HttpError(404, "No Oriel account matches that. Ask them to sign in to Oriel once, then invite them again.");
+  if (invitee === user.id) throw new HttpError(400, "You already own this project.");
 
   const { error } = await db.from("project_members").insert({ project_id: p.id, user_id: invitee, role: "editor", added_by: user.id });
   if (error?.code === "23505") throw new HttpError(409, "That person is already a member.");
   if (error) throw error;
 
   const { data: me } = await db.from("profiles").select("handle").eq("id", user.id).maybeSingle();
-  const who = me?.handle ? `@${me.handle}` : (user.email ?? "Someone");
+  const who = me?.handle ? `@${me.handle}` : (isPlaceholderEmail(user.email) ? "Someone" : user.email ?? "Someone");
   await db.from("notifications").insert({ user_id: invitee, kind: "team_invite", body: `${who} added you to ${p.name}.` });
   return NextResponse.json({ ok: true });
 });

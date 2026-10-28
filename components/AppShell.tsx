@@ -6,7 +6,7 @@ import { Icon, type IconName } from "./Icon";
 import { OrielLockup } from "./Logo";
 import { CommandPalette, modKey } from "./CommandPalette";
 
-type Me = { email: string; tier: string; balance: { total: number; monthly: number; topup: number }; profile: { handle: string | null }; notifications: unknown[] };
+type Me = { email: string | null; tier: string; balance: { total: number; monthly: number; topup: number }; profile: { handle: string | null; wallet_address?: string | null }; notifications: unknown[] };
 type Project = { id: string; name: string; slug: string; published_version: number | null; shared?: boolean };
 
 const NAV: [string, string, IconName][] = [
@@ -17,6 +17,9 @@ const NAV: [string, string, IconName][] = [
 ];
 const TIER_CREDITS: Record<string, number> = { free: 60, builder: 1000, pro: 2500, studio: 10000 };
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+/** @handle, else email, else the short wallet address (wallet-only accounts). */
+const nameOf = (m: Me) => (m.profile?.handle ? `@${m.profile.handle}` : m.email ?? (m.profile?.wallet_address ? short(m.profile.wallet_address) : "Account"));
 
 /** Ask the shell to reload credits and recent projects (after a build, purchase, or new project). */
 export const refreshShell = () => window.dispatchEvent(new Event("oriel:refresh"));
@@ -88,9 +91,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <div className="meter"><i className={total < quota * 0.15 ? "accent" : ""} style={{ width: `${Math.min(100, (total / quota) * 100)}%` }} /></div>
               </Link>
               <Link href="/account" className="sb-account" aria-current={path.startsWith("/account") ? "page" : undefined}>
-                <span className="avatar">{(me.profile?.handle ?? me.email ?? "?").charAt(0)}</span>
+                <span className="avatar">{nameOf(me).replace(/^@|^0x/, "").charAt(0)}</span>
                 <span className="grow">
-                  <span className="small truncate" style={{ display: "block" }}>{me.profile?.handle ? `@${me.profile.handle}` : me.email}</span>
+                  <span className="small truncate" style={{ display: "block" }}>{nameOf(me)}</span>
                   <span className="xs mute">Account</span>
                 </span>
                 {unread > 0 && <span className="dot" aria-label={`${unread} unread notifications`} />}

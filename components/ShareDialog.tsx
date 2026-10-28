@@ -9,7 +9,7 @@ type Team = { isOwner: boolean; canInvite: boolean; tier: string; members: Membe
 
 const label = (m: Member) => (m.handle ? `@${m.handle}` : m.email ?? "Oriel user");
 
-/** Project team: list members, invite by email (Studio owners), remove members or leave. */
+/** Project team: list members, invite by email, @handle or wallet (Studio owners), remove members or leave. */
 export function ShareDialog({ projectId, open, onClose }: { projectId: string; open: boolean; onClose: () => void }) {
   const [team, setTeam] = useState<Team | null>(null);
   const [email, setEmail] = useState("");
@@ -53,7 +53,7 @@ export function ShareDialog({ projectId, open, onClose }: { projectId: string; o
       {team?.isOwner && (team.canInvite ? (
         <form onSubmit={invite} className="row" style={{ gap: 8 }}>
           <div className="input-group grow">
-            <input className="input" type="email" required placeholder="teammate@example.com" aria-label="Email address"
+            <input className="input" type="text" required placeholder="Email, @handle, or wallet address" aria-label="Email, handle, or wallet address" autoCapitalize="off" spellCheck={false}
               value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} />
           </div>
           <button type="submit" className="btn btn-primary" disabled={busy || !email.trim()}>{busy ? <span className="spinner" /> : null}Invite</button>
