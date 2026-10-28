@@ -149,4 +149,4 @@ The staking contract has no owner, pause or upgrade path, so unstaking always wo
 
 ## License
 
-No open-source license has been chosen yet, so all rights are reserved.
+[MIT](LICENSE). The Oriel name and logo (including the files in `brand/`) are trademarks and are not covered by the license.
