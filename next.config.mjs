@@ -5,5 +5,7 @@ const nextConfig = {
   skipTrailingSlashRedirect: true,
   experimental: { serverActions: { bodySizeLimit: "4mb" } },
   images: { unoptimized: true },
+  // the example projects are read from disk by the showcase publishing task
+  outputFileTracingIncludes: { "/api/admin/showcase": ["./content/showcase/**/*"] },
 };
 export default nextConfig;
