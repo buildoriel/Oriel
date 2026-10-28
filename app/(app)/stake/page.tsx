@@ -23,7 +23,12 @@ export default function Stake() {
     if (kind === "stake" && diff <= 0) return setMsg("Enter an amount above your current stake to add more.");
     if (kind === "unstake" && diff >= 0) return setMsg("Enter an amount below your current stake to withdraw.");
     const delta = Math.abs(diff);
-    try { setMsg("Confirm in your wallet"); kind === "stake" ? await stake(String(delta)) : await unstake(String(delta)); setMsg("Done. Tiers are evaluated on the 1st of each month."); load(); }
+    try {
+      setMsg("Confirm in your wallet");
+      const r = kind === "stake" ? await stake(String(delta)) : await unstake(String(delta));
+      setMsg(`${kind === "stake" ? "Staked" : "Unstaked"} (transaction ${r.transactionHash.slice(0, 10)}…). Tiers are evaluated on the 1st of each month.`);
+      load();
+    }
     catch (e: any) { setMsg(e.shortMessage ?? e.message); }
   }
   return (
