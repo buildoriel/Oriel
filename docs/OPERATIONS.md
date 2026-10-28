@@ -86,7 +86,7 @@ Register an app with each provider using the redirect `https://buildoriel.com/ap
 
 | Provider | How | Minimum permissions |
 |---|---|---|
-| GitHub | GitHub App (not an OAuth App), enable "Request user authorization (OAuth) during installation" | Repository: Contents RW, Administration RW (to create repos), install with "Only select repositories" |
+| GitHub | GitHub App (not an OAuth App), enable "Request user authorization (OAuth) during installation", turn off the webhook, install on "Any account", generate a private key (GitHub requires one before installs), set `GITHUB_APP_SLUG` | Repository: Contents RW, Administration RW (to create repos), install with "Only select repositories" |
 | Vercel | Integration (Console → Integrations), set `VERCEL_INTEGRATION_SLUG` | Deployments |
 | Netlify | OAuth application under User settings → Applications | default |
 | Supabase | OAuth App in the organization dashboard | Read projects + API keys (for the site's URL & anon key), write database (the "apply schema" button) |

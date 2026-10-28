@@ -57,8 +57,11 @@ export async function githubPush(userId: string, projectId: string, message: str
   if (!p) throw new HttpError(404, "Project not found.");
   let repo = p.github_repo;
   if (!repo) {
-    const r = await j(await fetch("https://api.github.com/user/repos", { method: "POST", headers: H,
-      body: JSON.stringify({ name: `oriel-${p.slug}`, private: true, auto_init: true, description: "Made with Oriel" }) }));
+    const created = await fetch("https://api.github.com/user/repos", { method: "POST", headers: H,
+      body: JSON.stringify({ name: `oriel-${p.slug}`, private: true, auto_init: true, description: "Made with Oriel" }) });
+    if (created.status === 403 || created.status === 404)
+      throw new HttpError(403, "Oriel's GitHub app can't create repositories in your account. On GitHub, open Settings → Applications → Installed GitHub Apps → Configure, and choose \"All repositories\".");
+    const r = await j(created);
     repo = r.full_name as string;
     await db.from("projects").update({ github_repo: repo }).eq("id", projectId);
   }
