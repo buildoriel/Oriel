@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Composer } from "@/components/ui";
+import { Composer, EstimateLabel, useEstimate } from "@/components/ui";
 import { Icon, type IconName } from "@/components/Icon";
 
 type Project = { id: string; name: string; slug: string; published_version: number | null; updated_at: string };
@@ -32,6 +32,7 @@ export default function Start() {
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [err, setErr] = useState("");
   const [hello, setHello] = useState("What should we build?");
+  const est = useEstimate(prompt);
 
   useEffect(() => {
     setHello(greeting());
@@ -51,7 +52,7 @@ export default function Start() {
 
       <Composer value={prompt} onChange={setPrompt} onSubmit={start} autoFocus
         placeholder="A website for my ceramics studio, warm and minimal, with a gallery and a contact form"
-        footer={<><Icon name="spark" size={14} /><span>Oriel picks the right model for each request</span></>} />
+        footer={est ? <EstimateLabel est={est} /> : <><Icon name="spark" size={14} /><span>Oriel picks the right model for each request</span></>} />
       {err && <div className="callout callout-bad" style={{ marginTop: 12 }}><Icon name="alert" /><span className="callout-body">{err}</span></div>}
 
       <div className="row wrap" style={{ justifyContent: "center", marginTop: 18, gap: 8 }}>

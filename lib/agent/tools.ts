@@ -6,8 +6,10 @@ export const MAX_PROJECT_FILES = 200;
 const SAFE_PATH = /^(?!\/)(?!.*\.\.)[A-Za-z0-9._\-/]{1,160}$/;
 const TEXT_EXT = /\.(html|css|js|mjs|json|svg|txt|md|csv|xml|webmanifest|sql)$/i;
 export const IMAGE_EXT = /\.(png|jpe?g|webp)$/i;
-/** Files meant only for the project owner (e.g. the database schema); never published. */
-export const PRIVATE_FILE = /\.sql$/i;
+/** Binary files stored as data URLs: generated images plus uploaded GIFs. */
+const BINARY_EXT = /\.(png|jpe?g|webp|gif)$/i;
+/** Files meant only for the project team (the database schema, text files attached in chat); never published. */
+export const PRIVATE_FILE = /\.sql$|^assets\/uploads\/.*\.(txt|md|csv|json)$/i;
 const DATA_URL = /^data:([\w/+.-]+);base64,/;
 export const isDataUrl = (c: string) => DATA_URL.test(c);
 export const dataUrlBytes = (c: string) => Buffer.from(c.replace(DATA_URL, ""), "base64");
@@ -64,7 +66,7 @@ export const TOOLS_WITH_IMAGES: Anthropic.Tool[] = [...BASE_TOOLS, GENERATE_IMAG
 
 export type FileMap = Map<string, string>;
 
-export const validPath = (path: string) => SAFE_PATH.test(path) && (TEXT_EXT.test(path) || IMAGE_EXT.test(path));
+export const validPath = (path: string) => SAFE_PATH.test(path) && (TEXT_EXT.test(path) || BINARY_EXT.test(path));
 
 /** Project contents for the prompt: images become a short description so base64 does not burn tokens. */
 export function snapshotOf(files: FileMap) {
@@ -79,7 +81,7 @@ export function runTool(files: FileMap, changed: Set<string>, deleted: Set<strin
   if (name !== "finish" && !validPath(path)) return { out: `Error: path not allowed: ${path}` };
   switch (name) {
     case "write_file": {
-      if (IMAGE_EXT.test(path)) return { out: "Error: raster images are created with generate_image, not write_file." };
+      if (BINARY_EXT.test(path)) return { out: "Error: raster images are created with generate_image, not write_file." };
       const c = String(input.content ?? "");
       if (Buffer.byteLength(c) > MAX_FILE_BYTES) return { out: "Error: file too large (max 400KB)." };
       if (!files.has(path) && files.size >= MAX_PROJECT_FILES) return { out: "Error: file count limit reached." };

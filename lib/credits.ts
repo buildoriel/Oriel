@@ -1,6 +1,7 @@
 import { admin } from "./supabase/admin";
 import { CREDIT_COST_USD } from "./config";
 import type { Enums, Json } from "./database.types";
+import { notifyLowCredits } from "./email";
 
 type Reason = Enums<"credit_reason">;
 
@@ -14,7 +15,9 @@ export async function spend(userId: string, amount: number, reason: Reason, ref?
     p_user: userId, p_amount: Math.ceil(amount), p_reason: reason, p_ref: ref, p_meta: meta,
   });
   if (error) throw new Error(error.message);
-  return Number(data);
+  const total = Number(data);
+  void notifyLowCredits(userId, total);  // best effort, never throws
+  return total;
 }
 
 export async function grant(userId: string, amount: number, bucket: "monthly" | "topup", reason: Reason, ref?: string, meta: Json = {}) {

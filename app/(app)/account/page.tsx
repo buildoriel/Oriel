@@ -5,6 +5,7 @@ import { getAddress, type Address } from "viem";
 import { refreshShell } from "@/components/AppShell";
 import { Icon } from "@/components/Icon";
 import { Modal } from "@/components/ui";
+import { ThemeToggle } from "@/components/Theme";
 import { claimRevshare, isClaimed, verifyWallet } from "@/lib/wallet-client";
 import s from "./account.module.css";
 
@@ -52,6 +53,11 @@ export default function Account() {
     setSaving(false);
     if (!r.ok) return setHandleErr((await r.json().catch(() => ({}))).error ?? "Could not save the handle.");
     setHandle(null); setMsg("Handle saved."); load(); refreshShell();
+  }
+  async function setPref(key: "email_build_done" | "email_low_credits", value: boolean) {
+    setMe((m: any) => ({ ...m, profile: { ...m.profile, [key]: value } }));
+    const r = await fetch("/api/me", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ [key]: value }) });
+    if (!r.ok) { setMe((m: any) => ({ ...m, profile: { ...m.profile, [key]: !value } })); setMsg("Could not save your email preference. Try again."); }
   }
   async function readAll() { await fetch("/api/notifications", { method: "POST" }); load(); refreshShell(); }
   async function claim(a: any) {
@@ -144,6 +150,28 @@ export default function Account() {
                 <div className="small"><div className="xs faint" style={{ marginBottom: 2 }}>{date(n.created_at)}</div>{n.body}</div>
               </div>))}</div>
           )}
+        </section>
+
+        <section className={`card card-lg ${s.wide}`}>
+          <div className="row-between wrap" style={{ gap: 16 }}>
+            <span><h2 className="h3">Appearance</h2><span className="small mute">Follow your device, or always use light or dark.</span></span>
+            <ThemeToggle />
+          </div>
+        </section>
+
+        <section className={`card card-lg ${s.wide}`}>
+          <div className="card-head"><h2 className="h3">Email notifications</h2></div>
+          <div className={s.prefs}>
+            {([
+              ["email_build_done", "Build finished", "When a build that took more than a minute is done, or stops with an error."],
+              ["email_low_credits", "Low credits", "When your balance drops below 15% of your plan's monthly credits. At most once a week."],
+            ] as const).map(([key, label, hint]) => (
+              <label key={key} className={s.pref}>
+                <span><span className={s.prefLabel}>{label}</span><span className="small mute">{hint}</span></span>
+                <input type="checkbox" role="switch" className={s.switch} checked={p[key] !== false} onChange={(e) => setPref(key, e.target.checked)} />
+              </label>
+            ))}
+          </div>
         </section>
 
         <section className={`card card-lg ${s.wide}`}>

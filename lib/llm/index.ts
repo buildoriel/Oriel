@@ -64,8 +64,9 @@ const modelMap = (): Record<string, string> => ({
 });
 
 type ORPart = { type: "text"; text: string; cache_control?: { type: "ephemeral" } };
+type ORImage = { type: "image_url"; image_url: { url: string } };
 type ORMessage =
-  | { role: "system" | "user"; content: string | ORPart[] }
+  | { role: "system" | "user"; content: string | (ORPart | ORImage)[] }
   | { role: "assistant"; content: string | null; tool_calls?: { id: string; type: "function"; function: { name: string; arguments: string } }[] }
   | { role: "tool"; tool_call_id: string; content: string | ORPart[] };
 
@@ -84,13 +85,14 @@ function toOpenRouterMessages(req: LlmRequest): ORMessage[] {
       out.push({ role: "assistant", content: text || null, ...(calls.length ? { tool_calls: calls } : {}) });
       continue;
     }
-    // user: tool results become role "tool" messages (must directly follow the assistant), remaining text becomes a user message
-    const texts: ORPart[] = [];
+    // user: tool results become role "tool" messages (must directly follow the assistant), remaining text and images become a user message
+    const texts: (ORPart | ORImage)[] = [];
     for (const b of m.content as any[]) {
       if (b.type === "tool_result") {
         const body = typeof b.content === "string" ? b.content : (b.content ?? []).map((c: any) => c.text ?? "").join("");
         out.push({ role: "tool", tool_call_id: b.tool_use_id, content: b.cache_control ? [part(body, true)] : body });
       } else if (b.type === "text") texts.push(part(b.text, b.cache_control));
+      else if (b.type === "image" && b.source?.type === "base64") texts.push({ type: "image_url", image_url: { url: `data:${b.source.media_type};base64,${b.source.data}` } });
     }
     if (texts.length) out.push({ role: "user", content: texts });
   }

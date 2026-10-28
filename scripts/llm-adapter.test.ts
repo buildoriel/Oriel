@@ -45,6 +45,19 @@ async function main() {
   assert.deepEqual(res.usage, { input_tokens: 500, output_tokens: 800, cache_creation_input_tokens: 1500, cache_read_input_tokens: 10000 });
   // cost accounting still uses the same price table
   assert.ok(usageCostUsd("claude-sonnet-5-5", res.usage) > 0);
+
+  // attached images are sent as image_url parts in the user message, in order
+  await createMessage({
+    model: "claude-sonnet-5-5", max_tokens: 100, system: [{ type: "text", text: "SYS" }],
+    messages: [{ role: "user", content: [
+      { type: "text", text: "files" },
+      { type: "image", source: { type: "base64", media_type: "image/png", data: "iVBORw0KGgo=" } },
+      { type: "text", text: "request" },
+    ] }],
+  });
+  const parts = sent.messages[1].content;
+  assert.deepEqual(parts.map((p: any) => p.type), ["text", "image_url", "text"]);
+  assert.equal(parts[1].image_url.url, "data:image/png;base64,iVBORw0KGgo=");
   console.log("llm adapter tests: OK");
 }
 main().catch((e) => { console.error(e); process.exit(1); });

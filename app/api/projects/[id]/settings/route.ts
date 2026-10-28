@@ -2,14 +2,15 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser, HttpError } from "@/lib/supabase/server";
 import { admin } from "@/lib/supabase/admin";
-import { ownProject } from "@/lib/projects";
+import { ownProject, projectAccess } from "@/lib/projects";
 import { handle } from "@/lib/http";
 import type { TablesUpdate } from "@/lib/database.types";
 
 export const GET = handle(async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const user = await requireUser();
-  const p = await ownProject(user.id, (await ctx.params).id);
+  const p = await projectAccess(user.id, (await ctx.params).id);
   return NextResponse.json({
+    role: p.role,
     showcase_opt_in: p.showcase_opt_in, featured: !!p.featured_at, github_repo: p.github_repo, github_autocommit: p.github_autocommit,
     supabase_ref: p.supabase_ref, netlify_site_id: p.netlify_site_id,
   });

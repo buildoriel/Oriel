@@ -1,6 +1,7 @@
 import { admin } from "../supabase/admin";
 import type { Json } from "../database.types";
 import { finishRun, initState, runSlice, type AgentEvent, type AgentState } from "./loop";
+import { notifyBuildDone } from "../email";
 
 /**
  * Durable agent queue on Postgres (table agent_runs).
@@ -23,12 +24,12 @@ export async function emitEvent(runId: number, e: AgentEvent) {
 }
 
 /** Save the request to the chat and queue it. Returns null when this user already has a build running. */
-export async function enqueueRun(userId: string, projectId: string, message: string) {
+export async function enqueueRun(userId: string, projectId: string, message: string, attachments?: Json) {
   const db = admin();
   const { data: runId, error } = await db.rpc("enqueue_agent_run", { p_user: userId, p_project: projectId, p_message: message });
   if (error) throw error;
   if (!runId) return null;
-  await db.from("messages").insert({ project_id: projectId, role: "user", content: message });
+  await db.from("messages").insert({ project_id: projectId, role: "user", content: message, attachments: attachments ?? null });
   return runId;
 }
 
@@ -91,6 +92,7 @@ export async function workRun(runId: number) {
     if (res.finished) {
       await finishRun({ userId: run.user_id, projectId: run.project_id, state: res.state, emit });
       await close(runId, "done", null, res.state);
+      await notifyBuildDone({ userId: run.user_id, projectId: run.project_id, startedAt: run.started_at, ok: true });
       await kickRunnable(3);                                   // let the next queued build start right away
       return "done";
     }
@@ -116,10 +118,12 @@ async function close(runId: number, status: "done" | "error", error: string | nu
 
 async function fail(runId: number, message: string) {
   const db = admin();
-  const { data: run } = await db.from("agent_runs").select("project_id").eq("id", runId).single();
+  const { data: run } = await db.from("agent_runs").select("project_id, user_id, started_at").eq("id", runId).single();
   await emitEvent(runId, { type: "error", message });
   if (run) await db.from("messages").insert({ project_id: run.project_id, role: "assistant", content: message });
-  return close(runId, "error", "failed");
+  const status = await close(runId, "error", "failed");
+  if (run) await notifyBuildDone({ userId: run.user_id, projectId: run.project_id, startedAt: run.started_at, ok: false });
+  return status;
 }
 
 async function cancelUnstarted(runId: number, projectId: string) {

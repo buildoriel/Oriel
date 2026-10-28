@@ -9,7 +9,7 @@ const MIME: Record<string, string> = {
   html: "text/html; charset=utf-8", css: "text/css; charset=utf-8", js: "text/javascript; charset=utf-8",
   mjs: "text/javascript; charset=utf-8", json: "application/json", svg: "image/svg+xml", txt: "text/plain; charset=utf-8",
   md: "text/markdown; charset=utf-8", csv: "text/csv; charset=utf-8", xml: "application/xml", webmanifest: "application/manifest+json",
-  png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", ico: "image/x-icon",
+  png: "image/png", gif: "image/gif", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", ico: "image/x-icon",
 };
 export const mimeOf = (p: string) => MIME[p.split(".").pop()!.toLowerCase()] ?? "application/octet-stream";
 
@@ -87,4 +87,19 @@ export async function resolveSite(kind: "s" | "d", key: string) {
   const { data } = await db.from("domains").select("project_id, status, projects(id, published_version, suspended_at)")
     .eq("hostname", key).eq("status", "active").maybeSingle();
   return data?.projects ?? null;
+}
+
+/** Every object path under a Storage prefix, relative to it (Storage lists one folder level at a time). */
+export async function listObjects(prefix: string, sub = ""): Promise<string[]> {
+  const out: string[] = [];
+  for (let offset = 0; ; offset += 1000) {
+    const { data, error } = await admin().storage.from(SITES_BUCKET).list(sub ? `${prefix}/${sub}` : prefix, { limit: 1000, offset });
+    if (error) throw new Error(error.message);
+    for (const o of data ?? []) {
+      const rel = sub ? `${sub}/${o.name}` : o.name;
+      if (o.id === null) out.push(...(await listObjects(prefix, rel)));   // a folder
+      else out.push(rel);
+    }
+    if (!data || data.length < 1000) return out;
+  }
 }
