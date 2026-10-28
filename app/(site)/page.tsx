@@ -2,6 +2,9 @@ import Link from "next/link";
 import { Icon, type IconName } from "@/components/Icon";
 import { admin } from "@/lib/supabase/admin";
 import { ROOT_DOMAIN } from "@/lib/config";
+import { BuildDemo } from "@/components/BuildDemo";
+import { HeroPrompt } from "@/components/HeroPrompt";
+import { CountUp, RevealObserver } from "@/components/Motion";
 import styles from "./home.module.css";
 
 export const revalidate = 300;
@@ -47,20 +50,14 @@ export default async function Home() {
   const show = await featured();
   return (
     <div className="site-main">
+      <RevealObserver />
       {/* ---------------- hero ---------------- */}
-      <section className={styles.hero}>
+      <section className={`enter ${styles.hero}`}>
         <span className="badge badge-outline">AI workspace on Robinhood Chain</span>
         <h1 className="display">Build anything.<br />Own a piece of it.</h1>
         <p className="lead">Describe what you want. Oriel builds it, puts it live at a link, and keeps improving it with you through chat.</p>
 
-        <form className={`composer ${styles.prompt}`} action="/workspace/new">
-          <textarea name="prompt" rows={2} required maxLength={2000} aria-label="What do you want to build"
-            placeholder="A portfolio site for my ceramics studio, warm and minimal, with a gallery" />
-          <div className="composer-foot">
-            <span className={`small mute ${styles.note}`}><Icon name="spark" size={14} />60 free credits every month. No credit card.</span>
-            <button className="send" type="submit" aria-label="Start building"><Icon name="arrowUp" /></button>
-          </div>
-        </form>
+        <HeroPrompt examples={EXAMPLES.map(([, prompt]) => prompt)} className={styles.prompt} noteClassName={styles.note} />
 
         <div className={styles.examples}>
           {EXAMPLES.map(([label, prompt]) => (
@@ -69,15 +66,20 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ---------------- demo ---------------- */}
+      <section className={styles.demo} data-reveal>
+        <BuildDemo />
+      </section>
+
       {/* ---------------- what you can build ---------------- */}
       <section className="section">
-        <div className={styles.sectionHead}>
+        <div className={styles.sectionHead} data-reveal>
           <span className="eyebrow">What you can build</span>
           <h2 className="h1">From a single page to a full product.</h2>
         </div>
         <div className="grid-4">
-          {KINDS.map(([icon, title, text]) => (
-            <div key={title} className={`card ${styles.tile}`}>
+          {KINDS.map(([icon, title, text], i) => (
+            <div key={title} className={`card card-hover ${styles.tile}`} data-reveal style={{ "--d": `${i * 70}ms` } as React.CSSProperties}>
               <span className={styles.tileIcon}><Icon name={icon} /></span>
               <h3 className="h3">{title}</h3>
               <p className="small mute">{text}</p>
@@ -88,13 +90,13 @@ export default async function Home() {
 
       {/* ---------------- how it works ---------------- */}
       <section className="section" style={{ paddingTop: 0 }}>
-        <div className={styles.sectionHead}>
+        <div className={styles.sectionHead} data-reveal>
           <span className="eyebrow">How it works</span>
           <h2 className="h1">Three steps, no setup.</h2>
         </div>
         <div className="grid-3">
           {STEPS.map(([title, text], i) => (
-            <div key={title} className={`stack ${styles.tile}`}>
+            <div key={title} className={`stack ${styles.tile}`} data-reveal style={{ "--d": `${i * 90}ms` } as React.CSSProperties}>
               <span className={styles.stepNum}>{i + 1}</span>
               <h3 className="h3">{title}</h3>
               <p className="small mute">{text}</p>
@@ -106,7 +108,7 @@ export default async function Home() {
       {/* ---------------- economics ---------------- */}
       <section className="section" style={{ paddingTop: 0 }}>
         <div className={styles.econ}>
-          <div className="stack" style={{ gap: 16 }}>
+          <div className="stack" style={{ gap: 16 }} data-reveal>
             <span className="eyebrow">Stake instead of subscribe</span>
             <h2 className="h1">Use it, earn from it, withdraw any time.</h2>
             <p className="mute">Stake $ORIEL worth a plan and use its credits every month. Stakers also receive a share of the margin in USDG. Unstake whenever you want.</p>
@@ -115,19 +117,19 @@ export default async function Home() {
               <Link className="btn btn-ghost" href="/tiers">See plans<Icon name="arrowRight" /></Link>
             </div>
           </div>
-          <div className="card card-lg" aria-label="Example monthly margin split">
+          <div className="card card-lg" aria-label="Example monthly margin split" data-reveal style={{ "--d": "120ms" } as React.CSSProperties}>
             <div className="row-between" style={{ marginBottom: 22 }}>
               <span className="small mute">Example: last month&apos;s gross margin</span>
-              <span className="h2 num">$10,000</span>
+              <CountUp className="h2 num" value={10_000} prefix="$" duration={1100} onView />
             </div>
             <div className={styles.split}>
-              {SPLIT.map(([label, usd, pct, accent]) => (
+              {SPLIT.map(([label, usd, pct, accent], i) => (
                 <div key={label} className={styles.splitRow}>
                   <div className="row-between small">
                     <span>{label}</span>
-                    <span className="mono">${usd.toLocaleString("en-US")}</span>
+                    <CountUp className="mono" value={usd} prefix="$" duration={1100} onView />
                   </div>
-                  <div className="meter"><i className={accent ? "accent" : ""} style={{ width: `${pct}%` }} /></div>
+                  <div className="meter"><i className={accent ? "accent" : ""} style={{ width: `${pct}%`, "--d": `${200 + i * 110}ms` } as React.CSSProperties} /></div>
                 </div>
               ))}
             </div>
@@ -139,13 +141,13 @@ export default async function Home() {
       {/* ---------------- showcase ---------------- */}
       {show.length > 0 && (
         <section className="section" style={{ paddingTop: 0 }}>
-          <div className={styles.sectionHead}>
+          <div className={styles.sectionHead} data-reveal>
             <span className="eyebrow">Showcase</span>
             <h2 className="h1">Made with Oriel</h2>
           </div>
           <div className="grid-3">
-            {show.map((p) => (
-              <a key={p.id} className={`card card-hover ${styles.shot}`} href={`https://${p.slug}.${ROOT_DOMAIN}`} target="_blank" rel="noreferrer">
+            {show.map((p, i) => (
+              <a key={p.id} className={`card card-hover ${styles.shot}`} data-reveal style={{ "--d": `${(i % 3) * 80}ms` } as React.CSSProperties} href={`https://${p.slug}.${ROOT_DOMAIN}`} target="_blank" rel="noreferrer">
                 <div className={styles.frame}>
                   <iframe src={`https://${p.slug}.${ROOT_DOMAIN}`} title={p.name} loading="lazy" tabIndex={-1} aria-hidden="true" sandbox="allow-scripts" />
                 </div>
@@ -161,7 +163,7 @@ export default async function Home() {
 
       {/* ---------------- final CTA ---------------- */}
       <section className="section" style={{ paddingTop: 0 }}>
-        <div className={`card ${styles.cta}`}>
+        <div className={`card ${styles.cta}`} data-reveal>
           <h2 className="h1">Start with a sentence.</h2>
           <p className="mute" style={{ maxWidth: "46ch" }}>Your first project is free. Describe it, watch it come together, and publish when it&apos;s ready.</p>
           <Link className="btn btn-primary btn-lg" href="/workspace">Start building<Icon name="arrowRight" /></Link>

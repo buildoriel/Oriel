@@ -19,6 +19,7 @@ const ENTRIES: { date: string; title: string; body: React.ReactNode }[] = [
         <li><b>Command palette:</b> press ⌘K to search projects and jump anywhere.</li>
         <li><b>Light and dark themes:</b> choose light, dark, or follow your system.</li>
         <li><b>Email notifications:</b> get an email when a long build finishes or your credits run low.</li>
+        <li><b>Smoother motion:</b> a live build demo on the home page, gentle transitions across the app, and a cross-fade when you switch themes. Motion turns off when your system asks for reduced motion.</li>
         <li><b>Help pages:</b> new <Link href="/docs">Docs</Link> and <Link href="/faq">FAQ</Link> pages.</li>
       </ul>
     </>,

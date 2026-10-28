@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Icon, type IconName } from "./Icon";
+import { CountUp } from "./Motion";
 import { OrielLockup } from "./Logo";
 import { CommandPalette, modKey } from "./CommandPalette";
 
@@ -85,7 +86,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <>
               <Link href="/tiers" className="sb-credits" aria-label={`${total} credits, ${me.tier} plan`}>
                 <div className="row-between">
-                  <span className="small"><b className="num">{total.toLocaleString("en-US")}</b> <span className="mute">credits</span></span>
+                  <span className="small"><b className="num"><CountUp value={total} /></b> <span className="mute">credits</span></span>
                   <span className="badge">{cap(me.tier)}</span>
                 </div>
                 <div className="meter"><i className={total < quota * 0.15 ? "accent" : ""} style={{ width: `${Math.min(100, (total / quota) * 100)}%` }} /></div>
@@ -113,7 +114,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="topbar">
           <button className="btn btn-ghost btn-icon" onClick={() => setOpen(true)} aria-label="Open menu"><Icon name="menu" /></button>
           <Link href="/workspace" className="logo" aria-label="Oriel workspace"><OrielLockup height={22} /></Link>
-          {me ? <Link href="/tiers" className="badge num" aria-label={`${total} credits`}>{total.toLocaleString("en-US")} credits</Link>
+          {me ? <Link href="/tiers" className="badge num" aria-label={`${total} credits`}><CountUp value={total} /> credits</Link>
             : <Link href="/workspace" className="btn btn-ghost btn-icon" aria-label="New project"><Icon name="plus" /></Link>}
         </div>
         {children}

@@ -125,15 +125,29 @@ export function Modal({ open, onClose, title, children, footer }: {
   );
 }
 
-/** Tiny toast queue. Returns [node, show]. */
-export function useToasts(): [React.ReactNode, (text: string) => void] {
-  const [items, setItems] = useState<{ id: number; text: string }[]>([]);
-  const show = (text: string) => {
+/** Tiny toast queue. Returns [node, show]; tone "ok" adds a drawn check mark (publish and other milestones). */
+export function useToasts(): [React.ReactNode, (text: string, tone?: "ok") => void] {
+  const [items, setItems] = useState<{ id: number; text: string; tone?: "ok"; leaving?: boolean }[]>([]);
+  const show = (text: string, tone?: "ok") => {
     const id = Date.now() + Math.random();
-    setItems((x) => [...x.slice(-2), { id, text }]);
+    setItems((x) => [...x.slice(-2), { id, text, tone }]);
+    setTimeout(() => setItems((x) => x.map((t) => (t.id === id ? { ...t, leaving: true } : t))), 4000);
     setTimeout(() => setItems((x) => x.filter((t) => t.id !== id)), 4200);
   };
-  const node = <div className="toast-stack" role="status" aria-live="polite">{items.map((t) => <div key={t.id} className="toast">{t.text}</div>)}</div>;
+  const node = (
+    <div className="toast-stack" role="status" aria-live="polite">
+      {items.map((t) => (
+        <div key={t.id} className="toast" data-leaving={t.leaving || undefined}>
+          {t.tone === "ok" && (
+            <svg className="tick" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12.5l4.5 4.5L19 7.5" />
+            </svg>
+          )}
+          {t.text}
+        </div>
+      ))}
+    </div>
+  );
   return [node, show];
 }
 
