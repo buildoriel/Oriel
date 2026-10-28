@@ -5,6 +5,7 @@ import { projectAccess } from "@/lib/projects";
 import { getBalance } from "@/lib/credits";
 import { enqueueRun, kick } from "@/lib/agent/jobs";
 import { handle } from "@/lib/http";
+import { MAX_ATTACHMENTS, isUploadPath, uploadType, type Attachment } from "@/lib/uploads";
 
 const RUNS_PER_HOUR = Number(process.env.AGENT_RUNS_PER_HOUR ?? 40);
 
@@ -16,9 +17,10 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ id: str
   const user = await requireUser();
   const { id } = await ctx.params;
   await projectAccess(user.id, id);
-  const { message } = await req.json();
+  const { message, attachments: raw } = await req.json();
   if (typeof message !== "string" || !message.trim() || message.length > 8000)
     throw new HttpError(400, "Message is empty or too long (max 8,000 characters).");
+  const attachments = await checkAttachments(id, raw);
 
   // usage limits: max N requests per hour, and only one build per user at a time
   // (two parallel builds could both pass the balance check and then charge credits twice)
@@ -34,6 +36,21 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ id: str
 
   const runId = await enqueueRun(user.id, id, message.trim());
   if (!runId) throw new HttpError(409, "A build is still running. Wait until it finishes or stop it.");
+  if (attachments.length) {
+    const { data: msg } = await db.from("messages").select("id").eq("project_id", id).eq("role", "user").order("id", { ascending: false }).limit(1).single();
+    if (msg) await db.from("messages").update({ attachments }).eq("id", msg.id);
+  }
   await kick(runId);
   return NextResponse.json({ runId });
 });
+
+/** Attachments are files uploaded to assets/uploads/ just before sending (see ../upload). Only paths that exist in the project are kept. */
+async function checkAttachments(projectId: string, raw: unknown): Promise<Attachment[]> {
+  if (raw == null) return [];
+  if (!Array.isArray(raw) || raw.length > MAX_ATTACHMENTS) throw new HttpError(400, `Attach at most ${MAX_ATTACHMENTS} files per message.`);
+  const list = raw.map((a: any) => ({ path: String(a?.path ?? ""), name: String(a?.name ?? "").slice(0, 120), size: Math.max(0, Math.floor(Number(a?.size) || 0)) }));
+  if (list.some((a) => !isUploadPath(a.path) || !uploadType(a.path))) throw new HttpError(400, "Invalid attachment.");
+  const { data } = await admin().from("project_files").select("path").eq("project_id", projectId).in("path", list.map((a) => a.path));
+  const found = new Set((data ?? []).map((r) => r.path));
+  return list.filter((a) => found.has(a.path)).map((a) => ({ ...a, name: a.name || a.path.split("/").pop()!, type: uploadType(a.path)!.type }));
+}
