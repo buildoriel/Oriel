@@ -3,6 +3,23 @@ import { HttpError } from "./supabase/server";
 
 export const SLUG_RE = /^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])$/;
 
+const FILLER = new Set(["a", "an", "the", "for", "with", "and", "of", "in", "on", "my", "our", "to", "that", "which", "please", "make", "create", "build", "me", "i", "want", "need"]);
+const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
+
+/**
+ * A short project name and subdomain base from the first prompt: a quoted name ("Kopi Senja"), else "called/named X",
+ * else the first meaningful words. Pure, so it is unit tested.
+ */
+export function nameFromPrompt(prompt: string): { name: string; base: string } {
+  const p = prompt.trim();
+  const quoted = p.match(/["“'‘]([^"”'’]{2,40})["”'’]/)?.[1];
+  const called = p.match(/\b(?:called|named)\s+([A-Z0-9][\w&'-]*(?:\s+[A-Z0-9][\w&'-]*){0,3})/)?.[1];
+  const words = p.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").split(/\s+/).filter((w) => w && !FILLER.has(w)).slice(0, 3);
+  const name = (quoted ?? called)?.trim() || (words.length ? titleCase(words.join(" ")) : "New project");
+  const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30).replace(/-+$/, "");
+  return { name: name.slice(0, 60), base: base.length >= 2 ? base : "project" };
+}
+
 /** Placeholder slug for a deleted project, so its subdomain can be taken again. */
 export const releasedSlug = (uuid: string = crypto.randomUUID()) => `x-${uuid.replace(/-/g, "")}`;
 

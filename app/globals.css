@@ -446,10 +446,10 @@ dialog.cmdk { width: min(600px, calc(100% - 24px)); margin-top: 12vh; overflow: 
 .ws-mobile-tabs { display: none; }
 @media (max-width: 1080px) { .ws { grid-template-columns: minmax(320px, 380px) minmax(0, 1fr); } .code { grid-template-columns: 170px minmax(0, 1fr); } }
 @media (max-width: 860px) {
-  .ws { grid-template-columns: minmax(0, 1fr); height: calc(100dvh - 54px); }
+  .ws { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); height: calc(100dvh - 54px); }
   .ws[data-pane="chat"] .ws-preview, .ws[data-pane="preview"] .ws-chat { display: none; }
   .ws-chat { border-right: 0; }
-  .ws-mobile-tabs { display: flex; justify-content: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .ws-mobile-tabs { display: flex; justify-content: center; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
   .pv-stage { padding: 10px; }
   .code { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
   .code-files { border-right: 0; border-bottom: 1px solid var(--line); max-height: 140px; }
