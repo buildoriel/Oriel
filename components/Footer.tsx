@@ -4,8 +4,7 @@ import { ThemeToggle } from "./Theme";
 
 const SOCIAL: [string, string | undefined][] = [
   ["X", "https://x.com/buildoriel"],
-  ["GitHub", "https://github.com/buildoriel"],
-  ["Telegram", "https://t.me/buildoriel"],
+  ["GitHub", "https://github.com/buildoriel/Oriel"],
   ["Discord", process.env.NEXT_PUBLIC_DISCORD_URL], // shown only once an invite link is set
 ];
 
