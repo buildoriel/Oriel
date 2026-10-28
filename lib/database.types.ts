@@ -229,6 +229,42 @@ export type Database = {
           },
         ]
       }
+      app_errors: {
+        Row: {
+          created_at: string
+          digest: string | null
+          id: number
+          message: string
+          source: string
+          stack: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          digest?: string | null
+          id?: number
+          message: string
+          source: string
+          stack?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          digest?: string | null
+          id?: number
+          message?: string
+          source?: string
+          stack?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       buybacks: {
         Row: {
           executed_at: string | null
@@ -477,6 +513,7 @@ export type Database = {
           model: string | null
           project_id: string
           role: string
+          attachments: Json | null
         }
         Insert: {
           action_kind?: string | null
@@ -487,6 +524,7 @@ export type Database = {
           model?: string | null
           project_id: string
           role: string
+          attachments?: Json | null
         }
         Update: {
           action_kind?: string | null
@@ -497,6 +535,7 @@ export type Database = {
           model?: string | null
           project_id?: string
           role?: string
+          attachments?: Json | null
         }
         Relationships: [
           {
@@ -680,6 +719,9 @@ export type Database = {
           staked_tier: string
           wallet_address: string | null
           wallet_verified_at: string | null
+          email_build_done: boolean
+          email_low_credits: boolean
+          low_credits_emailed_at: string | null
         }
         Insert: {
           created_at?: string
@@ -695,6 +737,9 @@ export type Database = {
           staked_tier?: string
           wallet_address?: string | null
           wallet_verified_at?: string | null
+          email_build_done?: boolean
+          email_low_credits?: boolean
+          low_credits_emailed_at?: string | null
         }
         Update: {
           created_at?: string
@@ -710,6 +755,9 @@ export type Database = {
           staked_tier?: string
           wallet_address?: string | null
           wallet_verified_at?: string | null
+          email_build_done?: boolean
+          email_low_credits?: boolean
+          low_credits_emailed_at?: string | null
         }
         Relationships: [
           {
@@ -763,6 +811,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      project_members: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          project_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          project_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          project_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       project_versions: {
         Row: {
@@ -820,6 +892,7 @@ export type Database = {
           suspended_reason: string | null
           template_id: string | null
           updated_at: string
+          deleted_at: string | null
         }
         Insert: {
           created_at?: string
@@ -841,6 +914,7 @@ export type Database = {
           suspended_reason?: string | null
           template_id?: string | null
           updated_at?: string
+          deleted_at?: string | null
         }
         Update: {
           created_at?: string
@@ -862,6 +936,7 @@ export type Database = {
           suspended_reason?: string | null
           template_id?: string | null
           updated_at?: string
+          deleted_at?: string | null
         }
         Relationships: [
           {
@@ -1287,6 +1362,7 @@ export type Database = {
         Args: { p_template: string }
         Returns: undefined
       }
+      is_project_member: { Args: { p_project: string }; Returns: boolean }
       reset_monthly_credits: {
         Args: { p_amount: number; p_period: string; p_user: string }
         Returns: undefined

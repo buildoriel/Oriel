@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser, HttpError } from "@/lib/supabase/server";
 import { admin } from "@/lib/supabase/admin";
-import { ownProject } from "@/lib/projects";
+import { projectAccess } from "@/lib/projects";
 import { getBalance } from "@/lib/credits";
 import { enqueueRun, kick } from "@/lib/agent/jobs";
 import { handle } from "@/lib/http";
@@ -15,7 +15,7 @@ const RUNS_PER_HOUR = Number(process.env.AGENT_RUNS_PER_HOUR ?? 40);
 export const POST = handle(async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const user = await requireUser();
   const { id } = await ctx.params;
-  await ownProject(user.id, id);
+  await projectAccess(user.id, id);
   const { message } = await req.json();
   if (typeof message !== "string" || !message.trim() || message.length > 8000)
     throw new HttpError(400, "Message is empty or too long (max 8,000 characters).");
@@ -26,6 +26,10 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ id: str
   const { count } = await db.from("agent_runs").select("id", { count: "exact", head: true })
     .eq("user_id", user.id).gte("started_at", new Date(Date.now() - 3600_000).toISOString());
   if ((count ?? 0) >= RUNS_PER_HOUR) throw new HttpError(429, "Too many requests in one hour. Try again shortly.");
+  // team projects: one build per project at a time, so two members never write the same files at once
+  const { data: busy } = await db.from("agent_runs").select("id").eq("project_id", id).is("finished_at", null)
+    .or(`lease_until.gt.${new Date().toISOString()},started_at.gt.${new Date(Date.now() - 30 * 60_000).toISOString()}`).limit(1).maybeSingle();
+  if (busy) throw new HttpError(409, "A build is already running on this project. Wait until it finishes.");
   if ((await getBalance(user.id)).total < 1) throw new HttpError(402, "Not enough credits. Top up or upgrade your tier.");
 
   const runId = await enqueueRun(user.id, id, message.trim());
