@@ -1,0 +1,48 @@
+/* Shared by the FAQ, Docs and Changelog pages. */
+.head { margin-bottom: 40px; }
+.head h1 { margin-top: 12px; }
+.head p { margin-top: 12px; max-width: 60ch; }
+
+/* FAQ */
+.group + .group { margin-top: 44px; }
+.groupTitle { font: 500 12px/1 var(--font-sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--mute); margin-bottom: 10px; }
+.qa { border-bottom: 1px solid var(--line); }
+.qa:first-of-type { border-top: 1px solid var(--line); }
+.qa summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 2px; font: 500 16px/1.4 var(--font-sans); color: var(--ink); }
+.qa summary::-webkit-details-marker { display: none; }
+.qa summary svg { flex: none; width: 18px; height: 18px; color: var(--faint); transition: transform 0.15s; }
+.qa[open] summary svg { transform: rotate(180deg); }
+.answer { padding: 0 2px 20px; font: 400 16px/1.7 var(--font-serif); color: var(--ink-2); max-width: 66ch; }
+.answer p + p { margin-top: 0.7em; }
+.answer a, .doc a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-strong); }
+
+/* Docs */
+.docs { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 56px; align-items: start; }
+.toc { position: sticky; top: 88px; display: grid; gap: 2px; }
+.toc a { padding: 6px 10px; border-radius: var(--r-sm); font-size: 14px; color: var(--mute); }
+.toc a:hover { background: var(--surface-3); color: var(--ink); }
+.doc { display: grid; gap: 56px; max-width: 70ch; }
+.doc section { scroll-margin-top: 88px; }
+.doc h2 { font: 450 28px/1.2 var(--font-serif); letter-spacing: -0.01em; color: var(--ink); margin-bottom: 14px; }
+.doc h3 { font: 600 15px/1.4 var(--font-sans); color: var(--ink); margin: 22px 0 8px; }
+.doc p, .doc li { font: 400 16px/1.7 var(--font-serif); color: var(--ink-2); }
+.doc p + p { margin-top: 0.7em; }
+.doc ul, .doc ol { margin: 8px 0 0; padding-left: 22px; display: grid; gap: 6px; }
+.doc code, .answer code { font: 0.86em var(--font-mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+.example { margin-top: 12px; padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--r); background: var(--surface); font: 400 15px/1.6 var(--font-sans); color: var(--ink); }
+@media (max-width: 860px) {
+  .docs { grid-template-columns: 1fr; gap: 28px; }
+  .toc { position: static; display: flex; flex-wrap: wrap; gap: 6px; }
+  .toc a { border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 13px; }
+}
+
+/* Changelog */
+.entries { display: grid; gap: 0; }
+.entry { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 32px; padding: 36px 0; border-top: 1px solid var(--line); }
+.date { font: 500 13px/1.6 var(--font-sans); color: var(--mute); }
+.entry h2 { font: 450 26px/1.25 var(--font-serif); letter-spacing: -0.01em; color: var(--ink); margin: 8px 0 12px; }
+.entry p, .entry li { font: 400 16px/1.7 var(--font-serif); color: var(--ink-2); }
+.entry ul { margin: 12px 0 0; padding-left: 22px; display: grid; gap: 6px; }
+.entry b { color: var(--ink); font-weight: 600; }
+@media (max-width: 860px) { .entry { grid-template-columns: 1fr; gap: 6px; } }
+@media (prefers-reduced-motion: reduce) { .qa summary svg { transition: none; } }

@@ -88,3 +88,18 @@ export async function resolveSite(kind: "s" | "d", key: string) {
     .eq("hostname", key).eq("status", "active").maybeSingle();
   return data?.projects ?? null;
 }
+
+/** Every object path under a Storage prefix, relative to it (Storage lists one folder level at a time). */
+export async function listObjects(prefix: string, sub = ""): Promise<string[]> {
+  const out: string[] = [];
+  for (let offset = 0; ; offset += 1000) {
+    const { data, error } = await admin().storage.from(SITES_BUCKET).list(sub ? `${prefix}/${sub}` : prefix, { limit: 1000, offset });
+    if (error) throw new Error(error.message);
+    for (const o of data ?? []) {
+      const rel = sub ? `${sub}/${o.name}` : o.name;
+      if (o.id === null) out.push(...(await listObjects(prefix, rel)));   // a folder
+      else out.push(rel);
+    }
+    if (!data || data.length < 1000) return out;
+  }
+}

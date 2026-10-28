@@ -3,6 +3,9 @@ import { HttpError } from "./supabase/server";
 
 export const SLUG_RE = /^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])$/;
 
+/** Placeholder slug for a deleted project, so its subdomain can be taken again. */
+export const releasedSlug = (uuid: string = crypto.randomUUID()) => `x-${uuid.replace(/-/g, "")}`;
+
 /** A live (not deleted) project owned by the user. Use for owner-only actions: settings, domains, templates, connectors, delete, members. */
 export async function ownProject(userId: string, projectId: string) {
   const { data } = await admin().from("projects").select("*").eq("id", projectId).eq("owner_id", userId).is("deleted_at", null).maybeSingle();
