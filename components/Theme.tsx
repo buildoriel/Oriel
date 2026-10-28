@@ -8,7 +8,12 @@ const KEY = "oriel-theme";
 /** Runs in <head> before paint so a saved choice never flashes the other theme. */
 export const THEME_SCRIPT = `try{var t=localStorage.getItem("${KEY}");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`
   // data-motion gates scroll reveals: without JS, or with reduced motion, content is simply shown
-  + `try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.dataset.motion="1"}catch(e){}`;
+  + `try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.dataset.motion="1"}catch(e){}`
+  // Browser translation (e.g. Google Translate) and some extensions move React's text nodes; React then fails
+  // with "insertBefore/removeChild: not a child of this node" and the page crashes. Ignore those moves instead.
+  + `try{var N=Node.prototype,rc=N.removeChild,ib=N.insertBefore;`
+  + `N.removeChild=function(c){if(c&&c.parentNode!==this)return c;return rc.apply(this,arguments)};`
+  + `N.insertBefore=function(n,r){if(r&&r.parentNode!==this)return n;return ib.apply(this,arguments)}}catch(e){}`;
 
 export function getTheme(): ThemePref {
   try { const t = localStorage.getItem(KEY); return t === "light" || t === "dark" ? t : "system"; } catch { return "system"; }
