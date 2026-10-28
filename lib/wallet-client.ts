@@ -82,19 +82,28 @@ export async function payToTreasury(token: keyof typeof TOKENS, amount: string) 
   return hash;
 }
 
+/** Waits for a transaction and fails loudly if it reverted, so the UI never reports a failed transaction as done. */
+async function mined(pub: ReturnType<typeof createPublicClient>, hash: Hex, what: string) {
+  const r = await pub.waitForTransactionReceipt({ hash });
+  if (r.status !== "success") throw new Error(`The ${what} transaction failed on-chain (${hash.slice(0, 10)}…).`);
+  return r;
+}
+
 export async function stake(amount: string) {
   const { w, account, pub } = await wallet();
   const dec = await pub.readContract({ address: TOKENS.ORIEL, abi: ERC20, functionName: "decimals" });
   const v = parseUnits(amount, dec);
   const allowance = await pub.readContract({ address: TOKENS.ORIEL, abi: ERC20, functionName: "allowance", args: [account, STAKING] });
-  if (allowance < v) await pub.waitForTransactionReceipt({ hash: await w.writeContract({ account, address: TOKENS.ORIEL, abi: ERC20, functionName: "approve", args: [STAKING, v] }) });
-  return pub.waitForTransactionReceipt({ hash: await w.writeContract({ account, address: STAKING, abi: STAKE, functionName: "stake", args: [v] }) });
+  const balance = await pub.readContract({ address: TOKENS.ORIEL, abi: ERC20, functionName: "balanceOf", args: [account] });
+  if (balance < v) throw new Error(`This wallet (${account.slice(0, 6)}…${account.slice(-4)}) doesn't hold enough $ORIEL.`);
+  if (allowance < v) await mined(pub, await w.writeContract({ account, address: TOKENS.ORIEL, abi: ERC20, functionName: "approve", args: [STAKING, v] }), "approve");
+  return mined(pub, await w.writeContract({ account, address: STAKING, abi: STAKE, functionName: "stake", args: [v] }), "stake");
 }
 
 export async function unstake(amount: string) {
   const { w, account, pub } = await wallet();
   const dec = await pub.readContract({ address: TOKENS.ORIEL, abi: ERC20, functionName: "decimals" });
-  return pub.waitForTransactionReceipt({ hash: await w.writeContract({ account, address: STAKING, abi: STAKE, functionName: "unstake", args: [parseUnits(amount, dec)] }) });
+  return mined(pub, await w.writeContract({ account, address: STAKING, abi: STAKE, functionName: "unstake", args: [parseUnits(amount, dec)] }), "unstake");
 }
 
 /** Sign the nonce message, then verify on the server. Returns the Free credits granted (0 if already claimed). */
