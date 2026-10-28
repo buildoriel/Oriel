@@ -1,5 +1,20 @@
 /* Home page only. Everything else comes from the global design system. */
-.hero { padding: 96px 0 72px; display: grid; justify-items: center; text-align: center; gap: 20px; }
+.hero { position: relative; isolation: isolate; overflow-x: clip; padding: 96px 0 72px; display: grid; justify-items: center; text-align: center; gap: 20px; }
+/* soft brand glow and a faint grid behind the hero, drifting very slowly */
+.hero::before, .hero::after { content: ""; position: absolute; z-index: -1; pointer-events: none; }
+.hero::before {
+  inset: -40px 0 0; background: radial-gradient(ellipse 46% 42% at 50% 34%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 72%);
+  animation: glow 16s ease-in-out infinite alternate;
+}
+.hero::after {
+  inset: -40px 0 0; opacity: .55;
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 44px 44px; background-position: center top;
+  -webkit-mask-image: radial-gradient(ellipse 52% 60% at 50% 30%, #000 10%, transparent 75%);
+  mask-image: radial-gradient(ellipse 52% 60% at 50% 30%, #000 10%, transparent 75%);
+}
+@keyframes glow { from { transform: translate3d(-3%, 0, 0) scale(1); opacity: .85; } to { transform: translate3d(3%, 2%, 0) scale(1.06); opacity: 1; } }
+.demo { padding: 8px 0 24px; }
 .hero .lead { max-width: 54ch; }
 .prompt { width: 100%; max-width: 720px; margin-top: 16px; text-align: left; }
 .examples { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 720px; }

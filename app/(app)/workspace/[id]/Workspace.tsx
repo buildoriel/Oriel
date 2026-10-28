@@ -205,7 +205,7 @@ export default function Workspace({ project: initial, role, initialMessages, ini
     const r = await fetch(`/api/projects/${project.id}/publish`, { method: "POST" }); const j = await r.json().catch(() => ({}));
     setPublishing(false);
     if (r.ok) {
-      setLive(j.url); setVersion(j.version); toast(`Published version ${j.version}`); refreshShell();
+      setLive(j.url); setVersion(j.version); toast(`Published version ${j.version}`, "ok"); refreshShell();
       if (j.review) setNotice({ tone: "info", text: "Published. The automatic check flagged part of this site for a quick review by the Oriel team; it stays live meanwhile." });
     } else {
       setNotice({ tone: "error", text: j.error ?? "Publishing failed.", items: (j.findings ?? []).map((f: any) => `${f.file}: ${f.message}`) });
