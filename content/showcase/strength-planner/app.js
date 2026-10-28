@@ -243,6 +243,23 @@
     }
     return items;
   }
+  // If a session comes in well under the time box, add sets from the top of the day (capped by level).
+  function fillToTime(items, minutes, level) {
+    var cap = { beginner: 3, intermediate: 4, advanced: 5 }[level];
+    var target = minutes * 60;
+    var guard = 30;
+    while (guard--) {
+      var blocks = blocksOf(items);
+      var grow = null;
+      for (var i = 0; i < blocks.length; i++) {
+        if (blocks[i][0].sets < cap && ['time', 'carry'].indexOf(BY_ID[blocks[i][0].id].style) === -1) { grow = blocks[i]; break; }
+      }
+      if (!grow) break;
+      grow.forEach(function (it) { it.sets += 1; });
+      if (sessionSeconds(items) > target) { grow.forEach(function (it) { it.sets -= 1; }); break; }
+    }
+    return items;
+  }
 
   /* ---------------------------------------------------------
      3. Plan generator + swap
@@ -286,38 +303,50 @@
     return null;
   }
 
+  /** Tags + prescriptions for a day's exercises. Fat loss pairs them into A1/A2 supersets. */
+  function prescribeDay(list, inputs) {
+    return list.map(function (src, i) {
+      var it = { id: src.id, role: src.role };
+      if (inputs.goal === 'fatloss') {
+        var hasPartner = i % 2 === 1 || i + 1 < list.length;
+        it.pairPos = hasPartner ? (i % 2) + 1 : 0;
+        it.tag = String.fromCharCode(65 + Math.floor(i / 2)) + (hasPartner ? (i % 2) + 1 : '');
+      } else {
+        it.pairPos = 0;
+        it.tag = String(i + 1);
+      }
+      var rx = prescribe(BY_ID[it.id], it.role, inputs.goal, inputs.experience, it.pairPos);
+      it.sets = rx.sets; it.reps = rx.reps; it.rest = rx.rest;
+      return it;
+    });
+  }
+
   function generate(inputs) {
     var split = SPLITS[inputs.days];
     var count = COUNT[inputs.goal][inputs.length];
     var weekCount = {};
     var days = split.days.map(function (d, di) {
       var used = [];
-      var items = [];
+      var pool = [];
       var slots = T[d[1]];
-      for (var i = 0; i < slots.length && items.length < count; i++) {
-        var role = items.length < 2 ? 'main' : 'acc';
-        var ex = pick(slots[i], inputs, role, used, weekCount);
+      // Pick one exercise per template slot (in priority order).
+      for (var i = 0; i < slots.length; i++) {
+        var ex = pick(slots[i], inputs, pool.length < 2 ? 'main' : 'acc', used, weekCount);
         if (!ex) continue;
         used.push(ex.id);
-        weekCount[ex.id] = (weekCount[ex.id] || 0) + 1;
-        items.push({ id: ex.id, role: role });
+        pool.push({ id: ex.id, role: pool.length < 2 ? 'main' : 'acc' });
       }
-      // Tags + prescriptions. Fat loss pairs exercises into A1/A2 supersets.
-      items.forEach(function (it, i) {
-        if (inputs.goal === 'fatloss') {
-          var pairIdx = Math.floor(i / 2);
-          var hasPartner = i % 2 === 1 || i + 1 < items.length;
-          it.pairPos = hasPartner ? (i % 2) + 1 : 0;
-          it.tag = String.fromCharCode(65 + pairIdx) + (hasPartner ? (i % 2) + 1 : '');
-        } else {
-          it.pairPos = 0;
-          it.tag = String(i + 1);
-        }
-        var rx = prescribe(BY_ID[it.id], it.role, inputs.goal, inputs.experience, it.pairPos);
-        it.sets = rx.sets; it.reps = rx.reps; it.rest = rx.rest;
-      });
-      // A superset's rest sits on its second half: keep both halves at the same set count.
+      // Start with the standard count for this goal + time, then add slots while they still fit the clock.
+      var n = Math.min(count, pool.length);
+      var items = prescribeDay(pool.slice(0, n), inputs);
+      while (n < pool.length) {
+        var trial = prescribeDay(pool.slice(0, n + 1), inputs);
+        if (sessionSeconds(trial) > inputs.length * 60) break;
+        items = trial; n++;
+      }
       fitToTime(items, inputs.length);
+      fillToTime(items, inputs.length, inputs.experience);
+      items.forEach(function (it) { weekCount[it.id] = (weekCount[it.id] || 0) + 1; });
       return { name: d[0], weekday: split.on[di], items: items };
     });
     return { inputs: inputs, split: split.name, days: days, created: Date.now() };
@@ -380,6 +409,9 @@
     if (lv === 'beginner' && g === 'strength') extra.push('Beginners can usually add load every session for the first 6–8 weeks.');
     if (lv !== 'beginner') extra.push('Every 4th or 5th week, deload: same exercises, about half the sets.');
     extra.push('Log your weights. If a lift stalls for two weeks, swap it for a variation.');
+    if (!candidates('vpull', inputs, []).length && !candidates('hpull', inputs, []).length) {
+      extra.push('Gear tip: a pull-up bar or a resistance band unlocks proper back work. Without one, pulling is the gap in this plan.');
+    }
     return { main: main, extra: extra };
   }
 
