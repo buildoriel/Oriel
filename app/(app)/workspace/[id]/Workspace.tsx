@@ -8,6 +8,7 @@ import { MAX_ATTACHMENTS, uploadError, uploadType, type Attachment } from "@/lib
 import { Icon } from "@/components/Icon";
 import { OrielMark } from "@/components/Logo";
 import { refreshShell } from "@/components/AppShell";
+import { reportClientError } from "@/components/ErrorReporter";
 import ws from "./workspace.module.css";
 
 type Step = { text: string };
@@ -67,7 +68,7 @@ export default function Workspace({ project: initial, role, initialMessages, ini
   const [connected, setConnected] = useState<string[]>([]);
   const [settings, setSettings] = useState<any>({});
   const [files, setFiles] = useState<string[]>([]);
-  const [notice, setNotice] = useState<{ tone: "info" | "error"; text: string; items?: string[] } | null>(null);
+  const [notice, setNotice] = useState<{ tone: "info" | "error"; text: string; items?: string[]; publish?: boolean } | null>(null);
 
   const [confirmBox, setConfirmBox] = useState<Confirm | null>(null);
   const [autocommit, setAutocommit] = useState(true);
@@ -106,9 +107,10 @@ export default function Workspace({ project: initial, role, initialMessages, ini
       // a build that was still running when the page was opened (e.g. after closing the tab)
       autoSent.current = true;
       setMsgs((m) => [...m, { role: "assistant", content: "" }]); follow(activeRunId);
-    } else if (initialPrompt && initialMessages.length === 0 && !autoSent.current) {
-      // the prompt typed on the start screen is sent once
-      autoSent.current = true; send(initialPrompt); history.replaceState(null, "", location.pathname);
+    } else if (initialPrompt && !autoSent.current) {
+      // the prompt typed on the start screen is sent once; a project with a chat already only gets it in the message box
+      autoSent.current = true; history.replaceState(null, "", location.pathname);
+      if (initialMessages.length === 0) send(initialPrompt); else setInput(initialPrompt);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project.id]);
@@ -148,9 +150,14 @@ export default function Workspace({ project: initial, role, initialMessages, ini
     }
     setInput(""); files.forEach((f) => f.url && URL.revokeObjectURL(f.url)); if (!preset) setPending([]);
     setMsgs((m) => [...m, { role: "user", content: text, attachments }, { role: "assistant", content: "" }]);
-    const res = await fetch(`/api/projects/${project.id}/chat`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message: text, attachments }) });
-    const j = await res.json().catch(() => ({}));
-    if (!res.ok) { finish(j.error ?? "Could not send your message.", undefined, true); setBusy(false); setStatus(""); return; }
+    const res = await fetch(`/api/projects/${project.id}/chat`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message: text, attachments }) })
+      .catch(() => null);
+    const j = res ? await res.json().catch(() => ({})) : {};
+    if (!res?.ok) {
+      // logged so a first message that never turns into a build shows up in the error log
+      reportClientError({ message: `Build request failed (${res?.status ?? "network"}${preset ? ", auto-sent" : ""}): ${j.error ?? "no error message"}` });
+      finish(j.error ?? "Could not send your message. Check your connection and try again.", undefined, true); setBusy(false); setStatus(""); return;
+    }
     if (attachments.length) refreshFiles();
     await follow(j.runId);
   }
@@ -158,7 +165,7 @@ export default function Workspace({ project: initial, role, initialMessages, ini
   /** Follow a queued or running build until it finishes. The build keeps going if this tab closes. */
   async function follow(id: number) {
     setRunId(id); setBusy(true); setStopping(false);
-    let after = 0, misses = 0;
+    let after = 0, misses = 0, wrote = false;
     const local: Step[] = [];
     const step = (t: string) => { local.push({ text: t }); addStep(t); };
     try {
@@ -171,19 +178,28 @@ export default function Workspace({ project: initial, role, initialMessages, ini
         if (j.status === "queued" && after === 0 && !j.events.length) setStatus(j.stopping ? "Stopping" : j.ahead > 0 ? `In queue, ${j.ahead} ahead` : "Starting");
         for (const e of j.events) {
           after = e.id;
-          if (e.type === "route") { const t = `${KIND[e.kind] ?? "Build"} with ${MODEL[e.model] ?? e.model}`; setStatus(t); step(t); }
-          if (e.type === "file") { setStatus(`${e.op === "delete" ? "Removing" : "Writing"} ${e.path}`); step(`${e.op === "delete" ? "Removed" : "Wrote"} ${e.path}`); reloadPreview(); }
+          if (e.type === "route") {
+            const t = `${KIND[e.kind] ?? "Build"} with ${MODEL[e.model] ?? e.model}${e.welcome ? ", your first build is on us" : ""}`;
+            setStatus(t); step(t);
+          }
+          if (e.type === "file") { wrote = true; setStatus(`${e.op === "delete" ? "Removing" : "Writing"} ${e.path}`); step(`${e.op === "delete" ? "Removed" : "Wrote"} ${e.path}`); reloadPreview(); }
           if (e.type === "cost") setStatus((s) => s.replace(/ · .*$/, "") + ` · ${e.credits} credits`);
           if (e.type === "commit") step("Committed to GitHub");
           if (e.type === "text" && e.text?.trim()) step(e.text.trim().split("\n")[0].slice(0, 140));
-          if (e.type === "done") { finish(e.summary, e.credits, false, local); setNonce((n) => n + 1); refreshFiles(); if (view === "code") loadCode(); refreshShell(); return; }
+          if (e.type === "done") {
+            finish(e.summary, e.credits, false, local);
+            if (wrote && !live && owner) setNotice({ tone: "info", text: `Your site is ready. Publish it to get a live link at ${project.slug}.${ROOT} that you can share.`, publish: true });
+            setNonce((n) => n + 1); refreshFiles(); if (view === "code") loadCode(); refreshShell(); return;
+          }
           if (e.type === "error") { finish(e.message, undefined, true, local); refreshMe(); refreshShell(); return; }
         }
         if (j.stopping) setStatus("Stopping after this step");
         await sleep(1200);
       }
-    } catch { finish("Lost track of the build. It keeps running in the background; reload the page to see the result.", undefined, true); }
-    finally { setBusy(false); setRunId(null); setStopping(false); setStatus(""); }
+    } catch {
+      reportClientError({ message: `Lost track of build ${id}` });
+      finish("Lost track of the build. It keeps running in the background; reload the page to see the result.", undefined, true);
+    } finally { setBusy(false); setRunId(null); setStopping(false); setStatus(""); }
   }
   const finish = (content: string, credits?: number, error = false, done: Step[] = []) =>
     setMsgs((m) => [...m.slice(0, -1), { role: "assistant", content, credits, steps: done.length ? done : undefined, error }]);
@@ -350,6 +366,11 @@ export default function Workspace({ project: initial, role, initialMessages, ini
                   {notice.items?.length ? <ul>{notice.items.map((i) => <li key={i}>{i}</li>)}</ul> : null}
                   {notice.tone === "error" && notice.items?.length ? <p className="small mute" style={{ marginTop: 6 }}>Ask the agent to remove these parts, then publish again.</p> : null}
                 </div>
+                {notice.publish && !live && (
+                  <button className="btn btn-accent btn-sm" onClick={publish} disabled={busy || publishing}>
+                    {publishing ? <span className="spinner" /> : <Icon name="globe" />}Publish
+                  </button>
+                )}
                 <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setNotice(null)} aria-label="Dismiss"><Icon name="x" /></button>
               </div>
             )}

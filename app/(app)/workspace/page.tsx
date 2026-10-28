@@ -31,13 +31,17 @@ export default function Start() {
   const [prompt, setPrompt] = useState("");
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [err, setErr] = useState("");
+  const [limit, setLimit] = useState(false);
   const [hello, setHello] = useState("What should we build?");
   const est = useEstimate(prompt);
 
   useEffect(() => {
     setHello(greeting());
     fetch("/api/projects").then((r) => (r.ok ? r.json() : { projects: [] })).then((j) => setProjects(j.projects ?? [])).catch(() => setProjects([]));
-    const e = new URLSearchParams(location.search).get("error"); if (e) setErr(e);
+    const q = new URLSearchParams(location.search);
+    if (q.get("error")) setErr(q.get("error")!);
+    if (q.get("limit")) { setLimit(true); setPrompt(q.get("prompt") ?? ""); }
+    if (location.search) history.replaceState(null, "", location.pathname);
   }, []);
 
   // /workspace/new creates the project (auto subdomain) and opens it with the prompt sent
@@ -53,7 +57,24 @@ export default function Start() {
       <Composer value={prompt} onChange={setPrompt} onSubmit={start} autoFocus
         placeholder="A website for my ceramics studio, warm and minimal, with a gallery and a contact form"
         footer={est ? <EstimateLabel est={est} /> : <><Icon name="spark" size={14} /><span>Oriel picks the right model for each request</span></>} />
-      {err && <div className="callout callout-bad" style={{ marginTop: 12 }}><Icon name="alert" /><span className="callout-body">{err}</span></div>}
+      {err && !limit && <div className="callout callout-bad" style={{ marginTop: 12 }}><Icon name="alert" /><span className="callout-body">{err}</span></div>}
+      {err && limit && (
+        <div className="callout callout-accent" style={{ marginTop: 12 }}>
+          <Icon name="info" />
+          <div className="callout-body grow">
+            <b>{err}</b>
+            <p className="small mute" style={{ marginTop: 4 }}>You can keep going in an existing project instead: your prompt is placed in its message box, so you decide whether to send it.</p>
+            <div className="row wrap" style={{ marginTop: 10, gap: 8 }}>
+              {projects?.[0] && (
+                <Link className="btn btn-sm btn-primary" href={`/workspace/${projects[0].id}?prompt=${encodeURIComponent(prompt.trim())}`}>
+                  Continue in {projects[0].name}<Icon name="arrowRight" />
+                </Link>
+              )}
+              <Link className="btn btn-sm" href="/tiers">See plans</Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="row wrap" style={{ justifyContent: "center", marginTop: 18, gap: 8 }}>
         {IDEAS.map(([icon, label, text]) => (

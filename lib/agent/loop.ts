@@ -3,7 +3,7 @@ import { admin } from "../supabase/admin";
 import { getBalance, spend, usdToCredits } from "../credits";
 import type { TierId } from "../config";
 import type { Json } from "../database.types";
-import { KIND_LIMITS, pickModel, usageCostUsd, type ActionKind } from "./models";
+import { KIND_LIMITS, WELCOME_MODEL, pickModel, usageCostUsd, welcomeShare, type ActionKind } from "./models";
 import { routeRequest } from "./router";
 import { createMessage } from "../llm";
 import { AGENT_SYSTEM } from "./prompts";
@@ -19,7 +19,7 @@ const MAX_VISION_BYTES = 3_700_000;
 const IMAGE_MARK = /^<attached_image path="([^"]+)" \/>$/;
 
 export type AgentEvent =
-  | { type: "route"; kind: ActionKind; model: string }
+  | { type: "route"; kind: ActionKind; model: string; welcome?: boolean }
   | { type: "text"; text: string }
   | { type: "file"; path: string; op: "write" | "delete" }
   | { type: "cost"; credits: number }
@@ -42,6 +42,8 @@ export type AgentState = {
   msgs: Anthropic.MessageParam[];
   step: number; images: number; summary: string;
   costUsd: number; chargedUsd: number; chargedCredits: number;
+  /** fraction of the cost charged to the person (below 1 on a Free account's welcome build); absent = 1 */
+  paidShare?: number;
   usage: Usage;               // usage not yet written to ai_usage
   changed: string[]; deleted: string[];
 };
@@ -73,8 +75,11 @@ export async function initState(a: { userId: string; projectId: string; message:
     return { kind: (files.size ? "edit" : "build") as ActionKind, costUsd: 0, usage: null };
   });
   const kind = route.kind, limits = KIND_LIMITS[kind];
-  const model = pickModel(tier, kind, { premiumLeft });
-  await a.emit({ type: "route", kind, model });
+  // claim the welcome build atomically, so two queued requests can't both get it
+  const welcome = tier === "free" && kind !== "edit" && !!(await db.from("profiles").update({ welcome_build_at: new Date().toISOString() })
+    .eq("id", a.userId).is("welcome_build_at", null).select("id").maybeSingle()).data;
+  const model = welcome ? WELCOME_MODEL : pickModel(tier, kind, { premiumLeft });
+  await a.emit({ type: "route", kind, model, ...(welcome ? { welcome } : {}) });
   if (model === "claude-opus-5-5" && tier === "pro")
     await db.from("profiles").update({ premium_builds_used: Number(profile?.premium_builds_used ?? 0) + 1 }).eq("id", a.userId);
 
@@ -98,10 +103,13 @@ export async function initState(a: { userId: string; projectId: string; message:
       ],
     }],
     step: 0, images: 0, summary: "",
-    costUsd: route.costUsd, chargedUsd: 0, chargedCredits: 0, usage,
+    costUsd: route.costUsd, chargedUsd: 0, chargedCredits: 0, usage, ...(welcome ? { paidShare: welcomeShare() } : {}),
     changed: [], deleted: [],
   };
 }
+
+/** Credits the person owes for this request so far. */
+const owed = (s: AgentState) => usdToCredits(s.costUsd * (s.paidShare ?? 1));
 
 /**
  * Run agent steps until the run finishes, the slice deadline passes, or the user cancels.
@@ -130,7 +138,7 @@ export async function runSlice(a: {
     if (!validPath(path) || !IMAGE_EXT.test(path)) return "Error: image path must end in .png, .jpg, or .webp.";
     if (s.images >= MAX_IMAGES_PER_RUN) return `Error: limit of ${MAX_IMAGES_PER_RUN} images per request reached.`;
     if (!files.has(path) && files.size >= MAX_PROJECT_FILES) return "Error: file count limit reached.";
-    if (usdToCredits(s.costUsd) >= s.budgetCredits) return "Error: credit limit for this request reached.";
+    if (owed(s) >= s.budgetCredits) return "Error: credit limit for this request reached.";
     try {
       const img = await generateImage(String(input?.prompt ?? ""), input?.aspect_ratio);
       s.costUsd += img.costUsd; s.images++;
@@ -172,13 +180,13 @@ export async function runSlice(a: {
       results.push({ type: "tool_result", tool_use_id: b.id, content: r.out.slice(0, 60_000) });
     }
     await saveFiles(a.projectId, files, dirty, removed);
-    await a.emit({ type: "cost", credits: usdToCredits(s.costUsd) });
+    await a.emit({ type: "cost", credits: owed(s) });
 
     if (res.stop_reason !== "tool_use") { s.summary ||= textOf(res.content) || "Done."; break; }
     s.msgs.push({ role: "user", content: results });
     s.changed = [...changed]; s.deleted = [...deleted];
     await a.checkpoint(s);
-    if (usdToCredits(s.costUsd) >= s.budgetCredits) { s.summary = "Stopped because the credit limit for this request was reached. Changes so far have been saved."; break; }
+    if (owed(s) >= s.budgetCredits) { s.summary = "Stopped because the credit limit for this request was reached. Changes so far have been saved."; break; }
   }
 
   s.changed = [...changed]; s.deleted = [...deleted];
@@ -223,7 +231,7 @@ async function saveFiles(projectId: string, files: FileMap, dirty: Set<string>, 
  */
 async function chargeSlice(userId: string, projectId: string, s: AgentState) {
   const db = admin();
-  const owedCredits = Math.max(0, usdToCredits(s.costUsd) - s.chargedCredits);
+  const owedCredits = Math.max(0, owed(s) - s.chargedCredits);
   const deltaUsd = s.costUsd - s.chargedUsd;
   if (owedCredits === 0 && deltaUsd <= 0) return false;
   const balance = await getBalance(userId);

@@ -47,6 +47,13 @@ export function pickModel(tier: TierId, kind: ActionKind, opts: { premiumLeft: n
   }
 }
 
+/**
+ * A Free account's first build runs once on the Builder model, so the first thing a new person sees is a
+ * good result. They pay what the same build would cost on the Free model; Oriel pays the rest.
+ */
+export const WELCOME_MODEL = "claude-sonnet-5-5";
+export const welcomeShare = () => PRICES["claude-haiku-5-5"].output / PRICES[WELCOME_MODEL].output;
+
 /** Agent step limit and credit cap per request, so one message cannot drain the balance. */
 export const KIND_LIMITS: Record<ActionKind, { maxSteps: number; maxCredits: number; minCredits: number; maxTokens: number }> = {
   edit:  { maxSteps: 6,  maxCredits: 40,   minCredits: 1,  maxTokens: 8000 },
