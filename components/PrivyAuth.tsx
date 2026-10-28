@@ -1,7 +1,8 @@
 "use client";
-import { PrivyProvider, useIdentityToken, useLogout, usePrivy } from "@privy-io/react-auth";
+import { PrivyProvider, useIdentityToken, useLogout, usePrivy, useWallets } from "@privy-io/react-auth";
 import { useEffect, useRef, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { registerWalletProvider } from "@/lib/wallet-client";
 import { Icon } from "./Icon";
 
 export const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "";
@@ -87,4 +88,34 @@ export function PrivyLogout() {
     })();
   }, [ready, logout]);
   return <p className="small mute center"><span className="spinner" /> Signing out…</p>;
+}
+
+/**
+ * Hands the signed-in person's Privy wallet to lib/wallet-client (payments, staking, revenue share claims).
+ * Prefers the wallet linked to the Oriel account; asks Privy to sign in again when its session has ended.
+ */
+export function PrivyWalletBridge() {
+  const { ready, authenticated, login } = usePrivy();
+  const { wallets } = useWallets();
+  const [linked, setLinked] = useState<string | null>(null);
+  useEffect(() => {
+    fetch("/api/me").then((r) => (r.ok ? r.json() : null)).then((m) => setLinked(m?.profile?.wallet_address ?? null)).catch(() => {});
+  }, []);
+  useEffect(() => {
+    registerWalletProvider(async () => {
+      if (!ready) throw new Error("Wallet is still loading. Try again in a moment.");
+      if (!authenticated) { login(); throw new Error("Sign in to your wallet, then try again."); }
+      const w = wallets.find((x) => linked && x.address.toLowerCase() === linked.toLowerCase()) ?? wallets[0];
+      if (!w) throw new Error("No wallet on this account yet. Sign out and sign in again to create one.");
+      return w.getEthereumProvider();
+    });
+    return () => registerWalletProvider(null);
+  }, [ready, authenticated, login, wallets, linked]);
+  return null;
+}
+
+/** Privy provider plus the wallet bridge, for pages that send transactions. Renders children unchanged without Privy. */
+export function WalletScope({ children }: { children: React.ReactNode }) {
+  if (!PRIVY_APP_ID) return <>{children}</>;
+  return <PrivyAuthProvider><PrivyWalletBridge />{children}</PrivyAuthProvider>;
 }

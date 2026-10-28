@@ -19,9 +19,18 @@ export const TOKENS = {
 const TREASURY = process.env.NEXT_PUBLIC_TREASURY_ADDRESS as Address;
 const STAKING = process.env.NEXT_PUBLIC_STAKING_CONTRACT_ADDRESS as Address;
 
+/** Which payment tokens are live (addresses configured). Until then the buttons say payments open soon. */
+export const PAYMENTS = { USDG: !!TOKENS.USDG && !!TREASURY, ORIEL: !!TOKENS.ORIEL && !!TREASURY, STAKING: !!TOKENS.ORIEL && !!STAKING };
+
+type Eip1193 = { request: (a: { method: string; params?: any[] }) => Promise<any> }; // eslint-disable-line @typescript-eslint/no-explicit-any
+let provide: (() => Promise<Eip1193>) | null = null;
+
+/** The Privy wallet (embedded or external) registers here; without it a browser extension wallet is used. */
+export function registerWalletProvider(fn: (() => Promise<Eip1193>) | null) { provide = fn; }
+
 async function wallet() {
-  const eth = (window as any).ethereum;
-  if (!eth) throw new Error("No wallet found. Install a wallet that supports Robinhood Chain.");
+  const eth = provide ? await provide() : (window as any).ethereum;
+  if (!eth) throw new Error("No wallet found. Sign in again, or install a wallet that supports Robinhood Chain.");
   const w = createWalletClient({ chain, transport: custom(eth) });
   const [account] = await w.requestAddresses();
   try { await w.switchChain({ id: chain.id }); } catch { await w.addChain({ chain }); }

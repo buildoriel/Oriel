@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { payToTreasury, verifyWallet } from "@/lib/wallet-client";
+import { PAYMENTS, payToTreasury, verifyWallet } from "@/lib/wallet-client";
 import { refreshShell } from "./AppShell";
 import { Modal } from "./ui";
 
@@ -45,12 +45,18 @@ export function BuyButton({ product, usd, label, primary }: { product: string; u
     finally { setBusy(false); }
   }
 
+  if (!PAYMENTS.USDG && !PAYMENTS.ORIEL) return (
+    <div style={{ display: "grid", gap: 8, justifyItems: "center" }}>
+      <button type="button" className={`btn btn-block${primary ? " btn-primary" : ""}`} disabled>{label}</button>
+      <span className="xs mute center">Payments open soon.</span>
+    </div>
+  );
   return (
     <div style={{ display: "grid", gap: 8, justifyItems: "center" }}>
-      <button type="button" className={`btn btn-block${primary ? " btn-primary" : ""}`} onClick={() => buy("USDG")} disabled={busy}>
+      {PAYMENTS.USDG && <button type="button" className={`btn btn-block${primary ? " btn-primary" : ""}`} onClick={() => buy("USDG")} disabled={busy}>
         {busy && <span className="spinner" aria-hidden />}{label}
-      </button>
-      <button type="button" className="btn-link btn-sm" onClick={() => buy("ORIEL")} disabled={busy}>Pay with $ORIEL</button>
+      </button>}
+      {PAYMENTS.ORIEL && <button type="button" className="btn-link btn-sm" onClick={() => buy("ORIEL")} disabled={busy}>Pay with $ORIEL</button>}
       {state && <span className="xs mute center" role="status" aria-live="polite">{state}</span>}
       <Modal open={quote !== null} onClose={() => reply(false)} title="Pay with $ORIEL"
         footer={<>
