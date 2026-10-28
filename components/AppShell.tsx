@@ -4,9 +4,10 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Icon, type IconName } from "./Icon";
 import { OrielLockup } from "./Logo";
+import { CommandPalette, modKey } from "./CommandPalette";
 
 type Me = { email: string; tier: string; balance: { total: number; monthly: number; topup: number }; profile: { handle: string | null }; notifications: unknown[] };
-type Project = { id: string; name: string; slug: string; published_version: number | null };
+type Project = { id: string; name: string; slug: string; published_version: number | null; shared?: boolean };
 
 const NAV: [string, string, IconName][] = [
   ["/templates", "Templates", "templates"],
@@ -25,6 +26,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [me, setMe] = useState<Me | null | undefined>(undefined);
   const [projects, setProjects] = useState<Project[]>([]);
   const [open, setOpen] = useState(false);
+  const [mod, setMod] = useState("Ctrl");
+  useEffect(() => { setMod(modKey()); }, []);
+  const toggleSidebar = useCallback(() => setOpen((o) => !o), []);
 
   const load = useCallback(async () => {
     const r = await fetch("/api/me").catch(() => null);
@@ -51,6 +55,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="sb-section">
           <Link href="/workspace" className="btn btn-primary sb-new"><Icon name="plus" />New project</Link>
         </div>
+        <div className="sb-section" style={{ paddingBottom: 0 }}>
+          <button type="button" className="sb-search" onClick={() => window.dispatchEvent(new Event("oriel:palette"))}>
+            <Icon name="search" /><span className="grow" style={{ textAlign: "left" }}>Search</span><span className="kbd">{mod} K</span>
+          </button>
+        </div>
         <nav className="sb-section sb-nav" aria-label="App">
           {NAV.map(([h, l, i]) => (
             <Link key={h} href={h} className="sb-link" aria-current={path.startsWith(h) ? "page" : undefined}><Icon name={i} />{l}</Link>
@@ -62,7 +71,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {me === null && <p className="small mute" style={{ padding: "4px 10px" }}>Sign in to see your projects.</p>}
           {me && projects.length === 0 && <p className="small mute" style={{ padding: "4px 10px" }}>No projects yet.</p>}
           {projects.slice(0, 30).map((p) => (
-            <Link key={p.id} href={`/workspace/${p.id}`} className="sb-recent" aria-current={path === `/workspace/${p.id}` ? "page" : undefined} title={p.name}>{p.name}</Link>
+            <Link key={p.id} href={`/workspace/${p.id}`} className="sb-recent" aria-current={path === `/workspace/${p.id}` ? "page" : undefined} title={p.name}>
+              <span className="truncate">{p.name}</span>{p.shared && <span className="sb-shared">Shared</span>}
+            </Link>
           ))}
         </div>
 
@@ -93,6 +104,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       <div className="sb-scrim" onClick={() => setOpen(false)} />
+      <CommandPalette projects={projects} onToggleSidebar={toggleSidebar} />
 
       <div className="main">
         <div className="topbar">
