@@ -246,6 +246,16 @@ export default function Workspace({ project: initial, role, initialMessages, ini
       toast(`Restored version ${v}`);
     },
   });
+  const unpublish = () => setConfirmBox({
+    title: "Unpublish this site?", label: "Unpublish",
+    body: `${project.slug}.${ROOT} and any custom domains stop showing the site within a minute. Your files and version history stay, so you can publish again any time.`,
+    run: async () => {
+      const r = await fetch(`/api/projects/${project.id}/publish`, { method: "DELETE" }); const j = await r.json().catch(() => ({}));
+      if (!r.ok) return toast(j.error ?? "Could not unpublish.");
+      setLive(null); setVersion(null); refreshShell();
+      toast("Site unpublished");
+    },
+  });
   async function deleteProject() {
     setDeleting(true);
     const r = await fetch(`/api/projects/${project.id}`, { method: "DELETE" }); const j = await r.json().catch(() => ({}));
@@ -285,6 +295,7 @@ export default function Workspace({ project: initial, role, initialMessages, ini
     ...(owner && live ? [
       { icon: "tag", label: "Sell as template", onSelect: () => setSell({ title: project.name, description: "", category: "landing", price: "50" }) } as MenuEntry,
       { icon: "spark", label: settings.showcase_opt_in ? "Remove from showcase" : "Allow in showcase", onSelect: toggleShowcase } as MenuEntry,
+      { icon: "eye", label: "Unpublish", onSelect: unpublish } as MenuEntry,
     ] : []),
     "sep",
     { section: "Connectors" },
