@@ -6,7 +6,7 @@ import assert from "node:assert";
 import { setAdminForTests } from "../lib/supabase/admin";
 import { runSlice, finishRun, type AgentState } from "../lib/agent/loop";
 import { usdToCredits } from "../lib/credits";
-import { usageCostUsd } from "../lib/agent/models";
+import { usageCostUsd, welcomeShare } from "../lib/agent/models";
 import { fakeDb } from "./fake-db";
 
 process.env.LLM_PROVIDER = "openrouter"; process.env.OPENROUTER_API_KEY = "test"; delete process.env.IMAGE_MODEL;
@@ -125,6 +125,17 @@ async function main() {
     const r = await runSlice({ userId: USER, projectId: PROJECT, state: freshState({ budgetCredits: 600 }), deadline: Date.now() + 10, emit: noop, checkpoint: noop, cancelled: async () => false });
     assert.equal(r.finished, true); assert.match(r.state.summary, /credits ran out/);
     assert.equal(db.tables.credit_balances[0].topup, 0); assert.equal(r.state.chargedCredits, 3);
+  }
+
+  // ---- 5. a Free account's welcome build: real cost logged, the person pays only their share ----
+  {
+    const db = setup();
+    scriptModel([{ name: "write_file", args: { path: "index.html", content: "x" } }, { name: "finish", args: { summary: "Done." } }]);
+    const r = await runSlice({ userId: USER, projectId: PROJECT, state: freshState({ tier: "free", paidShare: welcomeShare() }), deadline: Date.now() + 60_000, emit: noop, checkpoint: noop, cancelled: async () => false });
+    const real = usageCostUsd("claude-sonnet-5-5", STEP_USAGE) * 2;
+    assert.equal(welcomeShare(), 1 / 3);
+    assert.equal(r.state.chargedCredits, usdToCredits(real / 3), "charged a third of the real cost");
+    assert.ok(Math.abs(db.tables.ai_usage.reduce((s, x) => s + x.cost_usd, 0) - real) < 1e-9, "ai_usage keeps the real cost");
   }
 
   console.log("agent queue tests: OK");

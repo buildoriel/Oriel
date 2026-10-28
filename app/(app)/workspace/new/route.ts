@@ -17,6 +17,8 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL(`/workspace/${p.id}?prompt=${encodeURIComponent(prompt)}`, url.origin));
   } catch (e) {
     const msg = e instanceof HttpError ? e.message : "Could not create the project.";
-    return NextResponse.redirect(new URL(`/workspace?error=${encodeURIComponent(msg)}`, url.origin));
+    // over the tier's project limit: keep the prompt so it can go into an existing project instead
+    const limit = e instanceof HttpError && e.status === 403 ? `&limit=1&prompt=${encodeURIComponent(prompt)}` : "";
+    return NextResponse.redirect(new URL(`/workspace?error=${encodeURIComponent(msg)}${limit}`, url.origin));
   }
 }

@@ -39,7 +39,8 @@ export async function middleware(req: NextRequest) {
   const { data } = await sb.auth.getUser();
   const protectedPath = /^\/(workspace|stake|connectors|account|admin)/.test(url.pathname);
   if (protectedPath && !data.user) {
-    url.pathname = "/login"; url.searchParams.set("next", req.nextUrl.pathname);
+    // keep the query (e.g. the prompt typed on the home page) inside `next`, so it survives signing in
+    url.pathname = "/login"; url.search = ""; url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
     return NextResponse.redirect(url);
   }
   // keep the referral code for 30 days

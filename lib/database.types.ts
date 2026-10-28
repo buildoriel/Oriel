@@ -730,6 +730,7 @@ export type Database = {
           handle: string | null
           id: string
           premium_builds_used: number
+          welcome_build_at: string | null
           purchased_tier: string | null
           purchased_tier_until: string | null
           referral_code: string
@@ -749,6 +750,7 @@ export type Database = {
           handle?: string | null
           id: string
           premium_builds_used?: number
+          welcome_build_at?: string | null
           purchased_tier?: string | null
           purchased_tier_until?: string | null
           referral_code?: string
@@ -768,6 +770,7 @@ export type Database = {
           handle?: string | null
           id?: string
           premium_builds_used?: number
+          welcome_build_at?: string | null
           purchased_tier?: string | null
           purchased_tier_until?: string | null
           referral_code?: string
