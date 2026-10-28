@@ -4,6 +4,9 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { Icon } from "@/components/Icon";
 import { OrielMark } from "@/components/Logo";
 
+
+// shown once the Google provider is enabled in Supabase (Authentication > Providers)
+const GOOGLE = process.env.NEXT_PUBLIC_GOOGLE_AUTH === "on";
 export default function Login() {
   const [email, setEmail] = useState(""); const [sent, setSent] = useState(false); const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -37,10 +40,12 @@ export default function Login() {
               <input className="input" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder="you@example.com" />
             </label>
             <button className="btn btn-primary btn-lg btn-block" type="submit" disabled={busy}>{busy ? <span className="spinner" /> : null}Email me a sign-in link</button>
-            <div className="row xs faint" style={{ gap: 12 }}>
-              <span className="grow" style={{ borderTop: "1px solid var(--line)" }} />or<span className="grow" style={{ borderTop: "1px solid var(--line)" }} />
-            </div>
-            <button className="btn btn-lg btn-block" type="button" onClick={google}><Icon name="globe" />Continue with Google</button>
+            {GOOGLE && <>
+              <div className="row xs faint" style={{ gap: 12 }}>
+                <span className="grow" style={{ borderTop: "1px solid var(--line)" }} />or<span className="grow" style={{ borderTop: "1px solid var(--line)" }} />
+              </div>
+              <button className="btn btn-lg btn-block" type="button" onClick={google}><Icon name="globe" />Continue with Google</button>
+            </>}
             {err && <p className="err" role="alert">{err}</p>}
           </form>
         )}
